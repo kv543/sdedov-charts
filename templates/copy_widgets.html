@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>העתקת ווידג'טים — שדה דב</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0ebe3; font-family: 'Heebo', Arial, sans-serif; direction: rtl; padding: 28px 20px; color: #222; }
+
+  .page-header {
+    max-width: 860px; margin: 0 auto 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .page-header h1 { font-size: 20px; font-weight: 700; color: #1a2e35; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; color: #496970; border: 1.5px solid #d0dfe2;
+    padding: 7px 16px; border-radius: 8px; font-family: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer; text-decoration: none; transition: all .15s;
+  }
+  .back-btn:hover { border-color: #61C0CC; color: #61C0CC; }
+
+  .hint {
+    max-width: 860px; margin: 0 auto 20px;
+    background: #e8f5f7; border-right: 4px solid #61C0CC;
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 13px; color: #496970; line-height: 1.6;
+  }
+
+  .widget-card {
+    max-width: 860px; margin: 0 auto 20px;
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 18px rgba(73,105,112,0.10);
+    overflow: hidden;
+  }
+  .widget-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: #fff; border-bottom: 1px solid #eef2f3;
+    gap: 12px;
+  }
+  .widget-num {
+    width: 28px; height: 28px; border-radius: 50%; background: #496970;
+    color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .widget-name { font-size: 15px; font-weight: 700; color: #222; flex: 1; }
+  .widget-desc { font-size: 12px; color: #999; }
+
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: #61C0CC; color: #fff; border: none;
+    padding: 8px 18px; border-radius: 8px; font-family: inherit;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .copy-btn:hover { background: #4dadb8; }
+  .copy-btn.copied { background: #3d9e6e; }
+  .copy-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .code-wrap { position: relative; }
+  textarea {
+    width: 100%; height: 180px; padding: 14px 16px;
+    font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.55;
+    color: #2d4a52; background: #f7fafb; border: none; outline: none;
+    resize: vertical; direction: ltr; text-align: left;
+  }
+  textarea:focus { background: #f0f8f9; }
+
+  .char-count { font-size: 11px; color: #bbb; padding: 6px 16px; text-align: left; border-top: 1px solid #eef2f3; }
+
+  .optional-badge {
+    background: #f0f8f9; color: #61C0CC; font-size: 11px; font-weight: 600;
+    border-radius: 20px; padding: 2px 10px; border: 1px solid #c9eaf0; white-space: nowrap;
+  }
+  .missing-badge {
+    background: #fff3e0; color: #e07b00; font-size: 11px; font-weight: 600;
+    border-radius: 20px; padding: 2px 10px; border: 1px solid #f5c472; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>📋 העתקת ווידג'טים לאלמנטור</h1>
+  <a href="/" class="back-btn">← חזרה לאפליקציה</a>
+</div>
+
+<div class="hint">
+  לכל ווידג'ט — לחצו על <strong>העתק קוד</strong>, עברו לאלמנטור, הוסיפו רכיב
+  <strong>HTML</strong> והדביקו. הקוד כולל את הנתונים המעודכנים מהקובץ שהעלתם.
+</div>
+
+{% for w in widgets %}
+<div class="widget-card">
+  <div class="widget-header">
+    <div class="widget-num">{{ loop.index }}</div>
+    <div>
+      <div class="widget-name">{{ w.name }}</div>
+      {% if w.desc %}<div class="widget-desc">{{ w.desc }}</div>{% endif %}
+    </div>
+    {% if w.optional %}<span class="optional-badge">אופציונלי</span>{% endif %}
+    {% if w.error %}<span class="missing-badge">שגיאה</span>{% endif %}
+    <button class="copy-btn" onclick="copyWidget(this, {{ loop.index0 }})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      העתק קוד
+    </button>
+  </div>
+  <div class="code-wrap">
+    {% if w.error %}
+      <textarea id="code-{{ loop.index0 }}" readonly>שגיאה: {{ w.error }}</textarea>
+    {% else %}
+      <textarea id="code-{{ loop.index0 }}" readonly>{{ w.html }}</textarea>
+    {% endif %}
+  </div>
+  <div class="char-count">{{ w.html | length | default(0) }} תווים</div>
+</div>
+{% endfor %}
+
+<script>
+function copyWidget(btn, idx) {
+  const ta = document.getElementById('code-' + idx);
+  navigator.clipboard.writeText(ta.value).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> הועתק!`;
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> העתק קוד`;
+    }, 2500);
+  }).catch(() => {
+    /* fallback for older browsers */
+    ta.select();
+    document.execCommand('copy');
+    btn.textContent = 'הועתק!';
+    setTimeout(() => { btn.textContent = 'העתק קוד'; }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>

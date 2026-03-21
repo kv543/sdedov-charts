@@ -181,6 +181,39 @@ WIDGET_FILES = [
 
 WIDGET_FILES_LAND = ("07-land.html", "widgets/land.html")
 
+# (שם קובץ, תבנית, שם לתצוגה, תיאור, אופציונלי)
+WIDGET_NAMES = [
+    ("01-kpi.html",          "widgets/kpi.html",          "כרטיסי KPI",               "סיכום מספרי — עסקאות, מחיר, פרויקטים", False),
+    ("02-charts.html",       "widgets/charts.html",       "גרף מכירות לאורך זמן",     "כמות, כמות מצטברת, מחיר למ\"ר",        False),
+    ("03-pie.html",          "widgets/pie.html",          "התפלגות מכירות",            "לפי מספר חדרים / לפי עלות דירה",       False),
+    ("04-rooms-bar.html",    "widgets/rooms_bar.html",    "מחיר דירה ממוצע לפי חדרים","מחיר / שטח / מחיר למ\"ר",              False),
+    ("05-ranges.html",       "widgets/ranges.html",       "כמות דירות לפי טווח מחיר", "דירות זולות מ-4M ויקרות מ-10M",        False),
+    ("06-transactions.html", "widgets/transactions.html", "טבלת עסקאות",              "10 יקרות / 10 זולות ביותר",            False),
+    ("07-land.html",         "widgets/land.html",         "עלות קרקע ליחידת דיור",    "גרף התפתחות מחיר מכרזי קרקע",         True),
+]
+
+
+@app.route("/export/copy")
+@login_required
+def export_copy():
+    if not _last_data:
+        return redirect(url_for('index'))
+
+    export_data = dict(_last_data)
+    export_data["land_chart"] = _last_land_data if _last_land_data else None
+
+    widgets = []
+    for fname, tpl, name, desc, optional in WIDGET_NAMES:
+        if optional and not _last_land_data:
+            continue
+        try:
+            html = render_template(tpl, data=export_data)
+            widgets.append({"name": name, "desc": desc, "html": html, "optional": optional, "error": None})
+        except Exception as e:
+            widgets.append({"name": name, "desc": desc, "html": "", "optional": optional, "error": str(e)})
+
+    return render_template("copy_widgets.html", widgets=widgets)
+
 
 @app.route("/export/html")
 @login_required

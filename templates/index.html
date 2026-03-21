@@ -335,7 +335,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
     <div class="header-right">
       <span class="badge" id="data-badge">טוען...</span>
       <button class="btn-export btn-export-json" id="btn-export-json">📦 ייצוא JSON</button>
-      <button class="btn-export btn-export-html" id="btn-export-html">📄 ייצוא HTML</button>
+      <button class="btn-export btn-export-html" id="btn-export-html">📋 העתקת HTML לאלמנטור</button>
       <button class="btn-export btn-new" id="btn-new">⬆ קובץ חדש</button>
       <a href="/logout" class="btn-logout">יציאה</a>
     </div>
@@ -1119,7 +1119,7 @@ document.getElementById('land-file-update').addEventListener('change',function()
 
 // Export buttons
 document.getElementById('btn-export-json').addEventListener('click',()=>{window.location.href='/export/json';});
-document.getElementById('btn-export-html').addEventListener('click',()=>{window.location.href='/export/html';});
+document.getElementById('btn-export-html').addEventListener('click',()=>{window.open('/export/copy','_blank');});
 document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
   mainInst=null;pieInst=null;roomsInst=null;prInst=null;
