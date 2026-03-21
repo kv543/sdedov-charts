@@ -90,20 +90,24 @@ def generate_all_data(
         src["ym"]          = list(zip(src["year"], src["month"]))
         src["yq"]          = list(zip(src["year"], src["quarter"]))
 
-    df_valid = df.dropna(subset=["price", "sqm", "ppm"])
+    # DataFrames נפרדים לכל מדד — ממוצע מחושב רק מערכים קיימים
+    df_price = df.dropna(subset=["price"])
+    df_sqm   = df.dropna(subset=["sqm"])
+    df_ppm   = df.dropna(subset=["ppm"])
+    df_valid = df.dropna(subset=["price", "sqm", "ppm"])  # לטבלת עסקאות בלבד
 
     # ── 1. KPI ─────────────────────────────────────────────
     def avg_price_rooms(n):
         label = f"{n} חדרים"
-        sub   = df_valid[df_valid["rooms_label"] == label]["price"]
+        sub   = df_price[df_price["rooms_label"] == label]["price"]
         if len(sub) == 0:
             return 0
         return round(safe_float(sub.mean()) / 1e6, 2)
 
     kpi = {
-        "avg_ppm":            round(safe_float(df_valid["ppm"].mean())),
-        "avg_price":          round(safe_float(df_valid["price"].mean())),
-        "avg_sqm":            round(safe_float(df_valid["sqm"].mean()), 1),
+        "avg_ppm":            round(safe_float(df_ppm["ppm"].mean())),
+        "avg_price":          round(safe_float(df_price["price"].mean())),
+        "avg_sqm":            round(safe_float(df_sqm["sqm"].mean()), 1),
         "total_transactions": int(len(df_all)),
         "avg_price_3rooms":   avg_price_rooms(3),
         "avg_price_4rooms":   avg_price_rooms(4),
@@ -117,7 +121,7 @@ def generate_all_data(
                    .reset_index()
                    .sort_values("ym"))
 
-    monthly_ppm = (df_valid.groupby("ym")
+    monthly_ppm = (df_ppm.groupby("ym")
                    .agg(avg_ppm=("ppm", "mean"))
                    .reset_index()
                    .sort_values("ym"))
@@ -161,12 +165,15 @@ def generate_all_data(
     }
 
     # ── 3. גרף עוגה ────────────────────────────────────────
-    rooms_counts = [int(len(df_valid[df_valid["rooms_label"] == l])) for l in ROOMS_ORDER]
+    # התפלגות חדרים — מספיק שיש תגית חדרים תקינה (לא נדרש מחיר/שטח)
+    df_rooms_valid = df[df["rooms_label"].notna()]
+    rooms_counts = [int(len(df_rooms_valid[df_rooms_valid["rooms_label"] == l])) for l in ROOMS_ORDER]
 
+    # התפלגות מחיר — רק שורות עם מחיר תקין
     price_breaks = [0, 4e6, 7e6, 10e6, float("inf")]
     price_labels = ["עד 4 מ'", "4–7 מ'", "7–10 מ'", "מעל 10 מ'"]
     price_counts = [
-        int(((df_valid["price"] >= price_breaks[i]) & (df_valid["price"] < price_breaks[i+1])).sum())
+        int(((df_price["price"] >= price_breaks[i]) & (df_price["price"] < price_breaks[i+1])).sum())
         for i in range(4)
     ]
 
@@ -188,14 +195,20 @@ def generate_all_data(
     }
 
     # ── 4. גרף עמודות — חדרים ─────────────────────────────
-    df_r     = df_valid[df_valid["rooms_label"].notna()]
-    by_rooms = (df_r.groupby("rooms_label")
-                .agg(avg_price=("price", "mean"), avg_sqm=("sqm", "mean"), avg_ppm=("ppm", "mean"))
-                .reindex(ROOMS_ORDER))
+    # כל מדד מחושב מהסט הרלוונטי שלו בלבד
+    by_rooms_price = (df_price[df_price["rooms_label"].notna()]
+                      .groupby("rooms_label").agg(avg_price=("price", "mean"))
+                      .reindex(ROOMS_ORDER))
+    by_rooms_sqm   = (df_sqm[df_sqm["rooms_label"].notna()]
+                      .groupby("rooms_label").agg(avg_sqm=("sqm", "mean"))
+                      .reindex(ROOMS_ORDER))
+    by_rooms_ppm   = (df_ppm[df_ppm["rooms_label"].notna()]
+                      .groupby("rooms_label").agg(avg_ppm=("ppm", "mean"))
+                      .reindex(ROOMS_ORDER))
 
-    prices_m = [round(safe_float(v) / 1e6, 2) for v in by_rooms["avg_price"]]
-    sizes    = [round(safe_float(v), 1)        for v in by_rooms["avg_sqm"]]
-    ppms     = [round(safe_float(v))            for v in by_rooms["avg_ppm"]]
+    prices_m = [round(safe_float(v) / 1e6, 2) for v in by_rooms_price["avg_price"]]
+    sizes    = [round(safe_float(v), 1)        for v in by_rooms_sqm["avg_sqm"]]
+    ppms     = [round(safe_float(v))            for v in by_rooms_ppm["avg_ppm"]]
 
     rooms_charts = {
         "price": {
@@ -231,11 +244,11 @@ def generate_all_data(
     }
 
     # ── 5. מחירי קצה — רבעוני ─────────────────────────────
-    quarters_sorted  = sorted(df_valid["yq"].unique())
+    quarters_sorted  = sorted(df_price["yq"].unique())
     q_labels         = [quarter_label(y, q) for y, q in quarters_sorted]
 
-    df_cheap     = df_valid[df_valid["price"] < 4e6]
-    df_expensive = df_valid[df_valid["price"] > 10e6]
+    df_cheap     = df_price[df_price["price"] < 4e6]
+    df_expensive = df_price[df_price["price"] > 10e6]
 
     cheap_counts     = [int(len(df_cheap[df_cheap["yq"]         == yq])) for yq in quarters_sorted]
     expensive_counts = [int(len(df_expensive[df_expensive["yq"] == yq])) for yq in quarters_sorted]
@@ -257,8 +270,8 @@ def generate_all_data(
             "ppm":        round(safe_float(row["ppm"]))
         }
 
-    top_exp   = df_valid.nlargest(10, "price")
-    top_cheap = df_valid.nsmallest(10, "price")
+    top_exp   = df_price.nlargest(10, "price")
+    top_cheap = df_price.nsmallest(10, "price")
 
     transactions = {
         "expensive": [make_row(r) for _, r in top_exp.iterrows()],
