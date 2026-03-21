@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Excel uploads (אל תעלה נתונים אמיתיים ל-GitHub)
+*.xlsx
+*.xls
+~$*
+
+# Generated data (נוצר אוטומטית בעת הרצה)
+data/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
