@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style></head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div id="tbl-container">
+  <div id="tbl-header">
+    <div id="tbl-title-wrap">
+      <div id="tbl-title"></div>
+      <div id="tbl-subtitle">ללא עסקאות אופציה</div>
+    </div>
+    <select id="tbl-select">
+      <option value="expensive">עסקאות יקרות ביותר</option>
+      <option value="cheap">עסקאות זולות ביותר</option>
+    </select>
+  </div>
+  <div id="tbl-wrap">
+    <table id="tbl-main">
+      <thead><tr>
+        <th data-sort="date" class="sortable">תאריך</th>
+        <th>מתחם</th>
+        <th data-sort="price" class="sortable">מחיר</th>
+        <th>שטח</th>
+        <th>חדרים</th>
+        <th>שנת בנייה</th>
+        <th data-sort="ppm" class="sortable">מחיר למ"ר</th>
+      </tr></thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const TBL_DATA = {{ data.transactions | tojson }};
+
+(function(){
+  const TITLES={expensive:'10 העסקאות היקרות ביותר בשדה דב',cheap:'10 העסקאות הזולות ביותר בשדה דב'};
+  const MONTHS={ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
+  let key='expensive', sortCol='price', sortDir='desc';
+  function dateNum(s){const p=s.trim().split(' ');return parseInt(p[2])*10000+(MONTHS[p[1].replace('ב','')]||0)*100+parseInt(p[0]);}
+  function fmtP(v){return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+" מ' ₪";}
+  function fmtPpm(v){return '₪'+v.toLocaleString('he-IL');}
+  function getSorted(rows){
+    return [...rows].sort((a,b)=>{
+      let va,vb;
+      if(sortCol==='date'){va=dateNum(a.date);vb=dateNum(b.date);}
+      else if(sortCol==='price'){va=a.price;vb=b.price;}
+      else{va=a.ppm;vb=b.ppm;}
+      return sortDir==='asc'?va-vb:vb-va;
+    });
+  }
+  function renderTbl(k){
+    document.getElementById('tbl-title').textContent=TITLES[k];
+    const rows=getSorted(TBL_DATA[k]);
+    const tbody=document.getElementById('tbl-body');
+    tbody.innerHTML='';
+    rows.forEach((r,i)=>{
+      const tr=document.createElement('tr');
+      tr.className=i%2===0?'row-even':'row-odd';
+      tr.innerHTML=`<td>${r.date}</td><td>${r.complex}</td><td>${fmtP(r.price)}</td><td>${r.sqm} מ"ר</td><td>${r.rooms}</td><td>${r.build_year||''}</td><td>${fmtPpm(r.ppm)}</td>`;
+      tbody.appendChild(tr);
+    });
+    document.querySelectorAll('#tbl-main th.sortable').forEach(th=>{
+      const arr=th.querySelector('.sort-arrow');
+      if(arr)arr.remove();
+      if(th.dataset.sort===sortCol){
+        const s=document.createElement('span');s.className='sort-arrow';
+        s.textContent=sortDir==='asc'?' ↑':' ↓';th.appendChild(s);
+      }
+    });
+  }
+  renderTbl(key);
+  document.getElementById('tbl-select').addEventListener('change',function(){
+    this.classList.add('used');key=this.value;sortCol='price';sortDir=key==='cheap'?'asc':'desc';renderTbl(key);
+  });
+  document.querySelectorAll('#tbl-main th.sortable').forEach(th=>th.addEventListener('click',function(){
+    const col=this.dataset.sort;
+    if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
+    else{sortCol=col;sortDir='asc';}
+    renderTbl(key);
+  }));
+})();
+</script>
+
+<style>
+  #tbl-container{width:100%;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;}
+  #tbl-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #tbl-title-wrap{flex:1;text-align:right;}
+  #tbl-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #tbl-subtitle{font-size:13px;color:#777;margin-top:3px;}
+  #tbl-select{flex:0 0 auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;
+    color:#444;font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+    outline:none;direction:rtl;appearance:auto;-webkit-appearance:auto;
+    animation:pulse 2.4s ease-in-out infinite;}
+  #tbl-select.used{animation:none;}
+  #tbl-select:hover,#tbl-select:focus{border-color:#61C0CC;}
+  @keyframes pulse{0%{border-color:#ddd;background:#fff}50%{border-color:#61C0CC;background:#d6f0f3}100%{border-color:#ddd;background:#fff}}
+  #tbl-wrap{overflow-x:auto;overflow-y:auto;flex:1;max-height:360px;}
+  #tbl-main{width:100%;border-collapse:collapse;font-family:'Heebo',Arial,sans-serif;font-size:13px;direction:rtl;}
+  #tbl-main thead tr{background:#496970;color:#fff;}
+  #tbl-main th{padding:10px 12px;text-align:right;font-weight:600;font-size:13px;white-space:nowrap;}
+  #tbl-main th.sortable{cursor:pointer;user-select:none;}
+  #tbl-main th.sortable:hover{background:#3d5860;}
+  #tbl-main td{padding:9px 12px;text-align:right;color:#333;white-space:nowrap;}
+  #tbl-main tr.row-even{background:#fff;}
+  #tbl-main tr.row-odd{background:#f4f9fa;}
+  #tbl-main tbody tr:hover{background:#e8f5f7;}
+  @media(max-width:1200px){
+    #tbl-main{font-size:11px;}
+    #tbl-main th{padding:8px 7px;font-size:11px;}
+    #tbl-main td{padding:7px 7px;}
+    #tbl-main th:nth-child(6),#tbl-main td:nth-child(6){display:none;}
+  }
+</style>
+</body></html>

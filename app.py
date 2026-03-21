@@ -167,7 +167,18 @@ def export_json():
                      as_attachment=True, download_name="sdedov-data.zip")
 
 
-# ── ייצוא HTML ───────────────────────────────────────────────
+# ── ייצוא HTML (ZIP של ווידג'טים) ────────────────────────────
+
+# רשימת קבצי ווידג'ט לייצוא (שם קובץ, שם תבנית)
+WIDGET_FILES = [
+    ("01-charts.html",       "widgets/charts.html"),
+    ("02-pie-rooms.html",    "widgets/pie_rooms.html"),
+    ("03-ranges.html",       "widgets/ranges.html"),
+    ("04-transactions.html", "widgets/transactions.html"),
+]
+
+WIDGET_FILES_LAND = ("05-land.html", "widgets/land.html")
+
 
 @app.route("/export/html")
 @login_required
@@ -178,10 +189,19 @@ def export_html():
     export_data = dict(_last_data)
     export_data["land_chart"] = _last_land_data if _last_land_data else None
 
-    html = render_template("export_standalone.html", data=export_data)
-    buf  = BytesIO(html.encode("utf-8"))
-    return send_file(buf, mimetype="text/html",
-                     as_attachment=True, download_name="sdedov-charts.html")
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for fname, tpl in WIDGET_FILES:
+            html = render_template(tpl, data=export_data)
+            zf.writestr(fname, html.encode("utf-8"))
+        # קובץ קרקע — רק אם קיים
+        if _last_land_data:
+            html = render_template(WIDGET_FILES_LAND[1], data=export_data)
+            zf.writestr(WIDGET_FILES_LAND[0], html.encode("utf-8"))
+
+    buf.seek(0)
+    return send_file(buf, mimetype="application/zip",
+                     as_attachment=True, download_name="sdedov-widgets.zip")
 
 
 # ── הפעלה ────────────────────────────────────────────────────
