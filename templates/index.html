@@ -704,6 +704,7 @@ function renderPieChart(k){
   if(pieInst){
     pieInst.data.labels=c.labels;pieInst.data.datasets[0].data=c.data;
     pieInst.data.datasets[0].backgroundColor=c.colors;
+    pieInst.data.datasets[0].hoverBackgroundColor=c.colors;
     pieInst.options.plugins.tooltip.callbacks.label=ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%';
     pieInst.update();
   } else {
@@ -711,8 +712,8 @@ function renderPieChart(k){
     document.getElementById('pieChart').style.display='block';
     pieInst=new Chart(document.getElementById('pieChart'),{
       type:'pie',plugins:[piePlugin],
-      data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
-      options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,animation:{duration:600},
+      data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.colors,hoverBackgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
+      options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,animation:{duration:600,easing:'easeInOutQuart'},
         plugins:{legend:{display:false},title:{display:false},
           tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%'},bodyFont:{family:font},titleFont:{family:font}}}}
     });
