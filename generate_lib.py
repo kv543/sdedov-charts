@@ -70,7 +70,11 @@ def generate_all_data(
 
     # ── טעינה ──────────────────────────────────────────────
     df_all = pd.read_excel(excel_path)
-    df     = df_all[df_all["סוג עסקה"] != "אופציה"].copy()
+
+    # פילטור עסקאות אופציה — על בסיס עמודת "סוג עסקה" בלבד
+    # (שימוש ב-str.contains כדי לתפוס גם "עסקת אופציה", רווחים נוספים וכו')
+    is_option = df_all["סוג עסקה"].astype(str).str.contains("אופציה", na=False, case=False)
+    df        = df_all[~is_option].copy()
 
     # עיבוד עמודות על שני ה-DataFrames
     for src in [df_all, df]:
