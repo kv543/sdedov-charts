@@ -144,26 +144,26 @@ def generate_all_data(
             "data":        counts,
             "color":       "#496970",
             "tooltipType": "count",
-            "yMin":        None,
+            "yMin":        0,
             "yMax":        None
         },
         "cumulative": {
-            "title":       "כמות עסקאות מצטברת בשדה דב",
+            "title":       "כמות מצטברת של דירות שנמכרו בשדה דב",
             "labels":      labels,
             "data":        cumulative,
-            "color":       "#61C0CC",
+            "color":       "#496970",
             "tooltipType": "cumulative",
-            "yMin":        None,
+            "yMin":        0,
             "yMax":        None
         },
         "price": {
             "title":       'התפתחות המחיר הממוצע למ"ר בשדה דב (ללא עסקאות אופציה)',
             "labels":      labels,
             "data":        avg_ppm_m,
-            "color":       "#7dcdd7",
+            "color":       "#61C0CC",
             "tooltipType": "price",
-            "yMin":        None,
-            "yMax":        None
+            "yMin":        0,
+            "yMax":        120000
         }
     }
 
