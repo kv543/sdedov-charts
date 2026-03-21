@@ -91,10 +91,29 @@
   #land-subtitle{font-size:13px;color:#777;margin-top:3px;}
   #land-chart-wrap{flex:1;position:relative;min-height:280px;}
   #land-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
-  #land-note{font-size:11px;color:#aaa;margin-top:10px;text-align:right;}
+  #land-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:8px;}
+  #lc-legend{display:flex;align-items:center;gap:20px;}
+  .lc-leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#555;transition:opacity .25s;}
+  #lc-leg-range{opacity:1;}
+  #land-note{font-size:11px;color:#bbb;font-style:italic;text-align:left;}
+  #lc-tooltip{position:absolute;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;}
+  #lc-tooltip.visible{opacity:1;}
+  #lc-tt-inner{background:#fff;border:1px solid #e4ecee;border-radius:12px;padding:12px 14px;box-shadow:0 6px 24px rgba(73,105,112,.14);width:210px;font-family:inherit;direction:rtl;}
+  .lc-tt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .lc-tt-tender{font-size:13px;font-weight:700;color:#1a2e35;}
+  .lc-tt-date{font-size:11px;color:#aaa;direction:ltr;}
+  .lc-tt-area{font-size:12px;color:#777;margin-bottom:8px;}
+  .lc-tt-area strong{color:#496970;}
+  .lc-tt-divider{height:1px;background:#eef2f3;margin:7px 0;}
+  .lc-tt-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:#555;margin:4px 0;}
+  .lc-tt-main{font-size:13.5px;color:#222;}
+  .lc-tt-main strong{color:#496970;font-weight:700;}
+  .lc-tt-single{color:#999;font-size:12px;font-style:italic;}
+  .lc-tt-winners{color:#444;}
+  .lc-tt-badge{background:#eaf4f5;color:#496970;font-weight:700;font-size:12px;border-radius:20px;padding:2px 10px;}
   .land-toggle-wrap{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
   .land-lbl{font-size:12px;font-weight:600;color:#aaa;cursor:pointer;transition:color .15s;}
-  .land-lbl.active{color:#2d6b75;}
+  .land-lbl.active{color:#496970;}
   .toggle-switch{position:relative;display:inline-block;width:38px;height:22px;}
   .toggle-switch input{opacity:0;width:0;height:0;}
   .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:22px;transition:.2s;}
@@ -246,8 +265,23 @@
           <span class="land-lbl" id="land-lbl-off">ממוצע בלבד</span>
         </div>
       </div>
-      <div id="land-chart-wrap"><canvas id="landChart"></canvas></div>
-      <div id="land-note"></div>
+      <div id="land-chart-wrap">
+        <canvas id="landChart"></canvas>
+        <div id="lc-tooltip"><div id="lc-tt-inner"></div></div>
+      </div>
+      <div id="land-footer">
+        <div id="lc-legend">
+          <div class="lc-leg-item">
+            <svg width="28" height="10" viewBox="0 0 28 10"><line x1="0" y1="5" x2="28" y2="5" stroke="#496970" stroke-width="2.5"/><circle cx="14" cy="5" r="4" fill="#fff" stroke="#496970" stroke-width="2.5"/></svg>
+            <span>מחיר ממוצע לקרקע ליח"ד</span>
+          </div>
+          <div class="lc-leg-item" id="lc-leg-range">
+            <svg width="28" height="14" viewBox="0 0 28 14"><rect x="0" y="2" width="28" height="10" rx="2" fill="rgba(73,105,112,0.18)"/></svg>
+            <span>טווח הצעות זוכים</span>
+          </div>
+        </div>
+        <div id="land-note"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -430,80 +464,81 @@ function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){
 (function(){
   const d = window.__SD__.land_chart;
   if (!d) return;
-  const tenders  = d.tenders || [];
-  const labels   = tenders.map(t => t.xLabel);
-  const avgs     = tenders.map(t => t.avg);
-  const mins     = tenders.map(t => t.min);
-  const maxs     = tenders.map(t => t.max);
-  const avgColor = '#2d6b75', bandColor = hexToRgba('#2d6b75', 0.12);
-  const yOpts = { grid:{color:'#f0f0f0'}, min:1400000, ticks:{font:{family:font,size:11},callback:v=>(v/1e6).toFixed(1)+" מ' ₪"} };
+  const tenders = d.tenders || [];
+  const labels  = tenders.map(t => t.xLabel);
+  const avgs    = tenders.map(t => t.avg);
+  const mins    = tenders.map(t => t.min);
+  const maxs    = tenders.map(t => t.max);
+  const LC_COLOR  = '#496970';
+  const LC_COLOR2 = 'rgba(73,105,112,0.16)';
   document.getElementById('land-title').textContent    = d.title    || '';
   document.getElementById('land-subtitle').textContent = d.subtitle || '';
   document.getElementById('land-note').textContent     = d.note     || '';
-
-  const wrap = document.getElementById('land-chart-wrap');
-  wrap.style.position = 'relative';
-  const tipEl = document.createElement('div');
-  tipEl.style.cssText = 'position:absolute;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;pointer-events:none;font-family:'+font+';font-size:13px;direction:rtl;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:opacity .15s;opacity:0;z-index:9;min-width:160px;';
-  wrap.appendChild(tipEl);
-
-  function externalTooltip({ chart, tooltip }) {
-    if (tooltip.opacity === 0) { tipEl.style.opacity = '0'; return; }
-    const idx = tooltip.dataPoints?.[0]?.dataIndex ?? -1;
-    if (idx < 0) { tipEl.style.opacity = '0'; return; }
-    const t = tenders[idx];
-    const fmt = v => (v/1e6).toFixed(2)+" מ' ₪";
-    tipEl.innerHTML =
-      '<div style="font-weight:600;color:#2d6b75;margin-bottom:3px">מכרז '+t.tender+'</div>'+
-      '<div style="color:#777;font-size:11px;margin-bottom:5px">'+t.date+'</div>'+
-      '<div style="margin-bottom:3px">מתחם: <b>'+t.area+'</b></div>'+
-      '<div style="margin-bottom:2px">ממוצע: <b>'+fmt(t.avg)+'</b></div>'+
-      '<div style="margin-bottom:5px">טווח: '+fmt(t.min)+' – '+fmt(t.max)+'</div>'+
-      '<div style="background:#f0f7f8;border-radius:4px;padding:2px 8px;display:inline-block;font-size:12px">'+t.winners+' זוכים</div>';
-    tipEl.style.opacity = '1';
-    const tw = tipEl.offsetWidth || 175;
-    const x = tooltip.caretX, y = tooltip.caretY;
-    tipEl.style.left = ((x+tw+10>chart.width)?x-tw-10:x+10)+'px';
-    tipEl.style.top  = Math.max(0,y-30)+'px';
+  function fmtM(n){return (n/1_000_000).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+' מ\' ₪';}
+  const vertLinePlugin={id:'lcVertLine',afterDraw(chart){
+    if(!chart.tooltip._active||!chart.tooltip._active.length)return;
+    const ctx=chart.ctx,x=chart.tooltip._active[0].element.x;
+    ctx.save();ctx.beginPath();ctx.moveTo(x,chart.scales.y.top);ctx.lineTo(x,chart.scales.y.bottom);
+    ctx.setLineDash([5,4]);ctx.lineWidth=1.2;ctx.strokeStyle='rgba(73,105,112,0.35)';ctx.stroke();ctx.restore();
+  }};
+  const canvas=document.getElementById('landChart');
+  function externalTooltip(context){
+    const ttEl=document.getElementById('lc-tooltip'),inner=document.getElementById('lc-tt-inner');
+    if(context.tooltip.opacity===0){ttEl.classList.remove('visible');return;}
+    const idx=context.tooltip.dataPoints[0].dataIndex,t=tenders[idx];
+    const hasRange=(t.min!==t.max),showRange=document.getElementById('land-toggle')?.checked!==false;
+    inner.innerHTML=`
+      <div class="lc-tt-head">
+        <span class="lc-tt-tender">מכרז ${t.tender}</span>
+        <span class="lc-tt-date">${t.date}</span>
+      </div>
+      <div class="lc-tt-area">מתחם <strong>${t.area}</strong></div>
+      <div class="lc-tt-divider"></div>
+      <div class="lc-tt-row lc-tt-main">
+        <span>מחיר ממוצע</span><strong>${fmtM(t.avg)}</strong>
+      </div>
+      ${showRange&&hasRange?`
+      <div class="lc-tt-row"><span>מינימום</span><span>${fmtM(t.min)}</span></div>
+      <div class="lc-tt-row"><span>מקסימום</span><span>${fmtM(t.max)}</span></div>`
+      :showRange&&!hasRange?`<div class="lc-tt-row lc-tt-single"><span>זוכה יחיד</span></div>`:''}
+      <div class="lc-tt-divider"></div>
+      <div class="lc-tt-row lc-tt-winners">
+        <span>מספר זוכים</span><span class="lc-tt-badge">${t.winners}</span>
+      </div>`;
+    const canvasW=canvas.offsetWidth,ttW=210;
+    let left=context.tooltip.caretX;
+    left=(left+ttW+20>canvasW)?left-ttW-14:left+14;
+    ttEl.style.left=left+'px';ttEl.style.top=Math.max(0,context.tooltip.caretY-30)+'px';
+    ttEl.classList.add('visible');
   }
-
-  const vertLine = {
-    id:'vertLine',
-    afterDraw(chart){
-      if(chart.tooltip._active?.length){
-        const ctx=chart.ctx, x=chart.tooltip._active[0].element.x;
-        ctx.save();ctx.beginPath();ctx.moveTo(x,chart.scales.y.top);ctx.lineTo(x,chart.scales.y.bottom);
-        ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();ctx.restore();
-      }
-    }
-  };
-
-  const inst = new Chart(document.getElementById('landChart'),{
-    type:'line',
-    plugins:[vertLine],
+  const inst=new Chart(canvas,{
+    type:'line',plugins:[vertLinePlugin],
     data:{labels,datasets:[
-      {label:'טווח הצעות זוכים',data:maxs,borderColor:'transparent',backgroundColor:bandColor,fill:'+1',tension:0.4,pointRadius:0},
-      {data:mins,borderColor:'transparent',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0},
-      {label:'מחיר ממוצע לקרקע ליח"ד',data:avgs,borderColor:avgColor,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:avgColor,pointBorderWidth:2,tension:0.4,fill:false}
+      {label:'_max',data:maxs,borderColor:'transparent',backgroundColor:LC_COLOR2,borderWidth:0,pointRadius:0,pointHoverRadius:0,fill:1,tension:0.42,order:3},
+      {label:'_min',data:mins,borderColor:'transparent',backgroundColor:'transparent',borderWidth:0,pointRadius:0,pointHoverRadius:0,fill:false,tension:0.42,order:3},
+      {label:'ממוצע',data:avgs,borderColor:LC_COLOR,backgroundColor:LC_COLOR,borderWidth:2.5,pointRadius:7,pointHoverRadius:10,pointBackgroundColor:'#fff',pointBorderColor:LC_COLOR,pointBorderWidth:2.5,pointHoverBackgroundColor:LC_COLOR,pointHoverBorderColor:'#fff',pointHoverBorderWidth:3,fill:false,tension:0.42,order:1}
     ]},
     options:{
-      responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeInOutQuart'},
       interaction:{mode:'index',intersect:false},
-      plugins:{
-        legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:12},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,filter:item=>item.datasetIndex!==1}},
-        tooltip:{enabled:false,external:externalTooltip}
-      },
-      scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:11}}},y:yOpts}
+      plugins:{legend:{display:false},tooltip:{enabled:false,external:externalTooltip}},
+      scales:{
+        x:{grid:{color:'#f0f0f0',lineWidth:1},border:{display:false},ticks:{font:{family:font,size:12},color:'#555',padding:8}},
+        y:{grid:{color:'#f0f0f0',lineWidth:1},border:{display:false},min:1400000,ticks:{font:{family:font,size:11},color:'#888',padding:10,callback:v=>(v/1e6).toFixed(1)+' מ\' ₪'}}
+      }
     }
   });
   const tog=document.getElementById('land-toggle');
   if(tog) tog.addEventListener('change',function(){
-    const show=this.checked;
-    inst.data.datasets[0].hidden=!show;
-    inst.data.datasets[1].hidden=!show;
+    const on=this.checked;
+    inst.data.datasets[0].backgroundColor=on?LC_COLOR2:'transparent';
+    inst.data.datasets[0].fill=on?1:false;
+    const legRange=document.getElementById('lc-leg-range');
+    if(legRange)legRange.style.opacity=on?'1':'0.35';
+    document.getElementById('land-lbl-on').classList.toggle('active',on);
+    document.getElementById('land-lbl-off').classList.toggle('active',!on);
     inst.update();
-    document.getElementById('land-lbl-on').classList.toggle('active',show);
-    document.getElementById('land-lbl-off').classList.toggle('active',!show);
   });
 })();
 

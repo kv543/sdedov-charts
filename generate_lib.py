@@ -346,8 +346,8 @@ def generate_land_chart_data(excel_path) -> dict:
         row1    = group.iloc[0]
         date    = row1["_date"]
 
-        xLabel  = f"{MONTHS_HE[date.month]} {date.year}"
-        date_he = f"{date.day} ב{MONTHS_HE[date.month]} {date.year}"
+        xLabel     = f"{MONTHS_HE[date.month]} {date.year}"
+        date_short = f"{date.day}.{date.month}.{str(date.year)[2:]}"
 
         tender_num = str(row1["מספר מכרז"]).strip()
         area       = str(row1["מתחם"]).strip()
@@ -360,7 +360,7 @@ def generate_land_chart_data(excel_path) -> dict:
 
         tenders.append({
             "xLabel":  xLabel,
-            "date":    date_he,
+            "date":    date_short,
             "tender":  tender_num,
             "area":    area,
             "avg":     round(avg_val),
