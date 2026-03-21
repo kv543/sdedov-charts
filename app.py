@@ -183,25 +183,37 @@ WIDGET_FILES_LAND = ("05-land.html", "widgets/land.html")
 @app.route("/export/html")
 @login_required
 def export_html():
+    import traceback
     if not _last_data:
         return "אין נתונים. אנא העלה קובץ Excel תחילה.", 400
 
     export_data = dict(_last_data)
     export_data["land_chart"] = _last_land_data if _last_land_data else None
 
-    buf = BytesIO()
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        for fname, tpl in WIDGET_FILES:
-            html = render_template(tpl, data=export_data)
-            zf.writestr(fname, html.encode("utf-8"))
-        # קובץ קרקע — רק אם קיים
-        if _last_land_data:
-            html = render_template(WIDGET_FILES_LAND[1], data=export_data)
-            zf.writestr(WIDGET_FILES_LAND[0], html.encode("utf-8"))
+    try:
+        buf = BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for fname, tpl in WIDGET_FILES:
+                try:
+                    html = render_template(tpl, data=export_data)
+                    zf.writestr(fname, html.encode("utf-8"))
+                except Exception as e:
+                    zf.writestr(fname + ".error.txt",
+                                f"ERROR in {tpl}:\n{traceback.format_exc()}".encode("utf-8"))
+            # קובץ קרקע — רק אם קיים
+            if _last_land_data:
+                try:
+                    html = render_template(WIDGET_FILES_LAND[1], data=export_data)
+                    zf.writestr(WIDGET_FILES_LAND[0], html.encode("utf-8"))
+                except Exception as e:
+                    zf.writestr(WIDGET_FILES_LAND[0] + ".error.txt",
+                                f"ERROR in land.html:\n{traceback.format_exc()}".encode("utf-8"))
 
-    buf.seek(0)
-    return send_file(buf, mimetype="application/zip",
-                     as_attachment=True, download_name="sdedov-widgets.zip")
+        buf.seek(0)
+        return send_file(buf, mimetype="application/zip",
+                         as_attachment=True, download_name="sdedov-widgets.zip")
+    except Exception as e:
+        return f"<pre>EXPORT ERROR:\n{traceback.format_exc()}</pre>", 500
 
 
 # ── הפעלה ────────────────────────────────────────────────────
