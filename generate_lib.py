@@ -238,8 +238,8 @@ def generate_all_data(
             "data":        ppms,
             "color":       "#7dcdd7",
             "tooltipType": "pricePerSqm",
-            "yMin":        round(min(p for p in ppms if p > 0) * 0.8 / 10000) * 10000 if any(p > 0 for p in ppms) else 0,
-            "yMax":        round(max(p for p in ppms if p > 0) * 1.2 / 10000) * 10000 if any(p > 0 for p in ppms) else 100000
+            "yMin":        20000,
+            "yMax":        100000
         }
     }
 
