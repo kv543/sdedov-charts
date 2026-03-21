@@ -310,74 +310,68 @@ def generate_land_chart_data(excel_path) -> dict:
     """
     מייצר נתונים לגרף עלות קרקע ליחידת דיור.
 
-    מבנה אקסל מצופה (גמיש):
-      - עמודת תאריך  (תאריך / date / ...)
-      - עמודת מחיר ליח"ד בש"ח (מחיר / price / ערך / הצעה / ...)
-      - שורה אחת או יותר לכל מכרז — מקובצות לפי תאריך
+    מבנה אקסל נדרש (גמיש — מזהה עמודות לפי שם):
+      - סדר כרונולוגי      : מספר מכרז (לקיבוץ)
+      - תאריך סגירת מכרז   : תאריך בפורמט DD.M.YY
+      - מספר מכרז          : מחרוזת כגון "62/2021"
+      - מתחם               : שם מתחם
+      - עלות ממוצעת לקרקע ליחידת דיור : עלות לכל זוכה (₪)
+      - ממוצע למכרז        : ממוצע מכרז (₪)
+
+    פלט: dict עם שדה "tenders" — מערך אובייקטים לכל מכרז.
     """
     df = pd.read_excel(excel_path)
 
-    # ── זיהוי עמודת תאריך ───────────────────────────────────
-    date_col = None
-    for c in df.columns:
-        if any(k in str(c) for k in ['תאריך', 'date', 'Date', 'שנה']):
-            date_col = c
-            break
-    if date_col is None:
-        date_col = df.columns[0]
+    # ── פירוס תאריך (פורמט DD.M.YY) ─────────────────────────
+    def _parse_date(s):
+        s = str(s).strip()
+        parts = s.split(".")
+        if len(parts) == 3:
+            day, month, yr = int(parts[0]), int(parts[1]), int(parts[2])
+            if yr < 100:
+                yr += 2000
+            return pd.Timestamp(year=yr, month=month, day=day)
+        return pd.NaT
 
-    # ── זיהוי עמודת מחיר ────────────────────────────────────
-    price_col = None
-    price_kw  = ['מחיר', 'price', 'Price', 'ערך', 'שווי', 'הצעה', 'תמורה']
-    for c in df.columns:
-        if c == date_col:
+    df["_date"]       = df["תאריך סגירת מכרז"].apply(_parse_date)
+    df["_seq"]        = pd.to_numeric(df["סדר כרונולוגי"], errors="coerce")
+    df["_unit_cost"]  = pd.to_numeric(df["עלות ממוצעת לקרקע ליחידת דיור"], errors="coerce")
+    df["_tender_avg"] = pd.to_numeric(df["ממוצע למכרז"], errors="coerce")
+
+    tenders = []
+    for seq_val, group in df.groupby("_seq", sort=True):
+        group = group.dropna(subset=["_date"])
+        if group.empty:
             continue
-        if any(k in str(c) for k in price_kw):
-            price_col = c
-            break
-    if price_col is None:
-        # fallback — עמודה מספרית ראשונה שאינה התאריך
-        for c in df.columns:
-            if c != date_col and pd.api.types.is_numeric_dtype(df[c]):
-                price_col = c
-                break
-    if price_col is None:
-        raise ValueError(f"לא נמצאה עמודת מחיר. עמודות: {list(df.columns)}")
+        row1    = group.iloc[0]
+        date    = row1["_date"]
 
-    df["_date"]  = pd.to_datetime(df[date_col],  errors="coerce", dayfirst=True)
-    df["_price"] = pd.to_numeric(df[price_col],  errors="coerce")
-    df = df.dropna(subset=["_date", "_price"]).sort_values("_date")
+        xLabel  = f"{MONTHS_HE[date.month]} {date.year}"
+        date_he = f"{date.day} ב{MONTHS_HE[date.month]} {date.year}"
 
-    if df.empty:
-        raise ValueError("לא נמצאו שורות תקינות בקובץ")
+        tender_num = str(row1["מספר מכרז"]).strip()
+        area       = str(row1["מתחם"]).strip()
 
-    # המרה למיליוני ₪ אם הערכים בש"ח
-    if df["_price"].median() > 100_000:
-        df["_price"] = df["_price"] / 1e6
+        avg_val = safe_float(row1["_tender_avg"])
+        vals    = group["_unit_cost"].dropna()
+        min_val = safe_float(vals.min()) if len(vals) > 0 else avg_val
+        max_val = safe_float(vals.max()) if len(vals) > 0 else avg_val
+        winners = len(group)
 
-    # ── קיבוץ לפי תאריך ─────────────────────────────────────
-    grouped = (df.groupby("_date")
-               .agg(avg=("_price","mean"), mn=("_price","min"), mx=("_price","max"))
-               .reset_index()
-               .sort_values("_date"))
-
-    labels  = [f"{MONTHS_HE[d.month]} {d.year}" for d in grouped["_date"]]
-    avgs    = [round(safe_float(v), 2) for v in grouped["avg"]]
-    mins    = [round(safe_float(v), 2) for v in grouped["mn"]]
-    maxs    = [round(safe_float(v), 2) for v in grouped["mx"]]
-
-    all_vals = [v for v in avgs + mins + maxs if v > 0]
-    y_min = round(min(all_vals) * 0.85 * 10) / 10 if all_vals else 0
-    y_max = round(max(all_vals) * 1.15 * 10) / 10 if all_vals else 5
+        tenders.append({
+            "xLabel":  xLabel,
+            "date":    date_he,
+            "tender":  tender_num,
+            "area":    area,
+            "avg":     round(avg_val),
+            "min":     round(min_val),
+            "max":     round(max_val),
+            "winners": winners
+        })
 
     return {
         "title":    "עלות קרקע ליחידת דיור",
         "subtitle": 'התפתחות מחיר הקרקע הממוצע ליח"ד במכרזי שדה דב לפי תאריך סגירת מכרז',
         "note":     "* הטווח מייצג את הפיזור בין הצעות הזוכים בכל מכרז",
-        "labels":   labels,
-        "avg":      avgs,
-        "min":      mins,
-        "max":      maxs,
-        "yMin":     y_min,
-        "yMax":     y_max,
+        "tenders":  tenders
     }

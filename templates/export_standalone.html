@@ -430,23 +430,68 @@ function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){
 (function(){
   const d = window.__SD__.land_chart;
   if (!d) return;
-  const avgColor='#2d6b75', bandFill=hexToRgba('#2d6b75',0.12);
-  const yOpts={grid:{color:'#f0f0f0'},min:d.yMin,max:d.yMax,ticks:{font:{family:font,size:11},callback:v=>v+" מ' ₪"}};
+  const tenders  = d.tenders || [];
+  const labels   = tenders.map(t => t.xLabel);
+  const avgs     = tenders.map(t => t.avg);
+  const mins     = tenders.map(t => t.min);
+  const maxs     = tenders.map(t => t.max);
+  const avgColor = '#2d6b75', bandColor = hexToRgba('#2d6b75', 0.12);
+  const yOpts = { grid:{color:'#f0f0f0'}, min:1400000, ticks:{font:{family:font,size:11},callback:v=>(v/1e6).toFixed(1)+" מ' ₪"} };
   document.getElementById('land-title').textContent    = d.title    || '';
   document.getElementById('land-subtitle').textContent = d.subtitle || '';
   document.getElementById('land-note').textContent     = d.note     || '';
+
+  const wrap = document.getElementById('land-chart-wrap');
+  wrap.style.position = 'relative';
+  const tipEl = document.createElement('div');
+  tipEl.style.cssText = 'position:absolute;background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;pointer-events:none;font-family:'+font+';font-size:13px;direction:rtl;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:opacity .15s;opacity:0;z-index:9;min-width:160px;';
+  wrap.appendChild(tipEl);
+
+  function externalTooltip({ chart, tooltip }) {
+    if (tooltip.opacity === 0) { tipEl.style.opacity = '0'; return; }
+    const idx = tooltip.dataPoints?.[0]?.dataIndex ?? -1;
+    if (idx < 0) { tipEl.style.opacity = '0'; return; }
+    const t = tenders[idx];
+    const fmt = v => (v/1e6).toFixed(2)+" מ' ₪";
+    tipEl.innerHTML =
+      '<div style="font-weight:600;color:#2d6b75;margin-bottom:3px">מכרז '+t.tender+'</div>'+
+      '<div style="color:#777;font-size:11px;margin-bottom:5px">'+t.date+'</div>'+
+      '<div style="margin-bottom:3px">מתחם: <b>'+t.area+'</b></div>'+
+      '<div style="margin-bottom:2px">ממוצע: <b>'+fmt(t.avg)+'</b></div>'+
+      '<div style="margin-bottom:5px">טווח: '+fmt(t.min)+' – '+fmt(t.max)+'</div>'+
+      '<div style="background:#f0f7f8;border-radius:4px;padding:2px 8px;display:inline-block;font-size:12px">'+t.winners+' זוכים</div>';
+    tipEl.style.opacity = '1';
+    const tw = tipEl.offsetWidth || 175;
+    const x = tooltip.caretX, y = tooltip.caretY;
+    tipEl.style.left = ((x+tw+10>chart.width)?x-tw-10:x+10)+'px';
+    tipEl.style.top  = Math.max(0,y-30)+'px';
+  }
+
+  const vertLine = {
+    id:'vertLine',
+    afterDraw(chart){
+      if(chart.tooltip._active?.length){
+        const ctx=chart.ctx, x=chart.tooltip._active[0].element.x;
+        ctx.save();ctx.beginPath();ctx.moveTo(x,chart.scales.y.top);ctx.lineTo(x,chart.scales.y.bottom);
+        ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.15)';ctx.stroke();ctx.restore();
+      }
+    }
+  };
+
   const inst = new Chart(document.getElementById('landChart'),{
     type:'line',
-    data:{labels:d.labels,datasets:[
-      {label:'טווח הצעות זוכים',data:d.max,borderColor:'transparent',backgroundColor:bandFill,fill:'+1',tension:0.4,pointRadius:0},
-      {data:d.min,borderColor:'transparent',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0},
-      {label:'מחיר ממוצע לקרקע ליח"ד',data:d.avg,borderColor:avgColor,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:avgColor,pointBorderWidth:2,tension:0.4,fill:false}
+    plugins:[vertLine],
+    data:{labels,datasets:[
+      {label:'טווח הצעות זוכים',data:maxs,borderColor:'transparent',backgroundColor:bandColor,fill:'+1',tension:0.4,pointRadius:0},
+      {data:mins,borderColor:'transparent',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0},
+      {label:'מחיר ממוצע לקרקע ליח"ד',data:avgs,borderColor:avgColor,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:avgColor,pointBorderWidth:2,tension:0.4,fill:false}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:12},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,filter:item=>item.datasetIndex!==1}},
-        tooltip:{rtl:true,callbacks:{label:ctx=>{if(ctx.datasetIndex===1)return null;return ' '+ctx.raw+" מ' ₪ — "+ctx.dataset.label;}},bodyFont:{family:font},titleFont:{family:font}}
+        tooltip:{enabled:false,external:externalTooltip}
       },
       scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:11}}},y:yOpts}
     }
