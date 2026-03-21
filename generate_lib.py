@@ -17,7 +17,8 @@ MONTHS_HE = {
 }
 PIE_COLORS_ROOMS = ["#496970", "#64929C", "#689CAB", "#82C2D2", "#61C0CC"]
 PIE_COLORS_PRICE = ["#496970", "#64929C", "#82C2D2", "#61C0CC"]
-ROOMS_ORDER = ["2 חדרים", "3 חדרים", "4 חדרים", "5 חדרים", "6+"]
+ROOMS_ORDER     = ["2 חדרים", "3 חדרים", "4 חדרים", "5 חדרים", "6+"]  # לגרף עוגה
+ROOMS_BAR_ORDER = ["2 חדרים", "3 חדרים", "4 חדרים", "5 חדרים"]         # לגרפי עמודות
 
 # ── עזר ────────────────────────────────────────────────────
 
@@ -197,16 +198,16 @@ def generate_all_data(
     }
 
     # ── 4. גרף עמודות — חדרים ─────────────────────────────
-    # כל מדד מחושב מהסט הרלוונטי שלו בלבד
-    by_rooms_price = (df_price[df_price["rooms_label"].notna()]
+    # כל מדד מחושב מהסט הרלוונטי שלו בלבד (ללא 6+)
+    by_rooms_price = (df_price[df_price["rooms_label"].isin(ROOMS_BAR_ORDER)]
                       .groupby("rooms_label").agg(avg_price=("price", "mean"))
-                      .reindex(ROOMS_ORDER))
-    by_rooms_sqm   = (df_sqm[df_sqm["rooms_label"].notna()]
+                      .reindex(ROOMS_BAR_ORDER))
+    by_rooms_sqm   = (df_sqm[df_sqm["rooms_label"].isin(ROOMS_BAR_ORDER)]
                       .groupby("rooms_label").agg(avg_sqm=("sqm", "mean"))
-                      .reindex(ROOMS_ORDER))
-    by_rooms_ppm   = (df_ppm[df_ppm["rooms_label"].notna()]
+                      .reindex(ROOMS_BAR_ORDER))
+    by_rooms_ppm   = (df_ppm[df_ppm["rooms_label"].isin(ROOMS_BAR_ORDER)]
                       .groupby("rooms_label").agg(avg_ppm=("ppm", "mean"))
-                      .reindex(ROOMS_ORDER))
+                      .reindex(ROOMS_BAR_ORDER))
 
     prices_m = [round(safe_float(v) / 1e6, 2) for v in by_rooms_price["avg_price"]]
     sizes    = [round(safe_float(v), 1)        for v in by_rooms_sqm["avg_sqm"]]
@@ -216,7 +217,7 @@ def generate_all_data(
         "price": {
             "title":       "מחיר דירה ממוצע לפי מס' חדרים",
             "subtitle":    'במיליוני ש"ח',
-            "labels":      ROOMS_ORDER,
+            "labels":      ROOMS_BAR_ORDER,
             "data":        prices_m,
             "color":       "#61C0CC",
             "tooltipType": "price",
@@ -226,7 +227,7 @@ def generate_all_data(
         "size": {
             "title":       "שטח ממוצע לפי מס' חדרים",
             "subtitle":    'במטרים רבועים',
-            "labels":      ROOMS_ORDER,
+            "labels":      ROOMS_BAR_ORDER,
             "data":        sizes,
             "color":       "#496970",
             "tooltipType": "size",
@@ -236,7 +237,7 @@ def generate_all_data(
         "pricePerSqm": {
             "title":       'מחיר ממוצע למ"ר לפי מס\' חדרים',
             "subtitle":    'בשקלים',
-            "labels":      ROOMS_ORDER,
+            "labels":      ROOMS_BAR_ORDER,
             "data":        ppms,
             "color":       "#7dcdd7",
             "tooltipType": "pricePerSqm",
