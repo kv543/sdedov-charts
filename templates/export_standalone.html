@@ -76,6 +76,24 @@
   #tbl-main tr.row-even{background:#fff;}
   #tbl-main tr.row-odd{background:#f4f9fa;}
   #tbl-main tbody tr:hover{background:#e8f5f7;}
+  /* land chart */
+  #land-container{width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;display:flex;flex-direction:column;padding:22px 24px 20px;min-height:420px;}
+  #land-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #land-title-wrap{flex:1;text-align:right;}
+  #land-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #land-subtitle{font-size:13px;color:#777;margin-top:3px;}
+  #land-chart-wrap{flex:1;position:relative;min-height:280px;}
+  #land-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+  #land-note{font-size:11px;color:#aaa;margin-top:10px;text-align:right;}
+  .land-toggle-wrap{display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+  .land-lbl{font-size:12px;font-weight:600;color:#aaa;cursor:pointer;transition:color .15s;}
+  .land-lbl.active{color:#2d6b75;}
+  .toggle-switch{position:relative;display:inline-block;width:38px;height:22px;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:22px;transition:.2s;}
+  .toggle-slider:before{position:absolute;content:'';height:16px;width:16px;right:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+  input:checked + .toggle-slider{background:#2d6b75;}
+  input:checked + .toggle-slider:before{transform:translateX(-16px);}
 </style>
 </head>
 <body>
@@ -200,6 +218,33 @@
     </div>
   </div>
 </div>
+
+{% if data.land_chart %}
+<!-- ══ עלות קרקע ══ -->
+<div class="section">
+  <div class="section-label">עלות קרקע ליחידת דיור</div>
+  <div class="grid-1">
+    <div id="land-container">
+      <div id="land-header">
+        <div id="land-title-wrap">
+          <div id="land-title"></div>
+          <div id="land-subtitle"></div>
+        </div>
+        <div class="land-toggle-wrap">
+          <span class="land-lbl active" id="land-lbl-on">ממוצע + טווח</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="land-toggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="land-lbl" id="land-lbl-off">ממוצע בלבד</span>
+        </div>
+      </div>
+      <div id="land-chart-wrap"><canvas id="landChart"></canvas></div>
+      <div id="land-note"></div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <!-- ══ עוגה + עמודות ══ -->
 <div class="section">
@@ -372,6 +417,42 @@ function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){
   function render(){const fd=getFiltered();if(inst){inst.data.labels=fd.labels;inst.data.datasets[0].data=fd.cheap;inst.data.datasets[1].data=fd.exp;inst.update();}else{document.getElementById('pr-loading').style.display='none';document.getElementById('pr-chart-wrap').style.display='block';document.getElementById('pr-tabs').style.display='flex';inst=new Chart(document.getElementById('prChart'),{type:'line',data:{labels:fd.labels,datasets:[{label:'מחיר נמוך מ-4 מיליון ש"ח',data:fd.cheap,borderColor:'#61C0CC',backgroundColor:hexToRgba('#61C0CC',0.08),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#61C0CC',tension:0.3,fill:true},{label:'מחיר גבוה מ-10 מיליון ש"ח',data:fd.exp,borderColor:'#496970',backgroundColor:hexToRgba('#496970',0.06),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#496970',tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:13},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},title:{display:false},tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.raw+' דירות — '+ctx.dataset.label},bodyFont:{family:font},titleFont:{family:font}}},scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},y:{grid:{color:'#f0f0f0'},beginAtZero:true,ticks:{font:{family:font,size:11}}}}}}));}}
   render();
   document.querySelectorAll('.pr-tab').forEach(btn=>btn.addEventListener('click',function(){filter=this.dataset.filter;document.querySelectorAll('.pr-tab').forEach(b=>b.classList.remove('active'));this.classList.add('active');render();}));
+})();
+
+// ══ גרף עלות קרקע ════════════════════════════════════════
+(function(){
+  const d = window.__SD__.land_chart;
+  if (!d) return;
+  const avgColor='#2d6b75', bandFill=hexToRgba('#2d6b75',0.12);
+  const yOpts={grid:{color:'#f0f0f0'},min:d.yMin,max:d.yMax,ticks:{font:{family:font,size:11},callback:v=>v+" מ' ₪"}};
+  document.getElementById('land-title').textContent    = d.title    || '';
+  document.getElementById('land-subtitle').textContent = d.subtitle || '';
+  document.getElementById('land-note').textContent     = d.note     || '';
+  const inst = new Chart(document.getElementById('landChart'),{
+    type:'line',
+    data:{labels:d.labels,datasets:[
+      {label:'טווח הצעות זוכים',data:d.max,borderColor:'transparent',backgroundColor:bandFill,fill:'+1',tension:0.4,pointRadius:0},
+      {data:d.min,borderColor:'transparent',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0},
+      {label:'מחיר ממוצע לקרקע ליח"ד',data:d.avg,borderColor:avgColor,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:avgColor,pointBorderWidth:2,tension:0.4,fill:false}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      plugins:{
+        legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:12},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,filter:item=>item.datasetIndex!==1}},
+        tooltip:{rtl:true,callbacks:{label:ctx=>{if(ctx.datasetIndex===1)return null;return ' '+ctx.raw+" מ' ₪ — "+ctx.dataset.label;}},bodyFont:{family:font},titleFont:{family:font}}
+      },
+      scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:11}}},y:yOpts}
+    }
+  });
+  const tog=document.getElementById('land-toggle');
+  if(tog) tog.addEventListener('change',function(){
+    const show=this.checked;
+    inst.data.datasets[0].hidden=!show;
+    inst.data.datasets[1].hidden=!show;
+    inst.update();
+    document.getElementById('land-lbl-on').classList.toggle('active',show);
+    document.getElementById('land-lbl-off').classList.toggle('active',!show);
+  });
 })();
 
 // ══ טבלת עסקאות ══════════════════════════════════════════

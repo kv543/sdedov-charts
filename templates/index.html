@@ -208,6 +208,55 @@ select:hover,select:focus{border-color:#61C0CC;}
 }
 .meta-bar span{display:flex;align-items:center;gap:5px;}
 .meta-bar strong{color:#2d6b75;}
+.btn-logout{background:none;border:1.5px solid rgba(255,255,255,0.3);color:#fff;font-family:'Heebo',Arial,sans-serif;font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.btn-logout:hover{background:rgba(255,255,255,0.1);}
+
+/* ══ Land Chart ══ */
+#land-container{
+  width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 18px rgba(0,0,0,0.07);
+  font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;
+  display:flex;flex-direction:column;padding:22px 24px 20px;min-height:340px;
+}
+#land-empty{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+}
+.land-empty-icon{font-size:36px;opacity:.4;}
+.land-empty-title{font-size:16px;font-weight:700;color:#496970;}
+.land-empty-sub{font-size:13px;color:#aaa;}
+.btn-land-add{
+  display:inline-block;background:#f0f8f9;color:#2d6b75;
+  font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;
+  padding:8px 22px;border-radius:8px;cursor:pointer;border:2px dashed #b5dde2;
+  transition:all .15s;
+}
+.btn-land-add:hover{background:#d6f0f3;border-color:#61C0CC;}
+
+#land-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+#land-title-wrap{flex:1;text-align:right;}
+#land-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+#land-subtitle{font-size:13px;color:#777;margin-top:3px;}
+#land-header-right{flex:0 0 auto;display:flex;align-items:center;gap:14px;}
+#land-wrap{flex:1;position:relative;min-height:220px;}
+#land-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+#land-note{font-size:11px;color:#aaa;margin-top:10px;text-align:right;}
+
+/* Toggle switch */
+.toggle-wrap{display:flex;align-items:center;gap:8px;direction:ltr;}
+.toggle-label{font-size:12px;color:#888;font-family:'Heebo',Arial,sans-serif;white-space:nowrap;}
+.toggle-label.active{color:#2d6b75;font-weight:600;}
+.toggle-switch{position:relative;display:inline-block;width:42px;height:22px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:22px;transition:.25s;}
+.toggle-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;}
+input:checked+.toggle-slider{background:#2d6b75;}
+input:checked+.toggle-slider:before{transform:translateX(20px);}
+
+.btn-land-update{
+  display:inline-block;font-family:'Heebo',Arial,sans-serif;font-size:12px;font-weight:600;
+  color:#61C0CC;cursor:pointer;border:1.5px solid #c5e8ec;border-radius:6px;
+  padding:4px 12px;transition:all .15s;white-space:nowrap;
+}
+.btn-land-update:hover{background:#e8f7f9;border-color:#61C0CC;}
 </style>
 </head>
 <body>
@@ -261,6 +310,7 @@ select:hover,select:focus{border-color:#61C0CC;}
       <button class="btn-export btn-export-json" id="btn-export-json">📦 ייצוא JSON</button>
       <button class="btn-export btn-export-html" id="btn-export-html">📄 ייצוא HTML</button>
       <button class="btn-export btn-new" id="btn-new">⬆ קובץ חדש</button>
+      <a href="/logout" class="btn-logout">יציאה</a>
     </div>
   </div>
 
@@ -383,6 +433,51 @@ select:hover,select:focus{border-color:#61C0CC;}
           <button class="chart-tab" data-filter="24">24 חודשים</button>
           <button class="chart-tab" data-filter="12">12 חודשים</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ גרף עלות קרקע ══ -->
+  <div class="section" id="land-section">
+    <div class="section-label">עלות קרקע ליחידת דיור</div>
+    <div class="grid-1">
+      <div id="land-container">
+
+        <!-- Empty state -->
+        <div id="land-empty">
+          <div class="land-empty-icon">🏗</div>
+          <div class="land-empty-title">גרף עלות קרקע ליחידת דיור</div>
+          <div class="land-empty-sub">העלה קובץ Excel עם נתוני מכרזי קרקע כדי להציג את הגרף</div>
+          <label class="btn-land-add" for="land-file-input">+ הוסף נתוני קרקע (אופציונלי)</label>
+          <input type="file" id="land-file-input" accept=".xlsx,.xls" style="display:none">
+          <div id="land-upload-error" style="display:none;color:#c0392b;font-size:13px;margin-top:8px;"></div>
+          <div id="land-uploading" style="display:none;color:#496970;font-size:13px;margin-top:8px;">מעבד...</div>
+        </div>
+
+        <!-- Chart state -->
+        <div id="land-chart-area" style="display:none;flex:1;display:none;flex-direction:column;">
+          <div id="land-header">
+            <div id="land-title-wrap">
+              <div id="land-title"></div>
+              <div id="land-subtitle"></div>
+            </div>
+            <div id="land-header-right">
+              <div class="toggle-wrap" dir="rtl">
+                <span class="toggle-label active" id="land-lbl-on">ממוצע + טווח</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="land-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label" id="land-lbl-off">ממוצע בלבד</span>
+              </div>
+              <label class="btn-land-update" for="land-file-update">עדכן נתונים</label>
+              <input type="file" id="land-file-update" accept=".xlsx,.xls" style="display:none">
+            </div>
+          </div>
+          <div id="land-wrap"><canvas id="landChart"></canvas></div>
+          <div id="land-note"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -835,6 +930,83 @@ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-ove
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
 dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)processFile(f);});
 document.getElementById('file-input').addEventListener('change',function(){if(this.files[0])processFile(this.files[0]);});
+
+// ══════════════════════════════════════════════════════════
+// גרף עלות קרקע
+// ══════════════════════════════════════════════════════════
+let landInst = null;
+function initLandChart(d) {
+  document.getElementById('land-empty').style.display = 'none';
+  const area = document.getElementById('land-chart-area');
+  area.style.cssText = 'display:flex;flex:1;flex-direction:column;';
+  document.getElementById('land-title').textContent    = d.title    || '';
+  document.getElementById('land-subtitle').textContent = d.subtitle || '';
+  document.getElementById('land-note').textContent     = d.note     || '';
+
+  const avgColor = '#2d6b75';
+  const bandFill = hexToRgba('#2d6b75', 0.12);
+  const yOpts = {
+    grid:{color:'#f0f0f0'}, min:d.yMin, max:d.yMax,
+    ticks:{font:{family:font,size:11},callback:v=>v+" מ' ₪"}
+  };
+
+  if (landInst) {
+    landInst.data.labels=d.labels;
+    landInst.data.datasets[0].data=d.max;
+    landInst.data.datasets[1].data=d.min;
+    landInst.data.datasets[2].data=d.avg;
+    landInst.options.scales.y=yOpts; landInst.update(); return;
+  }
+
+  landInst = new Chart(document.getElementById('landChart'), {
+    type:'line',
+    data:{labels:d.labels,datasets:[
+      {label:'טווח הצעות זוכים',data:d.max,borderColor:'transparent',backgroundColor:bandFill,fill:'+1',tension:0.4,pointRadius:0},
+      {data:d.min,borderColor:'transparent',backgroundColor:'transparent',fill:false,tension:0.4,pointRadius:0},
+      {label:'מחיר ממוצע לקרקע ליח"ד',data:d.avg,borderColor:avgColor,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#fff',pointBorderColor:avgColor,pointBorderWidth:2,tension:0.4,fill:false}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:600},
+      plugins:{
+        legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:12},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,filter:item=>item.datasetIndex!==1}},
+        tooltip:{rtl:true,callbacks:{label:ctx=>{if(ctx.datasetIndex===1)return null;return ' '+ctx.raw+" מ' ₪ — "+ctx.dataset.label;}},bodyFont:{family:font},titleFont:{family:font}}
+      },
+      scales:{
+        x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:11}}},
+        y:yOpts
+      }
+    }
+  });
+
+  document.getElementById('land-toggle').addEventListener('change',function(){
+    const show=this.checked;
+    landInst.data.datasets[0].hidden=!show;
+    landInst.data.datasets[1].hidden=!show;
+    landInst.update();
+    document.getElementById('land-lbl-on').classList.toggle('active',show);
+    document.getElementById('land-lbl-off').classList.toggle('active',!show);
+  });
+}
+
+async function uploadLandFile(file){
+  if(!file) return;
+  if(!file.name.match(/\.(xlsx|xls)$/i)){
+    document.getElementById('land-upload-error').textContent='יש להעלות קובץ Excel';
+    document.getElementById('land-upload-error').style.display='block'; return;
+  }
+  document.getElementById('land-uploading').style.display='block';
+  document.getElementById('land-upload-error').style.display='none';
+  const fd=new FormData(); fd.append('excel',file);
+  try{
+    const res=await fetch('/process-land',{method:'POST',body:fd});
+    const json=await res.json();
+    if(!json.success){document.getElementById('land-upload-error').textContent=json.error||'שגיאה';document.getElementById('land-upload-error').style.display='block';}
+    else{ initLandChart(json.data); }
+  } catch(e){document.getElementById('land-upload-error').textContent='שגיאת רשת: '+e.message;document.getElementById('land-upload-error').style.display='block';}
+  document.getElementById('land-uploading').style.display='none';
+}
+document.getElementById('land-file-input').addEventListener('change', function(){uploadLandFile(this.files[0]);});
+document.getElementById('land-file-update').addEventListener('change',function(){uploadLandFile(this.files[0]);});
 
 // Export buttons
 document.getElementById('btn-export-json').addEventListener('click',()=>{window.location.href='/export/json';});

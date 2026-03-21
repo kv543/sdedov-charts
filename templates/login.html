@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שדה דב — כניסה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#1a2e35 0%,#2d6b75 100%);
+  font-family:'Heebo',Arial,sans-serif;
+  direction:rtl;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.login-wrap{display:flex;flex-direction:column;align-items:center;gap:28px;width:100%;max-width:400px;}
+.logo{text-align:center;color:#fff;}
+.logo-mark{font-size:40px;margin-bottom:8px;}
+.logo-title{font-size:30px;font-weight:800;}
+.logo-sub{font-size:14px;color:rgba(255,255,255,0.6);margin-top:4px;}
+
+.card{
+  background:#fff;border-radius:18px;padding:36px 32px;
+  width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.25);
+}
+.card h2{font-size:18px;font-weight:700;color:#1a2e35;margin-bottom:24px;text-align:center;}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+.field label{font-size:13px;font-weight:600;color:#496970;}
+.field input{
+  padding:11px 14px;border:2px solid #dde6e8;border-radius:9px;
+  font-family:'Heebo',Arial,sans-serif;font-size:15px;color:#222;
+  outline:none;transition:border-color .15s;direction:ltr;
+}
+.field input:focus{border-color:#61C0CC;}
+
+.btn-login{
+  width:100%;padding:12px;background:#2d6b75;color:#fff;
+  font-family:'Heebo',Arial,sans-serif;font-size:15px;font-weight:700;
+  border:none;border-radius:9px;cursor:pointer;transition:background .15s;
+}
+.btn-login:hover{background:#225560;}
+
+.error{
+  background:#fff0f0;border:1px solid #ffb3b3;border-radius:8px;
+  padding:10px 14px;color:#c0392b;font-size:13px;text-align:center;
+  margin-bottom:16px;
+}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="logo">
+    <div class="logo-mark">🏗</div>
+    <div class="logo-title">שדה דב</div>
+    <div class="logo-sub">מערכת ניתוח נדל"ן — כניסה מאובטחת</div>
+  </div>
+  <div class="card">
+    <h2>כניסה למערכת</h2>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="POST">
+      <div class="field">
+        <label for="password">סיסמה</label>
+        <input type="password" id="password" name="password" placeholder="הזן סיסמה" autofocus>
+      </div>
+      <button type="submit" class="btn-login">כניסה</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>
