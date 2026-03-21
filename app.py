@@ -171,13 +171,15 @@ def export_json():
 
 # רשימת קבצי ווידג'ט לייצוא (שם קובץ, שם תבנית)
 WIDGET_FILES = [
-    ("01-charts.html",       "widgets/charts.html"),
-    ("02-pie-rooms.html",    "widgets/pie_rooms.html"),
-    ("03-ranges.html",       "widgets/ranges.html"),
-    ("04-transactions.html", "widgets/transactions.html"),
+    ("01-kpi.html",          "widgets/kpi.html"),
+    ("02-charts.html",       "widgets/charts.html"),
+    ("03-pie.html",          "widgets/pie.html"),
+    ("04-rooms-bar.html",    "widgets/rooms_bar.html"),
+    ("05-ranges.html",       "widgets/ranges.html"),
+    ("06-transactions.html", "widgets/transactions.html"),
 ]
 
-WIDGET_FILES_LAND = ("05-land.html", "widgets/land.html")
+WIDGET_FILES_LAND = ("07-land.html", "widgets/land.html")
 
 
 @app.route("/export/html")

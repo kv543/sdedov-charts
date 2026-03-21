@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style></head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div id="pie-container">
+  <div id="pie-header">
+    <div id="pie-title-wrap">
+      <div id="pie-title"></div>
+      <div id="pie-subtitle"></div>
+    </div>
+    <div id="pie-select-wrap">
+      <select id="pie-select">
+        <option value="rooms">לפי מספר חדרים</option>
+        <option value="price">לפי עלות דירה</option>
+      </select>
+      <div id="pie-select-hint">לחצו למעבר בין גרפים</div>
+    </div>
+  </div>
+  <div id="pie-chart-wrap"><canvas id="pieChart"></canvas></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const PIE_DATA = {{ data.pie | tojson }};
+const font = "'Heebo','Arial',sans-serif";
+
+(function(){
+  let inst=null, key='rooms';
+  const plugin={id:'pieLabels',afterDatasetsDraw(chart){
+    const{ctx,data}=chart,meta=chart.getDatasetMeta(0);
+    const total=data.datasets[0].data.reduce((a,b)=>a+b,0);
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    meta.data.forEach((arc,i)=>{
+      const{startAngle,endAngle,x,y,outerRadius}=arc;
+      const mid=(startAngle+endAngle)/2,pct=Math.round(data.datasets[0].data[i]/total*100);
+      if(pct<5)return;
+      const r=outerRadius*0.63,lx=x+Math.cos(mid)*r,ly=y+Math.sin(mid)*r;
+      ctx.fillStyle='#fff';
+      ctx.font='600 14px Heebo,Arial,sans-serif';ctx.fillText(data.labels[i],lx,ly-9);
+      ctx.font='400 11px Heebo,Arial,sans-serif';ctx.fillText(pct+'%',lx,ly+9);
+    });ctx.restore();
+  }};
+  function render(k){
+    const c=PIE_DATA[k],total=c.data.reduce((a,b)=>a+b,0);
+    document.getElementById('pie-title').textContent=c.title;
+    document.getElementById('pie-subtitle').textContent=c.subtitle||'';
+    if(inst){
+      inst.data.labels=c.labels;inst.data.datasets[0].data=c.data;
+      inst.data.datasets[0].backgroundColor=c.colors;inst.data.datasets[0].hoverBackgroundColor=c.colors;
+      inst.options.plugins.tooltip.callbacks.label=ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%';
+      inst.update();
+    } else {
+      inst=new Chart(document.getElementById('pieChart'),{
+        type:'pie',plugins:[plugin],
+        data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.colors,hoverBackgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
+        options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,
+          animation:{duration:600,easing:'easeInOutQuart'},
+          plugins:{legend:{display:false},title:{display:false},
+            tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%'},bodyFont:{family:font},titleFont:{family:font}}}}
+      });
+    }
+  }
+  render(key);
+  document.getElementById('pie-select').addEventListener('change',function(){
+    this.classList.add('used');document.getElementById('pie-select-hint').style.display='none';
+    key=this.value;render(key);
+  });
+})();
+</script>
+
+<style>
+  #pie-container {
+    width:100%;min-height:460px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;
+  }
+  #pie-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #pie-title-wrap {flex:1;text-align:right;}
+  #pie-title {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #pie-subtitle {font-size:13px;color:#777;margin-top:3px;}
+  #pie-select-wrap {flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  #pie-select-hint {font-size:11px;font-weight:500;color:#61C0CC;white-space:nowrap;}
+  #pie-select {
+    width:auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#444;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;
+    direction:rtl;appearance:auto;-webkit-appearance:auto;animation:pie-pulse 2.4s ease-in-out infinite;
+  }
+  #pie-select.used {animation:none;}
+  #pie-select:hover, #pie-select:focus {border-color:#61C0CC;}
+  @keyframes pie-pulse {
+    0%   {border-color:#ddd;background:#fff}
+    50%  {border-color:#61C0CC;background:#d6f0f3}
+    100% {border-color:#ddd;background:#fff}
+  }
+  #pie-chart-wrap {flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;}
+  #pie-chart-wrap canvas {max-width:480px;width:100%;height:auto!important;}
+</style>
+</body></html>

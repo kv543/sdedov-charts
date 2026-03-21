@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');</style></head>
+<body style="margin:0;padding:0;background:transparent;">
+
+<div id="kpi-grid">
+
+  <div class="d-card" id="card-sold">
+    <div class="top-zone">
+      <svg class="d-gauge-svg" viewBox="0 0 200 108" preserveAspectRatio="none">
+        <path d="M 20 108 A 80 80 0 0 1 180 108" class="g-track"/>
+        <path d="M 20 108 A 80 80 0 0 1 180 108" class="g-fill" id="arc-count"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <div class="kpi-val kpi-val-lg" id="num-count">–</div>
+      <div class="kpi-unit-teal">דירות נמכרו</div>
+      <div class="sold-sub">מתוך 16,000 יחידות דיור ברובע שדה דב</div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-ppm">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="10" rx="2"/>
+          <line x1="6" y1="7" x2="6" y2="12"/><line x1="10" y1="7" x2="10" y2="10"/>
+          <line x1="14" y1="7" x2="14" y2="12"/><line x1="18" y1="7" x2="18" y2="10"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="ppm-inline">
+        <span class="kpi-val kpi-val-lg" id="num-ppm">–</span>
+        <span class="ppm-unit-inline">₪ למ"ר</span>
+      </div>
+      <div class="kpi-unit-teal">מחיר ממוצע למ"ר</div>
+      <div class="sold-sub">ללא עסקאות אופציה</div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-rooms">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="rooms-row">
+        <div class="rooms-num-line">
+          <span class="kpi-val kpi-val-lg" id="num-3r">–</span>
+          <span class="rooms-unit">מ' ש"ח</span>
+        </div>
+        <div class="rooms-sublbl">מחיר ממוצע לדירת 3 חדרים</div>
+      </div>
+      <div class="rooms-divider"></div>
+      <div class="rooms-row">
+        <div class="rooms-num-line">
+          <span class="kpi-val kpi-val-lg" id="num-4r">–</span>
+          <span class="rooms-unit">מ' ש"ח</span>
+        </div>
+        <div class="rooms-sublbl">מחיר ממוצע לדירת 4 חדרים</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-proj">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="9" y1="21" x2="9" y2="6"/><line x1="5" y1="21" x2="13" y2="21"/>
+          <line x1="3" y1="8" x2="21" y2="8"/><line x1="9" y1="6" x2="21" y2="10"/>
+          <line x1="9" y1="6" x2="3" y2="10"/><line x1="17" y1="8" x2="17" y2="14"/>
+          <path d="M15 14 Q17 17 19 14"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-val kpi-val-lg" id="num-proj">–</div>
+      <div class="kpi-unit-teal">פרויקטים בשיווק</div>
+    </div>
+    <a href="#" class="proj-link" id="proj-link-el">לכל הפרויקטים ←</a>
+  </div>
+
+</div>
+
+<script>
+const KPI = {{ data.kpi | tojson }};
+const DUR = 1400;
+const ARC_LEN = Math.PI * 80;
+
+function easeOut(t){ return 1 - Math.pow(1-t, 3); }
+function fmtN(n){ return Math.round(n).toLocaleString('he-IL'); }
+function fmtDec(n,d){ return n.toLocaleString('he-IL',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+function animArc(el, pct, dur){
+  const end = ARC_LEN * (1 - Math.min(pct, 1));
+  el.style.strokeDasharray = ARC_LEN + ' ' + (ARC_LEN + 10);
+  el.style.strokeDashoffset = ARC_LEN;
+  const t0 = performance.now();
+  (function tick(now){
+    const p = Math.min((now - t0) / dur, 1);
+    el.style.strokeDashoffset = ARC_LEN - (ARC_LEN - end) * easeOut(p);
+    if(p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+function animNum(el, end, fmt, dur){
+  const t0 = performance.now();
+  (function tick(now){
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = fmt(end * easeOut(p));
+    if(p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+animArc(document.getElementById('arc-count'), KPI.total_transactions / 16000, DUR);
+animNum(document.getElementById('num-count'), KPI.total_transactions, n => fmtN(n), DUR);
+animNum(document.getElementById('num-ppm'),   KPI.avg_ppm,            n => fmtN(n), DUR);
+animNum(document.getElementById('num-3r'),    KPI.avg_price_3rooms,   n => fmtDec(n, 2), DUR);
+animNum(document.getElementById('num-4r'),    KPI.avg_price_4rooms,   n => fmtDec(n, 2), DUR);
+animNum(document.getElementById('num-proj'),  KPI.projects_count,     n => Math.round(n), DUR);
+const lnk = document.getElementById('proj-link-el');
+if(KPI.projects_url) lnk.href = KPI.projects_url;
+</script>
+
+<style>
+  #kpi-grid {
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+    font-family:'Heebo',Arial,sans-serif;direction:rtl;width:100%;box-sizing:border-box;
+  }
+  .d-card {
+    background:#fff;border-radius:16px;padding:20px 16px 18px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    box-shadow:0 2px 18px rgba(73,105,112,0.10);border-top:3px solid #61C0CC;box-sizing:border-box;
+  }
+  .top-zone {width:100%;height:88px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .d-gauge-svg {width:100%;height:40px;display:block;}
+  .g-track {fill:none;stroke:#e8f0f2;stroke-width:14;stroke-linecap:round;}
+  .g-fill  {fill:none;stroke:#61C0CC;stroke-width:14;stroke-linecap:round;}
+  .stat-icon {
+    width:40px;height:40px;background:#f0f8f9;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;color:#61C0CC;
+  }
+  .stat-icon svg {width:21px;height:21px;}
+  .card-body {flex:1;display:flex;flex-direction:column;align-items:center;padding-top:12px;width:100%;}
+  .kpi-val {font-family:'Heebo',Arial,sans-serif;font-weight:800;color:#496970;line-height:1.05;direction:ltr;}
+  .kpi-val-lg {font-size:34px;}
+  .kpi-unit-teal {font-size:13px;font-weight:500;color:#82C2D2;margin-top:4px;}
+  .sold-sub {font-size:10.5px;color:#bbb;margin-top:5px;line-height:1.5;}
+  .ppm-inline {display:flex;align-items:baseline;gap:5px;direction:rtl;}
+  .ppm-unit-inline {font-size:14px;font-weight:500;color:#496970;white-space:nowrap;}
+  .rooms-row {display:flex;flex-direction:column;align-items:center;width:100%;}
+  .rooms-num-line {display:flex;align-items:baseline;gap:5px;direction:rtl;}
+  .rooms-unit {font-size:13px;font-weight:500;color:#496970;white-space:nowrap;}
+  .rooms-sublbl {font-size:11px;color:#61C0CC;margin-top:3px;}
+  .rooms-divider {width:40px;height:1px;background:#e8f0f2;margin:10px auto;}
+  .proj-link {
+    display:inline-block;color:#61C0CC;font-family:'Heebo',Arial,sans-serif;
+    font-size:12px;text-decoration:none;border-bottom:1px solid rgba(97,192,204,0.3);margin-top:auto;
+  }
+  @media (max-width:900px) { #kpi-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:500px) { #kpi-grid { grid-template-columns:1fr; } }
+</style>
+</body></html>
