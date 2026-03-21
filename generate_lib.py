@@ -137,33 +137,33 @@ def generate_all_data(
                  for _, row in monthly_ppm.iterrows()}
     avg_ppm_m = [ppm_dict.get(ym, 0) for ym in monthly_all["ym"]]
 
-    valid_ppms = [v for v in avg_ppm_m if v > 0]
-    y_ppm_min  = round(min(valid_ppms) * 0.85 / 5000) * 5000 if valid_ppms else 0
-    y_ppm_max  = round(max(valid_ppms) * 1.25 / 5000) * 5000 if valid_ppms else 100000
-
     charts = {
         "count": {
             "title":       "כמות דירות שנמכרו בשדה דב לפי חודשים",
             "labels":      labels,
             "data":        counts,
             "color":       "#496970",
-            "tooltipType": "count"
+            "tooltipType": "count",
+            "yMin":        None,
+            "yMax":        None
         },
         "cumulative": {
             "title":       "כמות עסקאות מצטברת בשדה דב",
             "labels":      labels,
             "data":        cumulative,
             "color":       "#61C0CC",
-            "tooltipType": "cumulative"
+            "tooltipType": "cumulative",
+            "yMin":        None,
+            "yMax":        None
         },
         "price": {
-            "title":       'מחיר ממוצע למ"ר בשדה דב לפי חודשים',
+            "title":       'התפתחות המחיר הממוצע למ"ר בשדה דב (ללא עסקאות אופציה)',
             "labels":      labels,
             "data":        avg_ppm_m,
             "color":       "#7dcdd7",
             "tooltipType": "price",
-            "yMin":        y_ppm_min,
-            "yMax":        y_ppm_max
+            "yMin":        None,
+            "yMax":        None
         }
     }
 
