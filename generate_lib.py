@@ -15,8 +15,9 @@ MONTHS_HE = {
     5: "מאי",   6: "יוני",   7: "יולי",    8: "אוגוסט",
     9: "ספטמבר",10: "אוקטובר",11: "נובמבר",12: "דצמבר"
 }
-PIE_COLORS  = ["#2d6b75", "#496970", "#61C0CC", "#7dcdd7"]
-ROOMS_ORDER = ["2 חדרים", "3 חדרים", "4 חדרים", "5 חדרים"]
+PIE_COLORS_ROOMS = ["#496970", "#64929C", "#689CAB", "#82C2D2", "#61C0CC"]
+PIE_COLORS_PRICE = ["#496970", "#64929C", "#82C2D2", "#61C0CC"]
+ROOMS_ORDER = ["2 חדרים", "3 חדרים", "4 חדרים", "5 חדרים", "6+"]
 
 # ── עזר ────────────────────────────────────────────────────
 
@@ -49,7 +50,8 @@ def rooms_group(r):
     elif r <= 2.5: return "2 חדרים"
     elif r <= 3.5: return "3 חדרים"
     elif r <= 4.5: return "4 חדרים"
-    else:          return "5 חדרים"
+    elif r <= 5.5: return "5 חדרים"
+    else:          return "6+"
 
 
 # ── פונקציה ראשית ───────────────────────────────────────────
@@ -171,7 +173,7 @@ def generate_all_data(
 
     # התפלגות מחיר — רק שורות עם מחיר תקין
     price_breaks = [0, 4e6, 7e6, 10e6, float("inf")]
-    price_labels = ["עד 4 מ'", "4–7 מ'", "7–10 מ'", "מעל 10 מ'"]
+    price_labels = ["עד 4 מ' ₪", "4-7 מ' ₪", "7-10 מ' ₪", "מעל 10 מ' ₪"]
     price_counts = [
         int(((df_price["price"] >= price_breaks[i]) & (df_price["price"] < price_breaks[i+1])).sum())
         for i in range(4)
@@ -183,14 +185,14 @@ def generate_all_data(
             "subtitle": "ללא עסקאות אופציה",
             "labels":   ROOMS_ORDER,
             "data":     rooms_counts,
-            "colors":   PIE_COLORS
+            "colors":   PIE_COLORS_ROOMS
         },
         "price": {
-            "title":    "התפלגות מכירות לפי טווח מחיר",
+            "title":    "התפלגות מכירות לפי עלות דירה",
             "subtitle": "ללא עסקאות אופציה",
             "labels":   price_labels,
             "data":     price_counts,
-            "colors":   PIE_COLORS
+            "colors":   PIE_COLORS_PRICE
         }
     }
 
