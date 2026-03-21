@@ -44,6 +44,32 @@ JSON_FILES = {
     "shadeh-dov-price-ranges.json": "price_ranges",
     "shadeh-dov-transactions.json": "transactions",
 }
+LAND_JSON_FILE = "shadeh-dov-land-chart.json"
+
+
+def _load_from_disk():
+    """טוען נתונים מדיסק לזיכרון אם הזיכרון ריק (לאחר הפעלה מחדש של השרת)."""
+    if not _last_data:
+        loaded = {}
+        for fname, key in JSON_FILES.items():
+            fpath = os.path.join(TEMP_DIR, fname)
+            if os.path.exists(fpath):
+                try:
+                    with open(fpath, encoding="utf-8") as f:
+                        loaded[key] = json.load(f)
+                except Exception:
+                    pass
+        if len(loaded) == len(JSON_FILES):
+            _last_data.update(loaded)
+
+    if not _last_land_data:
+        land_path = os.path.join(TEMP_DIR, LAND_JSON_FILE)
+        if os.path.exists(land_path):
+            try:
+                with open(land_path, encoding="utf-8") as f:
+                    _last_land_data.update(json.load(f))
+            except Exception:
+                pass
 
 
 # ── דקורטור Login Required ───────────────────────────────────
@@ -149,6 +175,7 @@ def process_land():
 @app.route("/export/json")
 @login_required
 def export_json():
+    _load_from_disk()
     if not _last_data:
         return "אין נתונים. אנא העלה קובץ Excel תחילה.", 400
 
@@ -196,6 +223,7 @@ WIDGET_NAMES = [
 @app.route("/export/copy")
 @login_required
 def export_copy():
+    _load_from_disk()
     if not _last_data:
         return redirect(url_for('index'))
 
@@ -219,6 +247,7 @@ def export_copy():
 @login_required
 def export_html():
     import traceback
+    _load_from_disk()
     if not _last_data:
         return "אין נתונים. אנא העלה קובץ Excel תחילה.", 400
 
