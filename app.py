@@ -170,6 +170,21 @@ def process_land():
     return jsonify({"success": True, "data": land_data})
 
 
+# ── API: קבלת נתונים קיימים (לטעינה אוטומטית בדף) ───────────
+
+@app.route("/api/data")
+@login_required
+def api_data():
+    """מחזיר נתונים שכבר עובדו (מזיכרון או דיסק), ללא צורך בהעלאה מחדש."""
+    _load_from_disk()
+    if not _last_data:
+        return jsonify({"available": False})
+    result = dict(_last_data)
+    if _last_land_data:
+        result["land_chart"] = _last_land_data
+    return jsonify({"available": True, "data": result})
+
+
 # ── ייצוא JSON ───────────────────────────────────────────────
 
 @app.route("/export/json")

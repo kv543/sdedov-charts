@@ -1153,6 +1153,23 @@ document.getElementById('btn-new').addEventListener('click',()=>{
   document.getElementById('file-info').style.display='none';
   document.getElementById('file-input').value='';
 });
+
+// ── טעינה אוטומטית של נתונים קיימים בעת כניסה לדף ────────────
+(async function autoLoad(){
+  try {
+    const res  = await fetch('/api/data');
+    const json = await res.json();
+    if (!json.available) return;          // אין נתונים — הצג מסך העלאה
+    const d = json.data;
+    loadDashboard(d);
+    // גרף קרקע — אם קיים
+    if (d.land_chart) {
+      initLandChart(d.land_chart);
+    }
+  } catch(e) {
+    // שגיאת רשת — מציג מסך העלאה כרגיל
+  }
+})();
 </script>
 
 </body>
