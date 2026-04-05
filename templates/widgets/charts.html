@@ -113,9 +113,9 @@ document.querySelectorAll(".chart-tab").forEach(btn=>btn.addEventListener("click
   #chart-wrap{flex:1;position:relative;min-height:260px;}
   #chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
   #chart-tabs{display:flex;justify-content:center;gap:16px;margin-top:12px;}
-  .chart-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;
-    font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;}
-  .chart-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
-  .chart-tab:hover:not(.active){color:#555;background:#f0f0f0;}
+  .chart-tab{padding:3px 8px;border:none !important;background:none !important;color:#aaa;font-family:'Heebo',Arial,sans-serif;
+    font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;box-shadow:none !important;}
+  .chart-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;box-shadow:none !important;}
+  .chart-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
 </style>
 </body></html>
