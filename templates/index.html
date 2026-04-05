@@ -176,10 +176,10 @@ select:hover,select:focus{border-color:#61C0CC;}
 #pie-chart-wrap canvas{max-width:480px;width:100%;height:auto!important;}
 
 /* ── Tabs ── */
-#chart-tabs,#pr-tabs{justify-content:center;gap:16px;margin-top:12px;}
-.chart-tab,.pr-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;}
-.chart-tab.active,.pr-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
-.chart-tab:hover:not(.active),.pr-tab:hover:not(.active){color:#555;background:#f0f0f0;}
+#chart-tabs,#pr-tabs,#rooms-tabs{justify-content:center;gap:16px;margin-top:12px;}
+.chart-tab,.pr-tab,.rooms-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;}
+.chart-tab.active,.pr-tab.active,.rooms-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
+.chart-tab:hover:not(.active),.pr-tab:hover:not(.active),.rooms-tab:hover:not(.active){color:#555;background:#f0f0f0;}
 
 /* ── Loading / Error ── */
 #chart-loading,#pie-loading,#rooms-loading,#pr-loading,#tbl-loading{text-align:center;padding:40px;color:#888;font-size:15px;}
@@ -564,6 +564,11 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
         </div>
         <div id="rooms-loading">ממתין לנתונים...</div>
         <div id="rooms-chart-wrap" style="display:none"><canvas id="roomsChart"></canvas></div>
+        <div id="rooms-tabs" style="display:none">
+          <button class="rooms-tab active" data-filter="all">הכל</button>
+          <button class="rooms-tab" data-filter="24">24 חודשים</button>
+          <button class="rooms-tab" data-filter="12">12 חודשים</button>
+        </div>
       </div>
 
     </div>
@@ -641,7 +646,7 @@ let mainInst=null, pieInst=null, roomsInst=null, prInst=null;
 let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null;
 let mainKey='count', mainFilter='all';
 let pieKey='rooms';
-let roomsKey='price';
+let roomsKey='price', roomsFilter='all';
 let prFilter='all';
 let tblKey='expensive', tblSortCol='price', tblSortDir='desc';
 
@@ -787,18 +792,20 @@ function renderRoomsChart(k){
   document.getElementById('rooms-title').textContent=c.title;
   document.getElementById('rooms-subtitle').innerHTML=c.subtitle+'<span style="color:#777;font-size:13px">, ללא עסקאות אופציה</span>';
   const yTick=c.tooltipType==='price'?v=>v+" מ'":c.tooltipType==='pricePerSqm'?v=>(v/1000).toLocaleString('he-IL')+'K':v=>v+' מ"ר';
+  const vals=c.data[roomsFilter]||c.data['all'];
   if(roomsInst){
-    roomsInst.data.labels=c.labels;roomsInst.data.datasets[0].data=c.data;
-    roomsInst.data.datasets[0].backgroundColor=c.data.map(()=>hexToRgba(c.color,0.85));
-    roomsInst.data.datasets[0].hoverBackgroundColor=c.data.map(()=>c.color);
+    roomsInst.data.labels=c.labels;roomsInst.data.datasets[0].data=vals;
+    roomsInst.data.datasets[0].backgroundColor=vals.map(()=>hexToRgba(c.color,0.85));
+    roomsInst.data.datasets[0].hoverBackgroundColor=vals.map(()=>c.color);
     roomsInst.options.plugins.tooltip.callbacks.label=ctx=>fmtTt(c.tooltipType,ctx.raw);
     roomsInst.options.scales.y.ticks.callback=yTick;roomsInst.options.scales.y.min=c.yMin??0;roomsInst.options.scales.y.max=c.yMax;roomsInst.update();
   } else {
     document.getElementById('rooms-loading').style.display='none';
     document.getElementById('rooms-chart-wrap').style.display='block';
+    document.getElementById('rooms-tabs').style.display='flex';
     roomsInst=new Chart(document.getElementById('roomsChart'),{
       type:'bar',plugins:[lblPlugin],
-      data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.data.map(()=>hexToRgba(c.color,0.85)),hoverBackgroundColor:c.data.map(()=>c.color),borderRadius:6,borderSkipped:false}]},
+      data:{labels:c.labels,datasets:[{data:vals,backgroundColor:vals.map(()=>hexToRgba(c.color,0.85)),hoverBackgroundColor:vals.map(()=>c.color),borderRadius:6,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36}},animation:{duration:600,easing:'easeInOutQuart'},
         plugins:{legend:{display:false},title:{display:false},tooltip:{rtl:true,callbacks:{label:ctx=>fmtTt(c.tooltipType,ctx.raw)},bodyFont:{family:font},titleFont:{family:font}}},
         scales:{x:{grid:{display:false},ticks:{font:{family:font,size:13,weight:'600'},color:'#333'}},
@@ -813,6 +820,12 @@ function initRoomsChart(data){
     this.classList.add('used');document.getElementById('rooms-select-hint').style.display='none';
     roomsKey=this.value;renderRoomsChart(roomsKey);
   });
+  document.querySelectorAll('.rooms-tab').forEach(btn=>btn.addEventListener('click',function(){
+    roomsFilter=this.dataset.filter;
+    document.querySelectorAll('.rooms-tab').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    renderRoomsChart(roomsKey);
+  }));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1124,7 +1137,7 @@ document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
   mainInst=null;pieInst=null;roomsInst=null;prInst=null;
   MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;
-  mainKey='count';mainFilter='all';pieKey='rooms';roomsKey='price';prFilter='all';
+  mainKey='count';mainFilter='all';pieKey='rooms';roomsKey='price';roomsFilter='all';prFilter='all';
   tblKey='expensive';tblSortCol='price';tblSortDir='desc';
   // Reset chart loading states
   ['chart-loading','pie-loading','rooms-loading','pr-loading','tbl-loading'].forEach(id=>{
