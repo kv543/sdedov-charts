@@ -199,27 +199,47 @@ def generate_all_data(
     }
 
     # ── 4. גרף עמודות — חדרים ─────────────────────────────
-    # כל מדד מחושב מהסט הרלוונטי שלו בלבד (ללא 6+)
-    by_rooms_price = (df_price[df_price["rooms_label"].isin(ROOMS_BAR_ORDER)]
-                      .groupby("rooms_label").agg(avg_price=("price", "mean"))
-                      .reindex(ROOMS_BAR_ORDER))
-    by_rooms_sqm   = (df_sqm[df_sqm["rooms_label"].isin(ROOMS_BAR_ORDER)]
-                      .groupby("rooms_label").agg(avg_sqm=("sqm", "mean"))
-                      .reindex(ROOMS_BAR_ORDER))
-    by_rooms_ppm   = (df_ppm[df_ppm["rooms_label"].isin(ROOMS_BAR_ORDER)]
-                      .groupby("rooms_label").agg(avg_ppm=("ppm", "mean"))
-                      .reindex(ROOMS_BAR_ORDER))
+    # עמודת תאריך לסינון זמני (נדרש לטאבי הכל/24/12 חודשים)
+    for src in [df_price, df_sqm, df_ppm]:
+        src["_date_ym"] = pd.to_datetime(
+            {"year": src["year"], "month": src["month"], "day": 1})
 
-    prices_m = [round(safe_float(v) / 1e6, 2) for v in by_rooms_price["avg_price"]]
-    sizes    = [round(safe_float(v), 1)        for v in by_rooms_sqm["avg_sqm"]]
-    ppms     = [round(safe_float(v))            for v in by_rooms_ppm["avg_ppm"]]
+    max_ym = df_price["_date_ym"].max()
+    cut_24 = max_ym - pd.DateOffset(months=23)  # כולל החודש הנוכחי → 24 חודשים
+    cut_12 = max_ym - pd.DateOffset(months=11)  # כולל החודש הנוכחי → 12 חודשים
+
+    def rooms_mean(src, col, cutoff=None):
+        """ממוצע לפי קבוצת חדרים, עם סינון זמני אופציונלי."""
+        s = src if cutoff is None else src[src["_date_ym"] >= cutoff]
+        s = s[s["rooms_label"].isin(ROOMS_BAR_ORDER)]
+        return s.groupby("rooms_label")[col].mean().reindex(ROOMS_BAR_ORDER)
+
+    def to_m(series):  return [round(safe_float(v) / 1e6, 2) for v in series]
+    def to_m1(series): return [round(safe_float(v), 1)        for v in series]
+    def to_i(series):  return [round(safe_float(v))            for v in series]
+
+    prices_data = {
+        "all": to_m(rooms_mean(df_price, "price")),
+        "24":  to_m(rooms_mean(df_price, "price", cut_24)),
+        "12":  to_m(rooms_mean(df_price, "price", cut_12)),
+    }
+    sizes_data = {
+        "all": to_m1(rooms_mean(df_sqm, "sqm")),
+        "24":  to_m1(rooms_mean(df_sqm, "sqm", cut_24)),
+        "12":  to_m1(rooms_mean(df_sqm, "sqm", cut_12)),
+    }
+    ppms_data = {
+        "all": to_i(rooms_mean(df_ppm, "ppm")),
+        "24":  to_i(rooms_mean(df_ppm, "ppm", cut_24)),
+        "12":  to_i(rooms_mean(df_ppm, "ppm", cut_12)),
+    }
 
     rooms_charts = {
         "price": {
             "title":       "מחיר דירה ממוצע לפי מס' חדרים (ללא עסקאות אופציה)",
             "subtitle":    'במיליוני ש"ח',
             "labels":      ROOMS_BAR_ORDER,
-            "data":        prices_m,
+            "data":        prices_data,
             "color":       "#689CAB",
             "tooltipType": "price",
             "yMin":        0,
@@ -229,7 +249,7 @@ def generate_all_data(
             "title":       "שטח דירה ממוצע לפי מס' חדרים (ללא עסקאות אופציה)",
             "subtitle":    'במטרים רבועים',
             "labels":      ROOMS_BAR_ORDER,
-            "data":        sizes,
+            "data":        sizes_data,
             "color":       "#61C0CC",
             "tooltipType": "size",
             "yMin":        0,
@@ -239,7 +259,7 @@ def generate_all_data(
             "title":       "מחיר ממוצע למ\"ר לפי מס' חדרים (ללא עסקאות אופציה)",
             "subtitle":    'בש"ח',
             "labels":      ROOMS_BAR_ORDER,
-            "data":        ppms,
+            "data":        ppms_data,
             "color":       "#61C0CC",
             "tooltipType": "pricePerSqm",
             "yMin":        20000,
