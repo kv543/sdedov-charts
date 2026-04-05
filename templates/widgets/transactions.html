@@ -15,6 +15,8 @@
       <option value="cheap">עסקאות זולות ביותר</option>
     </select>
   </div>
+  <div id="tbl-loading"></div>
+  <div id="tbl-error"></div>
   <div id="tbl-wrap">
     <table id="tbl-main">
       <thead><tr>
@@ -35,84 +37,178 @@
 const TBL_DATA = {{ data.transactions | tojson }};
 
 (function(){
-  const TITLES={expensive:'10 העסקאות היקרות ביותר בשדה דב',cheap:'10 העסקאות הזולות ביותר בשדה דב'};
-  const MONTHS={ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
-  let key='expensive', sortCol='price', sortDir='desc';
-  function dateNum(s){const p=s.trim().split(' ');return parseInt(p[2])*10000+(MONTHS[p[1].replace('ב','')]||0)*100+parseInt(p[0]);}
-  function fmtP(v){return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+" מ' ₪";}
-  function fmtPpm(v){return '₪'+v.toLocaleString('he-IL');}
-  function getSorted(rows){
-    return [...rows].sort((a,b)=>{
-      let va,vb;
-      if(sortCol==='date'){va=dateNum(a.date);vb=dateNum(b.date);}
-      else if(sortCol==='price'){va=a.price;vb=b.price;}
-      else{va=a.ppm;vb=b.ppm;}
-      return sortDir==='asc'?va-vb:vb-va;
+  const TITLES = {expensive:'10 העסקאות היקרות ביותר בשדה דב', cheap:'10 העסקאות הזולות ביותר בשדה דב'};
+  const MONTHS  = {ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
+
+  let key = 'expensive', sortCol = 'price', sortDir = 'desc';
+
+  /* "21 באפריל 2024" → "21.4.24" */
+  function formatDateShort(s) {
+    const p = s.trim().split(' ');
+    const day   = parseInt(p[0], 10);
+    const month = MONTHS[p[1].replace(/^ב/, '')] || 0;
+    const year  = parseInt(p[2], 10) % 100;
+    return day + '.' + month + '.' + String(year).padStart(2, '0');
+  }
+
+  /* numeric value for sorting dates */
+  function dateToNum(s) {
+    const p = s.trim().split(' ');
+    const year  = parseInt(p[2], 10);
+    const month = MONTHS[p[1].replace(/^ב/, '')] || 0;
+    const day   = parseInt(p[0], 10);
+    return year * 10000 + month * 100 + day;
+  }
+
+  function fmtPrice(v) {
+    return (v / 1e6).toLocaleString('he-IL', {minimumFractionDigits:2, maximumFractionDigits:2}) + " מ' ₪";
+  }
+  function fmtPpm(v) {
+    return '₪' + v.toLocaleString('he-IL');
+  }
+
+  function getSorted(rows) {
+    return [...rows].sort((a, b) => {
+      let va, vb;
+      if (sortCol === 'date')       { va = dateToNum(a.date); vb = dateToNum(b.date); }
+      else if (sortCol === 'price') { va = a.price;           vb = b.price;           }
+      else                          { va = a.ppm;             vb = b.ppm;             }
+      return sortDir === 'asc' ? va - vb : vb - va;
     });
   }
-  function renderTbl(k){
-    document.getElementById('tbl-title').textContent=TITLES[k];
-    const rows=getSorted(TBL_DATA[k]);
-    const tbody=document.getElementById('tbl-body');
-    tbody.innerHTML='';
-    rows.forEach((r,i)=>{
-      const tr=document.createElement('tr');
-      tr.className=i%2===0?'row-even':'row-odd';
-      tr.innerHTML=`<td>${r.date}</td><td>${r.complex}</td><td>${fmtP(r.price)}</td><td>${r.sqm} מ"ר</td><td>${r.rooms}</td><td>${r.build_year||''}</td><td>${fmtPpm(r.ppm)}</td>`;
+
+  function renderTbl(k) {
+    document.getElementById('tbl-title').textContent = TITLES[k];
+    const rows  = getSorted(TBL_DATA[k]);
+    const tbody = document.getElementById('tbl-body');
+    tbody.innerHTML = '';
+    rows.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      tr.className = i % 2 === 0 ? 'row-even' : 'row-odd';
+      tr.innerHTML =
+        `<td>${formatDateShort(r.date)}</td>` +
+        `<td>${r.complex}</td>` +
+        `<td class="num">${fmtPrice(r.price)}</td>` +
+        `<td class="num">${r.sqm} מ"ר</td>` +
+        `<td class="num">${r.rooms}</td>` +
+        `<td class="num">${r.build_year || ''}</td>` +
+        `<td class="num">${fmtPpm(r.ppm)}</td>`;
       tbody.appendChild(tr);
     });
-    document.querySelectorAll('#tbl-main th.sortable').forEach(th=>{
-      const arr=th.querySelector('.sort-arrow');
-      if(arr)arr.remove();
-      if(th.dataset.sort===sortCol){
-        const s=document.createElement('span');s.className='sort-arrow';
-        s.textContent=sortDir==='asc'?' ↑':' ↓';th.appendChild(s);
+    /* update sort arrows */
+    document.querySelectorAll('#tbl-main th.sortable').forEach(th => {
+      const arr = th.querySelector('.sort-arrow');
+      if (arr) arr.remove();
+      if (th.dataset.sort === sortCol) {
+        const s = document.createElement('span');
+        s.className = 'sort-arrow';
+        s.textContent = sortDir === 'asc' ? ' ↑' : ' ↓';
+        th.appendChild(s);
       }
     });
   }
+
   renderTbl(key);
-  document.getElementById('tbl-select').addEventListener('change',function(){
-    this.classList.add('used');key=this.value;sortCol='price';sortDir=key==='cheap'?'asc':'desc';renderTbl(key);
-  });
-  document.querySelectorAll('#tbl-main th.sortable').forEach(th=>th.addEventListener('click',function(){
-    const col=this.dataset.sort;
-    if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
-    else{sortCol=col;sortDir='asc';}
+
+  document.getElementById('tbl-select').addEventListener('change', function() {
+    key     = this.value;
+    sortCol = 'price';
+    sortDir = key === 'cheap' ? 'asc' : 'desc';
     renderTbl(key);
-  }));
+  });
+
+  document.querySelectorAll('#tbl-main th.sortable').forEach(th => {
+    th.addEventListener('click', function() {
+      const col = this.dataset.sort;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'asc';
+      }
+      renderTbl(key);
+    });
+  });
 })();
 </script>
 
 <style>
-  #tbl-container{width:100%;padding:22px 24px 20px;background:#fff;border-radius:14px;
-    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
-    box-sizing:border-box;display:flex;flex-direction:column;}
-  #tbl-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
-  #tbl-title-wrap{flex:1;text-align:right;}
-  #tbl-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;}
-  #tbl-subtitle{font-size:13px;color:#777;margin-top:3px;}
-  #tbl-select{flex:0 0 auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;
-    color:#444;font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;
-    outline:none;direction:rtl;appearance:auto;-webkit-appearance:auto;
-    animation:pulse 2.4s ease-in-out infinite;}
-  #tbl-select.used{animation:none;}
-  #tbl-select:hover,#tbl-select:focus{border-color:#61C0CC;}
-  @keyframes pulse{0%{border-color:#ddd;background:#fff}50%{border-color:#61C0CC;background:#d6f0f3}100%{border-color:#ddd;background:#fff}}
-  #tbl-wrap{overflow-x:auto;overflow-y:auto;flex:1;max-height:360px;}
-  #tbl-main{width:100%;border-collapse:collapse;font-family:'Heebo',Arial,sans-serif;font-size:13px;direction:rtl;}
-  #tbl-main thead tr{background:#496970;color:#fff;}
-  #tbl-main th{padding:10px 12px;text-align:right;font-weight:600;font-size:13px;white-space:nowrap;}
-  #tbl-main th.sortable{cursor:pointer;user-select:none;}
-  #tbl-main th.sortable:hover{background:#3d5860;}
-  #tbl-main td{padding:9px 12px;text-align:right;color:#333;white-space:nowrap;}
-  #tbl-main tr.row-even{background:#fff;}
-  #tbl-main tr.row-odd{background:#f4f9fa;}
-  #tbl-main tbody tr:hover{background:#e8f5f7;}
-  @media(max-width:1200px){
-    #tbl-main{font-size:11px;}
-    #tbl-main th{padding:8px 7px;font-size:11px;}
-    #tbl-main td{padding:7px 7px;}
-    #tbl-main th:nth-child(6),#tbl-main td:nth-child(6){display:none;}
+  /* ── container ──────────────────────────────────────────────── */
+  #tbl-container {
+    width:100%;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;
+    direction:rtl;box-sizing:border-box;display:flex;flex-direction:column;
+  }
+
+  /* ── header row ─────────────────────────────────────────────── */
+  #tbl-header {
+    display:flex;align-items:flex-start;justify-content:space-between;
+    margin-bottom:16px;gap:16px;
+  }
+  #tbl-title-wrap { flex:1;text-align:right; }
+  #tbl-title      { font-size:17px;font-weight:700;color:#222;line-height:1.4; }
+  #tbl-subtitle   { font-size:13px;color:#777;margin-top:3px; }
+
+  /* ── select (no pulse) ──────────────────────────────────────── */
+  #tbl-select {
+    flex:0 0 auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;
+    background:#fff;color:#444;font-family:'Heebo',Arial,sans-serif;
+    font-size:13px;font-weight:600;cursor:pointer;outline:none;
+    direction:rtl;appearance:auto;-webkit-appearance:auto;
+  }
+  #tbl-select:hover,
+  #tbl-select:focus { border-color:#61C0CC; }
+
+  /* ── loading spinner ────────────────────────────────────────── */
+  #tbl-loading {
+    display:none;align-items:center;justify-content:center;
+    padding:32px 0;font-size:14px;color:#888;
+  }
+  #tbl-loading.active { display:flex; }
+  #tbl-loading::before {
+    content:'';display:inline-block;width:22px;height:22px;margin-left:10px;
+    border:3px solid #ddd;border-top-color:#61C0CC;border-radius:50%;
+    animation:spin4 0.7s linear infinite;
+  }
+  @keyframes spin4 {
+    to { transform:rotate(360deg); }
+  }
+
+  /* ── error message ──────────────────────────────────────────── */
+  #tbl-error {
+    display:none;padding:12px 16px;background:#fff3f3;border:1px solid #f5c6cb;
+    border-radius:8px;color:#c0392b;font-size:13px;margin-bottom:12px;
+  }
+  #tbl-error.active { display:block; }
+
+  /* ── table wrapper ──────────────────────────────────────────── */
+  #tbl-wrap { overflow-x:auto;overflow-y:auto;flex:1;max-height:360px; }
+
+  /* ── table ──────────────────────────────────────────────────── */
+  #tbl-main {
+    width:100%;border-collapse:collapse;font-family:'Heebo',Arial,sans-serif;
+    font-size:13px;direction:rtl;
+  }
+  #tbl-main thead tr { background:#496970;color:#fff; }
+  #tbl-main th {
+    padding:10px 12px;text-align:right;font-weight:600;
+    font-size:13px;white-space:nowrap;
+  }
+  #tbl-main th.sortable { cursor:pointer;user-select:none; }
+  #tbl-main th.sortable:hover { background:#3d5860; }
+  #tbl-main td { padding:9px 12px;text-align:right;color:#333;white-space:nowrap; }
+  #tbl-main td.num { font-variant-numeric:tabular-nums; }
+  #tbl-main tr.row-even { background:#fff; }
+  #tbl-main tr.row-odd  { background:#f4f9fa; }
+  #tbl-main tbody tr:hover { background:#e8f5f7; }
+
+  /* ── responsive: hide build-year column ────────────────────── */
+  @media (max-width:1200px) {
+    #tbl-main { font-size:11px; }
+    #tbl-main th { padding:8px 7px;font-size:11px; }
+    #tbl-main td { padding:7px 7px; }
+    #tbl-main th:nth-child(6),
+    #tbl-main td:nth-child(6) { display:none; }
   }
 </style>
 </body></html>
