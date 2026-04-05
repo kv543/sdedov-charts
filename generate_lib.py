@@ -94,6 +94,12 @@ def generate_all_data(
         src["ym"]          = list(zip(src["year"], src["month"]))
         src["yq"]          = list(zip(src["year"], src["quarter"]))
 
+    # עמודת תאריך לסינון זמני — נוספת לפני יצירת ה-subsets כדי שיירשו אותה
+    df["_date_ym"] = pd.to_datetime({"year": df["year"], "month": df["month"], "day": 1})
+    _max_ym = df["_date_ym"].max()
+    _cut_24 = _max_ym - pd.DateOffset(months=23)  # 24 חודשים כולל החודש האחרון
+    _cut_12 = _max_ym - pd.DateOffset(months=11)  # 12 חודשים כולל החודש האחרון
+
     # DataFrames נפרדים לכל מדד — ממוצע מחושב רק מערכים קיימים
     df_price = df.dropna(subset=["price"])
     df_sqm   = df.dropna(subset=["sqm"])
@@ -169,44 +175,47 @@ def generate_all_data(
     }
 
     # ── 3. גרף עוגה ────────────────────────────────────────
-    # התפלגות חדרים — מספיק שיש תגית חדרים תקינה (לא נדרש מחיר/שטח)
-    df_rooms_valid = df[df["rooms_label"].notna()]
-    rooms_counts = [int(len(df_rooms_valid[df_rooms_valid["rooms_label"] == l])) for l in ROOMS_ORDER]
-
-    # התפלגות מחיר — רק שורות עם מחיר תקין
     price_breaks = [0, 4e6, 7e6, 10e6, float("inf")]
     price_labels = ["עד 4 מ' ₪", "4-7 מ' ₪", "7-10 מ' ₪", "מעל 10 מ' ₪"]
-    price_counts = [
-        int(((df_price["price"] >= price_breaks[i]) & (df_price["price"] < price_breaks[i+1])).sum())
-        for i in range(4)
-    ]
+
+    def _rooms_counts(df_sub):
+        rv = df_sub[df_sub["rooms_label"].notna()]
+        return [int(len(rv[rv["rooms_label"] == l])) for l in ROOMS_ORDER]
+
+    def _price_counts(df_sub):
+        dp = df_sub.dropna(subset=["price"])
+        return [
+            int(((dp["price"] >= price_breaks[i]) & (dp["price"] < price_breaks[i+1])).sum())
+            for i in range(4)
+        ]
 
     pie = {
         "rooms": {
             "title":    "התפלגות מכירות לפי מספר חדרים",
             "subtitle": "ללא עסקאות אופציה",
             "labels":   ROOMS_ORDER,
-            "data":     rooms_counts,
+            "data": {
+                "all": _rooms_counts(df),
+                "24":  _rooms_counts(df[df["_date_ym"] >= _cut_24]),
+                "12":  _rooms_counts(df[df["_date_ym"] >= _cut_12]),
+            },
             "colors":   PIE_COLORS_ROOMS
         },
         "price": {
             "title":    "התפלגות מכירות לפי עלות דירה",
             "subtitle": "ללא עסקאות אופציה",
             "labels":   price_labels,
-            "data":     price_counts,
+            "data": {
+                "all": _price_counts(df),
+                "24":  _price_counts(df[df["_date_ym"] >= _cut_24]),
+                "12":  _price_counts(df[df["_date_ym"] >= _cut_12]),
+            },
             "colors":   PIE_COLORS_PRICE
         }
     }
 
     # ── 4. גרף עמודות — חדרים ─────────────────────────────
-    # עמודת תאריך לסינון זמני (נדרש לטאבי הכל/24/12 חודשים)
-    for src in [df_price, df_sqm, df_ppm]:
-        src["_date_ym"] = pd.to_datetime(
-            {"year": src["year"], "month": src["month"], "day": 1})
-
-    max_ym = df_price["_date_ym"].max()
-    cut_24 = max_ym - pd.DateOffset(months=23)  # כולל החודש הנוכחי → 24 חודשים
-    cut_12 = max_ym - pd.DateOffset(months=11)  # כולל החודש הנוכחי → 12 חודשים
+    # _date_ym, _cut_24, _cut_12 כבר מחושבים מעלה (נירשו ל-df_price/sqm/ppm)
 
     def rooms_mean(src, col, cutoff=None):
         """ממוצע לפי קבוצת חדרים, עם סינון זמני אופציונלי."""
@@ -220,18 +229,18 @@ def generate_all_data(
 
     prices_data = {
         "all": to_m(rooms_mean(df_price, "price")),
-        "24":  to_m(rooms_mean(df_price, "price", cut_24)),
-        "12":  to_m(rooms_mean(df_price, "price", cut_12)),
+        "24":  to_m(rooms_mean(df_price, "price", _cut_24)),
+        "12":  to_m(rooms_mean(df_price, "price", _cut_12)),
     }
     sizes_data = {
         "all": to_m1(rooms_mean(df_sqm, "sqm")),
-        "24":  to_m1(rooms_mean(df_sqm, "sqm", cut_24)),
-        "12":  to_m1(rooms_mean(df_sqm, "sqm", cut_12)),
+        "24":  to_m1(rooms_mean(df_sqm, "sqm", _cut_24)),
+        "12":  to_m1(rooms_mean(df_sqm, "sqm", _cut_12)),
     }
     ppms_data = {
         "all": to_i(rooms_mean(df_ppm, "ppm")),
-        "24":  to_i(rooms_mean(df_ppm, "ppm", cut_24)),
-        "12":  to_i(rooms_mean(df_ppm, "ppm", cut_12)),
+        "24":  to_i(rooms_mean(df_ppm, "ppm", _cut_24)),
+        "12":  to_i(rooms_mean(df_ppm, "ppm", _cut_12)),
     }
 
     rooms_charts = {

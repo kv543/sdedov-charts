@@ -19,6 +19,11 @@
     </div>
   </div>
   <div id="pie-chart-wrap"><canvas id="pieChart"></canvas></div>
+  <div id="pie-tabs">
+    <button class="pie-tab active" data-filter="all">הכל</button>
+    <button class="pie-tab" data-filter="24">24 חודשים</button>
+    <button class="pie-tab" data-filter="12">12 חודשים</button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -27,45 +32,83 @@ const PIE_DATA = {{ data.pie | tojson }};
 const font = "'Heebo','Arial',sans-serif";
 
 (function(){
-  let inst=null, key='rooms';
-  const plugin={id:'pieLabels',afterDatasetsDraw(chart){
-    const{ctx,data}=chart,meta=chart.getDatasetMeta(0);
-    const total=data.datasets[0].data.reduce((a,b)=>a+b,0);
-    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
-    meta.data.forEach((arc,i)=>{
-      const{startAngle,endAngle,x,y,outerRadius}=arc;
-      const mid=(startAngle+endAngle)/2,pct=Math.round(data.datasets[0].data[i]/total*100);
-      if(pct<5)return;
-      const r=outerRadius*0.63,lx=x+Math.cos(mid)*r,ly=y+Math.sin(mid)*r;
-      ctx.fillStyle='#fff';
-      ctx.font='600 14px Heebo,Arial,sans-serif';ctx.fillText(data.labels[i],lx,ly-9);
-      ctx.font='400 11px Heebo,Arial,sans-serif';ctx.fillText(pct+'%',lx,ly+9);
-    });ctx.restore();
+  let inst = null, key = 'rooms', pieFilter = 'all';
+
+  const plugin = {id:'pieLabels', afterDatasetsDraw(chart){
+    const {ctx, data} = chart, meta = chart.getDatasetMeta(0);
+    const vals = data.datasets[0].data;
+    const total = vals.reduce((a, b) => a + b, 0);
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    meta.data.forEach((arc, i) => {
+      const {startAngle, endAngle, x, y, outerRadius} = arc;
+      const mid = (startAngle + endAngle) / 2;
+      const pct = Math.round(vals[i] / total * 100);
+      if (pct < 5) return;
+      const r = outerRadius * 0.63, lx = x + Math.cos(mid) * r, ly = y + Math.sin(mid) * r;
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 14px Heebo,Arial,sans-serif'; ctx.fillText(data.labels[i], lx, ly - 9);
+      ctx.font = '400 11px Heebo,Arial,sans-serif'; ctx.fillText(pct + '%', lx, ly + 9);
+    });
+    ctx.restore();
   }};
-  function render(k){
-    const c=PIE_DATA[k],total=c.data.reduce((a,b)=>a+b,0);
-    document.getElementById('pie-title').textContent=c.title;
-    document.getElementById('pie-subtitle').textContent=c.subtitle||'';
-    if(inst){
-      inst.data.labels=c.labels;inst.data.datasets[0].data=c.data;
-      inst.data.datasets[0].backgroundColor=c.colors;inst.data.datasets[0].hoverBackgroundColor=c.colors;
-      inst.options.plugins.tooltip.callbacks.label=ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%';
+
+  function render(k) {
+    const c    = PIE_DATA[k];
+    const vals = c.data[pieFilter];          // ← {all, 24, 12}
+    const total = vals.reduce((a, b) => a + b, 0);
+    document.getElementById('pie-title').textContent = c.title;
+    document.getElementById('pie-subtitle').textContent = c.subtitle || '';
+    if (inst) {
+      inst.data.labels = c.labels;
+      inst.data.datasets[0].data = vals;
+      inst.data.datasets[0].backgroundColor = c.colors;
+      inst.data.datasets[0].hoverBackgroundColor = c.colors;
+      inst.options.plugins.tooltip.callbacks.label =
+        ctx => ' ' + ctx.label + ': ' + Math.round(ctx.raw / total * 100) + '%';
       inst.update();
     } else {
-      inst=new Chart(document.getElementById('pieChart'),{
-        type:'pie',plugins:[plugin],
-        data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.colors,hoverBackgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
-        options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,
-          animation:{duration:600,easing:'easeInOutQuart'},
-          plugins:{legend:{display:false},title:{display:false},
-            tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%'},bodyFont:{family:font},titleFont:{family:font}}}}
+      inst = new Chart(document.getElementById('pieChart'), {
+        type: 'pie', plugins: [plugin],
+        data: {
+          labels: c.labels,
+          datasets: [{
+            data: vals,
+            backgroundColor: c.colors,
+            hoverBackgroundColor: c.colors,
+            borderWidth: 2, borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: true, aspectRatio: 1.4,
+          animation: {duration: 600, easing: 'easeInOutQuart'},
+          plugins: {
+            legend: {display: false}, title: {display: false},
+            tooltip: {
+              rtl: true,
+              callbacks: {label: ctx => ' ' + ctx.label + ': ' + Math.round(ctx.raw / total * 100) + '%'},
+              bodyFont: {family: font}, titleFont: {family: font}
+            }
+          }
+        }
       });
     }
   }
+
   render(key);
-  document.getElementById('pie-select').addEventListener('change',function(){
-    this.classList.add('used');document.getElementById('pie-select-hint').style.display='none';
-    key=this.value;render(key);
+
+  document.getElementById('pie-select').addEventListener('change', function() {
+    this.classList.add('used');
+    document.getElementById('pie-select-hint').style.display = 'none';
+    key = this.value; render(key);
+  });
+
+  document.querySelectorAll('.pie-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      pieFilter = this.dataset.filter;
+      document.querySelectorAll('.pie-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
   });
 })();
 </script>
@@ -78,7 +121,7 @@ const font = "'Heebo','Arial',sans-serif";
   }
   #pie-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
   #pie-title-wrap {flex:1;text-align:right;}
-  #pie-title {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #pie-title   {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
   #pie-subtitle {font-size:13px;color:#777;margin-top:3px;}
   #pie-select-wrap {flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
   #pie-select-hint {font-size:11px;font-weight:500;color:#61C0CC;white-space:nowrap;}
@@ -87,8 +130,9 @@ const font = "'Heebo','Arial',sans-serif";
     font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;
     direction:rtl;appearance:auto;-webkit-appearance:auto;animation:pie-pulse 2.4s ease-in-out infinite;
   }
-  #pie-select.used {animation:none;}
-  #pie-select:hover, #pie-select:focus {border-color:#61C0CC;}
+  #pie-select.used   {animation:none;}
+  #pie-select:hover,
+  #pie-select:focus  {border-color:#61C0CC;}
   @keyframes pie-pulse {
     0%   {border-color:#ddd;background:#fff}
     50%  {border-color:#61C0CC;background:#d6f0f3}
@@ -96,5 +140,15 @@ const font = "'Heebo','Arial',sans-serif";
   }
   #pie-chart-wrap {flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;}
   #pie-chart-wrap canvas {max-width:480px;width:100%;height:auto!important;}
+
+  /* ── טאבי סינון ─────────────────────────────────────────── */
+  #pie-tabs {display:flex;justify-content:center;gap:16px;margin-top:12px;}
+  .pie-tab {
+    padding:3px 8px;border:none;background:none;color:#aaa;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;
+    border-radius:4px;outline:none;-webkit-appearance:none;
+  }
+  .pie-tab.active           {color:#61C0CC;text-decoration:underline;font-weight:600;}
+  .pie-tab:hover:not(.active) {color:#555;background:#f0f0f0;}
 </style>
 </body></html>

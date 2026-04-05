@@ -176,10 +176,10 @@ select:hover,select:focus{border-color:#61C0CC;}
 #pie-chart-wrap canvas{max-width:480px;width:100%;height:auto!important;}
 
 /* ── Tabs ── */
-#chart-tabs,#pr-tabs,#rooms-tabs{justify-content:center;gap:16px;margin-top:12px;}
-.chart-tab,.pr-tab,.rooms-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;}
-.chart-tab.active,.pr-tab.active,.rooms-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
-.chart-tab:hover:not(.active),.pr-tab:hover:not(.active),.rooms-tab:hover:not(.active){color:#555;background:#f0f0f0;}
+#chart-tabs,#pr-tabs,#rooms-tabs,#pie-tabs{justify-content:center;gap:16px;margin-top:12px;}
+.chart-tab,.pr-tab,.rooms-tab,.pie-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;}
+.chart-tab.active,.pr-tab.active,.rooms-tab.active,.pie-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
+.chart-tab:hover:not(.active),.pr-tab:hover:not(.active),.rooms-tab:hover:not(.active),.pie-tab:hover:not(.active){color:#555;background:#f0f0f0;}
 
 /* ── Loading / Error ── */
 #chart-loading,#pie-loading,#rooms-loading,#pr-loading,#tbl-loading{text-align:center;padding:40px;color:#888;font-size:15px;}
@@ -545,6 +545,11 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
         </div>
         <div id="pie-loading">ממתין לנתונים...</div>
         <div id="pie-chart-wrap"><canvas id="pieChart" style="display:none"></canvas></div>
+        <div id="pie-tabs" style="display:none">
+          <button class="pie-tab active" data-filter="all">הכל</button>
+          <button class="pie-tab" data-filter="24">24 חודשים</button>
+          <button class="pie-tab" data-filter="12">12 חודשים</button>
+        </div>
       </div>
 
       <div id="rooms-container">
@@ -645,7 +650,7 @@ function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){
 let mainInst=null, pieInst=null, roomsInst=null, prInst=null;
 let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null;
 let mainKey='count', mainFilter='all';
-let pieKey='rooms';
+let pieKey='rooms', pieFilter='all';
 let roomsKey='price', roomsFilter='all';
 let prFilter='all';
 let tblKey='expensive', tblSortCol='price', tblSortDir='desc';
@@ -738,11 +743,11 @@ const piePlugin={id:'pieLabels',afterDatasetsDraw(chart){
   });ctx.restore();
 }};
 function renderPieChart(k){
-  const c=PIE_DATA[k],total=c.data.reduce((a,b)=>a+b,0);
+  const c=PIE_DATA[k],vals=c.data[pieFilter]||c.data['all'],total=vals.reduce((a,b)=>a+b,0);
   document.getElementById('pie-title').textContent=c.title;
   document.getElementById('pie-subtitle').textContent=c.subtitle||'';
   if(pieInst){
-    pieInst.data.labels=c.labels;pieInst.data.datasets[0].data=c.data;
+    pieInst.data.labels=c.labels;pieInst.data.datasets[0].data=vals;
     pieInst.data.datasets[0].backgroundColor=c.colors;
     pieInst.data.datasets[0].hoverBackgroundColor=c.colors;
     pieInst.options.plugins.tooltip.callbacks.label=ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%';
@@ -750,9 +755,10 @@ function renderPieChart(k){
   } else {
     document.getElementById('pie-loading').style.display='none';
     document.getElementById('pieChart').style.display='block';
+    document.getElementById('pie-tabs').style.display='flex';
     pieInst=new Chart(document.getElementById('pieChart'),{
       type:'pie',plugins:[piePlugin],
-      data:{labels:c.labels,datasets:[{data:c.data,backgroundColor:c.colors,hoverBackgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
+      data:{labels:c.labels,datasets:[{data:vals,backgroundColor:c.colors,hoverBackgroundColor:c.colors,borderWidth:2,borderColor:'#fff'}]},
       options:{responsive:true,maintainAspectRatio:true,aspectRatio:1.4,animation:{duration:600,easing:'easeInOutQuart'},
         plugins:{legend:{display:false},title:{display:false},
           tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.label+': '+Math.round(ctx.raw/total*100)+'%'},bodyFont:{family:font},titleFont:{family:font}}}}
@@ -766,6 +772,12 @@ function initPieChart(data){
     this.classList.add('used');document.getElementById('pie-select-hint').style.display='none';
     pieKey=this.value;renderPieChart(pieKey);
   });
+  document.querySelectorAll('.pie-tab').forEach(btn=>btn.addEventListener('click',function(){
+    pieFilter=this.dataset.filter;
+    document.querySelectorAll('.pie-tab').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    renderPieChart(pieKey);
+  }));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1137,7 +1149,7 @@ document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
   mainInst=null;pieInst=null;roomsInst=null;prInst=null;
   MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;
-  mainKey='count';mainFilter='all';pieKey='rooms';roomsKey='price';roomsFilter='all';prFilter='all';
+  mainKey='count';mainFilter='all';pieKey='rooms';pieFilter='all';roomsKey='price';roomsFilter='all';prFilter='all';
   tblKey='expensive';tblSortCol='price';tblSortDir='desc';
   // Reset chart loading states
   ['chart-loading','pie-loading','rooms-loading','pr-loading','tbl-loading'].forEach(id=>{
