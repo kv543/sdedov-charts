@@ -255,7 +255,7 @@ def generate_all_data(
 
     rooms_charts = {
         "price": {
-            "title":       "מחיר דירה ממוצע לפי מס' חדרים (ללא עסקאות אופציה)",
+            "title":       "מחיר דירה ממוצע לפי מס' חדרים",
             "subtitle":    'במיליוני ש"ח',
             "labels":      ROOMS_BAR_ORDER,
             "data":        prices_data,
@@ -265,7 +265,7 @@ def generate_all_data(
             "yMax":        14
         },
         "size": {
-            "title":       "שטח דירה ממוצע לפי מס' חדרים (ללא עסקאות אופציה)",
+            "title":       "שטח דירה ממוצע לפי מס' חדרים",
             "subtitle":    'במטרים רבועים',
             "labels":      ROOMS_BAR_ORDER,
             "data":        sizes_data,
@@ -275,7 +275,7 @@ def generate_all_data(
             "yMax":        160
         },
         "pricePerSqm": {
-            "title":       "מחיר ממוצע למ\"ר לפי מס' חדרים (ללא עסקאות אופציה)",
+            "title":       "מחיר ממוצע למ\"ר לפי מס' חדרים",
             "subtitle":    'בש"ח',
             "labels":      ROOMS_BAR_ORDER,
             "data":        ppms_data,
