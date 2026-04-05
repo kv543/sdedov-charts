@@ -47,13 +47,22 @@ def format_date_he(row):
     return f"{int(row['יום'])} ב{MONTHS_HE[int(row['חודש'])]} {int(row['שנה'])}"
 
 def rooms_group(r):
-    """קיבוץ לפי מספר חדרים מדויק בלבד — דירות .5 אינן נכללות בשום קבוצה."""
+    """קיבוץ מדויק — רק מספרים שלמים. משמש לגרף עמודות (ממוצע לפי חדרים)."""
     if   r == 2.0: return "2 חדרים"
     elif r == 3.0: return "3 חדרים"
     elif r == 4.0: return "4 חדרים"
     elif r == 5.0: return "5 חדרים"
     elif r >= 6.0 and r == int(r): return "6+"
     else:          return None
+
+def rooms_group_pie(r):
+    """קיבוץ כוללני — X.5 נכלל עם X. משמש לגרף עוגה (התפלגות 100%)."""
+    if   r <= 0:   return None
+    elif r <= 2.5: return "2 חדרים"
+    elif r <= 3.5: return "3 חדרים"
+    elif r <= 4.5: return "4 חדרים"
+    elif r <= 5.5: return "5 חדרים"
+    else:          return "6+"
 
 
 # ── פונקציה ראשית ───────────────────────────────────────────
@@ -89,7 +98,8 @@ def generate_all_data(
         src["month"]       = src["חודש"].astype(int)
         src["rooms_raw"]   = pd.to_numeric(src["חדרים"], errors="coerce").fillna(0)
         src["build_year"]  = pd.to_numeric(src["שנת בניה"], errors="coerce")
-        src["rooms_label"] = src["rooms_raw"].apply(rooms_group)
+        src["rooms_label"]     = src["rooms_raw"].apply(rooms_group)
+        src["rooms_label_pie"] = src["rooms_raw"].apply(rooms_group_pie)
         src["quarter"]     = ((src["month"] - 1) // 3 + 1).astype(int)
         src["ym"]          = list(zip(src["year"], src["month"]))
         src["yq"]          = list(zip(src["year"], src["quarter"]))
@@ -179,8 +189,8 @@ def generate_all_data(
     price_labels = ["עד 4 מ' ₪", "4-7 מ' ₪", "7-10 מ' ₪", "מעל 10 מ' ₪"]
 
     def _rooms_counts(df_sub):
-        rv = df_sub[df_sub["rooms_label"].notna()]
-        return [int(len(rv[rv["rooms_label"] == l])) for l in ROOMS_ORDER]
+        rv = df_sub[df_sub["rooms_label_pie"].notna()]
+        return [int(len(rv[rv["rooms_label_pie"] == l])) for l in ROOMS_ORDER]
 
     def _price_counts(df_sub):
         dp = df_sub.dropna(subset=["price"])
