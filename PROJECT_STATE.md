@@ -1,6 +1,6 @@
 # Project State — sdedov-charts
 
-> **Last updated:** 2026-03-28
+> **Last updated:** 2026-04-05
 > **Purpose:** Single source of truth for resuming development after any break.
 > **Rule:** Update this file at the end of every work session.
 
@@ -46,6 +46,51 @@ A password-protected internal web application for the **שדה דב real estate 
 - No multi-user support (single shared session/data)
 - No data validation UI (if Excel has wrong columns, error is shown but not detailed)
 - `generate.py` and `serve.py` in root — legacy scripts, not used by the Flask app
+
+---
+
+## 2b. Changes Made in Session 2026-04-05
+
+### Architecture clarification
+- Confirmed the live Elementor widgets fetch JSON **dynamically** from `https://sdedov.co.il/wp-content/uploads/data/` — no need to re-paste HTML on data updates
+- Workflow on data update: upload Excel → export JSON → upload JSON files to WordPress server
+
+### `generate_lib.py` changes
+1. **Two separate room-grouping functions:**
+   - `rooms_group(r)` — exact integer match only (2.0/3.0/4.0/5.0/6+); used by bar chart. Removes .5 values from averages.
+   - `rooms_group_pie(r)` — inclusive ranges (2.5→"2 חדרים", 3.5→"3 חדרים" etc.); used by pie chart so 100% of transactions are counted.
+   - Both computed at row level: `rooms_label` (bar) and `rooms_label_pie` (pie) columns added in processing loop.
+2. **Date column `_date_ym`** added to `df` before creating df_price/df_sqm/df_ppm so all subsets inherit it.
+3. **Time-window cutoffs** computed once: `_max_ym`, `_cut_24` (last 24 months), `_cut_12` (last 12 months).
+4. **`pie` data structure changed**: `data` is now `{"all": [...], "24": [...], "12": [...]}` instead of a plain array.
+5. **`rooms_charts` data structure changed**: `data` in each sub-chart is now `{"all": [...], "24": [...], "12": [...]}` instead of a plain array.
+6. **Rooms bar chart titles**: removed "(ללא עסקאות אופציה)" from all 3 titles (it's already shown as subtitle text).
+7. **KPI ppm unit**: display changed from "83,009 ₪ למ״ר" → "83,009 ₪" (label appears below).
+
+### `templates/widgets/transactions.html` (Elementor widget)
+- Added `formatDateShort()`: converts `"21 באפריל 2024"` → `"21.4.24"` (matches live Elementor site)
+- Added `dateToNum()` for sort comparisons
+- Added `class="num"` on numeric `<td>` elements with `font-variant-numeric: tabular-nums`
+- Added `#tbl-loading` spinner (`@keyframes spin4`) and `#tbl-error` div
+- Removed pulse animation from select; sort reset on select change (cheap→asc, expensive→desc)
+
+### `templates/widgets/pie.html` (Elementor widget)
+- Added time-filter tabs: הכל / 24 חודשים / 12 חודשים (same design as charts.html)
+- Widget now uses `c.data[pieFilter]` instead of `c.data`
+
+### `templates/widgets/rooms_bar.html` (Elementor widget)
+- Added time-filter tabs: הכל / 24 חודשים / 12 חודשים
+- Widget now uses `c.data[currentFilter]` instead of `c.data`
+
+### `templates/widgets/kpi.html` (Elementor widget)
+- Removed "למ״ר" suffix from ppm value display (kept only in label below)
+
+### `templates/index.html` (dashboard)
+- **Bug fix**: `renderRoomsChart` now uses `c.data[roomsFilter]` — previously crashed when `c.data` was an object (breaking all subsequent chart loads)
+- Added `roomsFilter` variable + rooms tabs + tab event listeners + CSS + reset
+- Added `pieFilter` variable + pie tabs + tab event listeners + CSS + reset
+- Added `formatDateShort()` to transactions table — dates now show as `21.4.24` instead of Hebrew long format
+- Removed "למ״ר" suffix from ppm KPI display
 
 ---
 
@@ -151,6 +196,14 @@ A password-protected internal web application for the **שדה דב real estate 
 - `safe_int()` converts to Python native int/float/str (avoids numpy serialization issues)
 - Land date parsing: `DD.M.YY` → `pd.Timestamp`; groups by `סדר כרונולוגי`
 - Land: per-tender `avg`, `min`, `max` (from individual winner rows), `winners` count
+- **Two room grouping functions** (see section 2b): `rooms_group` (exact, for bar) vs `rooms_group_pie` (inclusive, for pie)
+- **Time windows**: `_date_ym` column added to `df` before subset creation; `_cut_24`/`_cut_12` computed from `_max_ym` (latest date in dataset)
+- **`pie.data` and `rooms_charts[x].data`** are now objects `{"all", "24", "12"}` — not plain arrays
+
+### Date Handling
+- Raw dates in JSON: `"21 באפריל 2024"` (Hebrew long format, from `format_date_he()`)
+- Displayed in widgets/dashboard: `"21.4.24"` (via `formatDateShort()` in browser JS)
+- `formatDateShort(s)`: splits on space, maps Hebrew month name to number, returns `DD.M.YY`
 
 ---
 
@@ -174,13 +227,13 @@ A password-protected internal web application for the **שדה דב real estate 
 
 ## 7. Next Step (MOST IMPORTANT)
 
-**Clean up and stabilize:**
-Delete `templates/widgets/pie_rooms.html` (unused leftover), remove legacy `generate.py` + `serve.py` from repo, and make `projects_count` configurable via the upload form (simple number input). This will make the project clean and production-ready.
+Compare the live Elementor `transactions` widget HTML/CSS exactly against the current `transactions.html` widget template — the user noted visual differences in row styling beyond just the date format. Also: complete review of all 6 widgets against live Elementor site.
 
 ---
 
 ## 8. Short TODO List
 
+- [ ] **Visual review**: compare all 6 Elementor widget templates against live site screenshots — ensure design parity
 - [ ] Delete `templates/widgets/pie_rooms.html` (replaced by `pie.html` + `rooms_bar.html`)
 - [ ] Delete or archive `generate.py` and `serve.py` (legacy, not used by Flask)
 - [ ] Add `projects_count` input field in upload form (currently hardcoded to 7)
