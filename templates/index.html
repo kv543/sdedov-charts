@@ -885,7 +885,8 @@ function initPriceRangesChart(data){
 // ══════════════════════════════════════════════════════════
 const TBL_TITLES={expensive:'10 העסקאות היקרות ביותר בשדה דב',cheap:'10 העסקאות הזולות ביותר בשדה דב'};
 const MONTHS_MAP={ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
-function dateNum(s){const p=s.trim().split(' ');return parseInt(p[2])*10000+(MONTHS_MAP[p[1].replace('ב','')]||0)*100+parseInt(p[0]);}
+function dateNum(s){const p=s.trim().split(' ');return parseInt(p[2])*10000+(MONTHS_MAP[p[1].replace(/^ב/,'')]||0)*100+parseInt(p[0]);}
+function formatDateShort(s){const p=s.trim().split(' ');const day=parseInt(p[0],10),month=MONTHS_MAP[p[1].replace(/^ב/,'')]||0,year=parseInt(p[2],10)%100;return day+'.'+month+'.'+String(year).padStart(2,'0');}
 function fmtP(v){return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+" מ' ₪";}
 function fmtPpm(v){return '₪'+v.toLocaleString('he-IL');}
 function getSortedTbl(rows){
@@ -904,7 +905,7 @@ function renderTbl(k){
   tbody.innerHTML='';
   rows.forEach((r,i)=>{
     const tr=document.createElement('tr');tr.className=i%2===0?'row-even':'row-odd';
-    tr.innerHTML=`<td>${r.date}</td><td>${r.complex}</td><td class="num">${fmtP(r.price)}</td><td class="num">${r.sqm} מ"ר</td><td class="num">${r.rooms}</td><td class="num">${r.build_year||''}</td><td class="num">${fmtPpm(r.ppm)}</td>`;
+    tr.innerHTML=`<td>${formatDateShort(r.date)}</td><td>${r.complex}</td><td class="num">${fmtP(r.price)}</td><td class="num">${r.sqm} מ"ר</td><td class="num">${r.rooms}</td><td class="num">${r.build_year||''}</td><td class="num">${fmtPpm(r.ppm)}</td>`;
     tbody.appendChild(tr);
   });
   document.querySelectorAll('#tbl-main th.sortable').forEach(th=>{
