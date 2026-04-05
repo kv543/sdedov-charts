@@ -13,6 +13,7 @@ app.py — שרת Flask לאוטומציה של גרפי שדה דב
 """
 
 import os
+import re
 import json
 import zipfile
 from io import BytesIO
@@ -235,6 +236,24 @@ WIDGET_NAMES = [
 ]
 
 
+def strip_to_fragment(html):
+    """Convert a full HTML document to an Elementor-compatible fragment.
+    Keeps <style>/<script> from <head> and the full <body> content,
+    stripping <!DOCTYPE>, <html>, <head>, <body> wrapper tags.
+    """
+    head_match = re.search(r'<head[^>]*>(.*?)</head>', html, re.DOTALL | re.IGNORECASE)
+    head_extras = ''
+    if head_match:
+        head_inner = head_match.group(1)
+        styles  = re.findall(r'<style[^>]*>.*?</style>',  head_inner, re.DOTALL | re.IGNORECASE)
+        scripts = re.findall(r'<script[^>]*>.*?</script>', head_inner, re.DOTALL | re.IGNORECASE)
+        head_extras = '\n'.join(styles + scripts)
+    body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL | re.IGNORECASE)
+    body_content = body_match.group(1).strip() if body_match else html
+    parts = [p for p in [head_extras, body_content] if p]
+    return '\n'.join(parts)
+
+
 @app.route("/export/copy")
 @login_required
 def export_copy():
@@ -250,7 +269,7 @@ def export_copy():
         if optional and not _last_land_data:
             continue
         try:
-            html = render_template(tpl, data=export_data)
+            html = strip_to_fragment(render_template(tpl, data=export_data))
             widgets.append({"name": name, "desc": desc, "html": html, "optional": optional, "error": None})
         except Exception as e:
             widgets.append({"name": name, "desc": desc, "html": "", "optional": optional, "error": str(e)})
