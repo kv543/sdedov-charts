@@ -24,6 +24,7 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+(function(){
 const CHARTS     = {{ data.charts | tojson }};
 const font       = "'Heebo','Arial',sans-serif";
 let chartInstance = null;
@@ -92,6 +93,7 @@ document.querySelectorAll(".chart-tab").forEach(btn=>btn.addEventListener("click
   this.classList.add("active");
   renderChart(currentKey);
 }));
+})();
 </script>
 <style>
   #chart-container{width:100%;min-height:420px;padding:22px 24px 20px;background:#fff;border-radius:14px;

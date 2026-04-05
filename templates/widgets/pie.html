@@ -28,10 +28,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const PIE_DATA = {{ data.pie | tojson }};
-const font = "'Heebo','Arial',sans-serif";
-
 (function(){
+  const PIE_DATA = {{ data.pie | tojson }};
+  const font = "'Heebo','Arial',sans-serif";
   let inst = null, key = 'rooms', pieFilter = 'all';
 
   const plugin = {id:'pieLabels', afterDatasetsDraw(chart){
