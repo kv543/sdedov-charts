@@ -47,12 +47,13 @@ def format_date_he(row):
     return f"{int(row['יום'])} ב{MONTHS_HE[int(row['חודש'])]} {int(row['שנה'])}"
 
 def rooms_group(r):
-    if   r <= 0:   return None
-    elif r <= 2.5: return "2 חדרים"
-    elif r <= 3.5: return "3 חדרים"
-    elif r <= 4.5: return "4 חדרים"
-    elif r <= 5.5: return "5 חדרים"
-    else:          return "6+"
+    """קיבוץ לפי מספר חדרים מדויק בלבד — דירות .5 אינן נכללות בשום קבוצה."""
+    if   r == 2.0: return "2 חדרים"
+    elif r == 3.0: return "3 חדרים"
+    elif r == 4.0: return "4 חדרים"
+    elif r == 5.0: return "5 חדרים"
+    elif r >= 6.0 and r == int(r): return "6+"
+    else:          return None
 
 
 # ── פונקציה ראשית ───────────────────────────────────────────
