@@ -1,6 +1,6 @@
 # Project State — sdedov-charts
 
-> **Last updated:** 2026-04-05
+> **Last updated:** 2026-04-05 (session 3)
 > **Purpose:** Single source of truth for resuming development after any break.
 > **Rule:** Update this file at the end of every work session.
 
@@ -91,6 +91,41 @@ A password-protected internal web application for the **שדה דב real estate 
 - Added `pieFilter` variable + pie tabs + tab event listeners + CSS + reset
 - Added `formatDateShort()` to transactions table — dates now show as `21.4.24` instead of Hebrew long format
 - Removed "למ״ר" suffix from ppm KPI display
+
+---
+
+## 2c. Changes Made in Session 2026-04-05 (Session 3)
+
+### `app.py` — Elementor export fix
+1. **`strip_to_fragment(html)`** — new helper function added (uses `re` module, which was also imported).
+   Converts a full `<!DOCTYPE html>` document into an Elementor-compatible fragment:
+   extracts `<style>` / `<script>` from `<head>`, keeps full `<body>` content, strips `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` wrapper tags.
+2. **`/export/copy` route** — now calls `strip_to_fragment(render_template(...))` before adding each widget to the list.
+   Result: copy-to-clipboard page now outputs fragments (no DOCTYPE/html/head/body) suitable for direct paste into Elementor HTML widgets.
+
+### Global JS scope conflict fix (CRITICAL BUG)
+All Chart.js widgets on the same Elementor page share a single global JS scope. Four templates each declared `const font = "..."` at the global level. `charts.html` ran first and claimed `const font`; the next three all crashed with "Cannot redeclare block-scoped variable 'font'" → blank charts.
+
+Fix applied to all four templates:
+- **`charts.html`**: entire `<script>` block wrapped in `(function(){...})()` IIFE
+- **`pie.html`**: `const PIE_DATA` and `const font` moved inside existing IIFE
+- **`rooms_bar.html`**: `const ROOMS_DATA`, `const font`, and `hexToRgba()` moved inside existing IIFE
+- **`ranges.html`**: `const PR_DATA`, `const font`, and `hexToRgba()` moved inside existing IIFE
+
+### Widget heights — unified to match transactions table
+All card containers now use `min-height: 480px` (matching `transactions.html`):
+- `pie.html`: `460px` → `480px`
+- `rooms_bar.html`: `460px` → `480px`
+- `ranges.html`: `400px` → `480px`
+- `charts.html` (time-series): left at `420px` — this widget is full-width and standalone, does not need matching height
+- `pie.html` — added `max-height: 320px` on `#pie-chart-wrap` and canvas to prevent the aspect-ratio-driven canvas from growing beyond the 480px container
+
+### Tab active-state styling — Elementor CSS override fix
+WordPress/Elementor theme was overriding `.tab.active` with a red background and blue border (button styles). Fixed across all 4 tab sets by adding `!important` to all relevant properties and adding a `:focus` rule:
+- Properties enforced with `!important`: `border:none`, `background:none`, `outline:none`, `box-shadow:none`
+- `.active` state enforces: `color:#61C0CC`, `text-decoration:underline`, `background:none`, `border:none`, `outline:none`, `box-shadow:none`
+- `:focus` pseudo-class added with `outline:none !important; box-shadow:none !important`
+- Applied to: `.chart-tab`, `.pie-tab`, `.rooms-tab`, `.pr-tab`
 
 ---
 
@@ -225,16 +260,15 @@ A password-protected internal web application for the **שדה דב real estate 
 
 ---
 
-## 7. Next Step (MOST IMPORTANT)
+## 7. Next Step
 
-Compare the live Elementor `transactions` widget HTML/CSS exactly against the current `transactions.html` widget template — the user noted visual differences in row styling beyond just the date format. Also: complete review of all 6 widgets against live Elementor site.
+All 6 widgets are deployed and working on the live Elementor site. No critical pending work. See TODO list for optional cleanup tasks.
 
 ---
 
 ## 8. Short TODO List
 
-- [ ] **Visual review**: compare all 6 Elementor widget templates against live site screenshots — ensure design parity
-- [ ] Delete `templates/widgets/pie_rooms.html` (replaced by `pie.html` + `rooms_bar.html`)
+- [ ] Delete `templates/widgets/pie_rooms.html` (replaced by `pie.html` + `rooms_bar.html`, still an unused file)
 - [ ] Delete or archive `generate.py` and `serve.py` (legacy, not used by Flask)
 - [ ] Add `projects_count` input field in upload form (currently hardcoded to 7)
 - [ ] Remove debug `.error.txt` logic from `/export/html` route (or gate behind `DEBUG` flag)
@@ -279,10 +313,14 @@ GET /export/copy → render_template each widget → copy-to-clipboard UI
 - Land date format: `DD.M.YY` (e.g. `23.8.21`) — custom parser in `generate_land_chart_data`
 
 ### Elementor integration:
-- Each widget is a fully self-contained `<!DOCTYPE html>` snippet
-- User copies HTML from `/export/copy` page and pastes into Elementor HTML widget
-- Widgets are independent — no shared state between them on the WordPress page
+- `/export/copy` page now outputs **fragment HTML** (no `<!DOCTYPE>`, `<html>`, `<head>`, `<body>` wrappers) via `strip_to_fragment()` in `app.py`. This is required — Elementor HTML widgets are embedded directly in the page body, not in iframes.
+- Fragment starts with `<style>@import url('...');</style>` then the widget content.
+- The internal Flask widget templates (`templates/widgets/*.html`) remain full `<!DOCTYPE html>` documents (needed for the dashboard to work); `strip_to_fragment()` converts them at export time.
+- **CRITICAL**: All widget JS must be wrapped in an IIFE `(function(){...})()` to avoid `const`/`let` redeclaration errors when multiple widgets share the same page scope.
+- User copies HTML from `/export/copy` page and pastes into Elementor HTML widget.
+- Live site dynamic JSON fetch: widgets on the live Elementor site also fetch JSON from `https://sdedov.co.il/wp-content/uploads/data/`. The baked-in (Flask-exported) version and the dynamic (live) version are functionally equivalent but different codebases.
 - All fonts/CDN resources load from external URLs (Chart.js CDN, Google Fonts)
+- **When Elementor override CSS causes visual bugs**: use `!important` on `border`, `background`, `outline`, `box-shadow` in both base and `:focus`/`.active` states.
 
 ---
 
