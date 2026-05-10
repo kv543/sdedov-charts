@@ -146,6 +146,13 @@ body{font-family:'Heebo',Arial,sans-serif;direction:rtl;}
 #rooms-container{height:480px;}
 #pr-container   {height:480px;}
 #tbl-container  {height:480px;}
+/* On mobile (single-column), let widgets grow if content needs more vertical space */
+@media(max-width:900px){
+  #chart-container,#pie-container,#rooms-container,#pr-container,#tbl-container{
+    height:auto;min-height:480px;
+  }
+  #chart-container{min-height:420px;}
+}
 
 /* ── Headers ── */
 #chart-header,#pie-header,#rooms-header,#tbl-header,#pr-header{

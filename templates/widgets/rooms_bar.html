@@ -179,6 +179,8 @@
     box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
     box-sizing:border-box;display:flex;flex-direction:column;
   }
+  /* On mobile, single column — let the container grow if header/tabs need extra height */
+  @media(max-width:600px){#rooms-container{height:auto;min-height:480px;}}
   #rooms-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
   #rooms-title-wrap {flex:1;text-align:right;}
   #rooms-title    {font-size:17px;font-weight:700;color:#222;line-height:1.4;}

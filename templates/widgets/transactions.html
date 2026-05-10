@@ -166,7 +166,7 @@ const TBL_DATA = {{ data.transactions | tojson }};
     width: 100%;
     min-width: 0;
     overflow-x: hidden;
-    height: 480px;
+    height: 480px;        /* desktop: fixed for pair alignment */
     padding: 22px 24px 20px;
     background: #fff;
     border-radius: 14px;
@@ -293,6 +293,10 @@ const TBL_DATA = {{ data.transactions | tojson }};
     #tbl-main td { padding: 7px 7px; }
     #tbl-main th:nth-child(6),
     #tbl-main td:nth-child(6) { display: none; }
+  }
+  /* Mobile: single column — let the container grow to show all rows */
+  @media (max-width: 600px) {
+    #tbl-container { height: auto; min-height: 480px; }
   }
 
   /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */

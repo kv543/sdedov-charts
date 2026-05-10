@@ -137,11 +137,13 @@
   .cmpb-leg-range {font-size:11px;color:#999;font-weight:400;margin-right:6px;}
   .cmpb-note {font-size:11px;color:#aaa;font-style:italic;margin-top:8px;text-align:right;line-height:1.5;flex-shrink:0;}
 
-  /* Mobile: compact legend so it fits without breaking the 480px box */
+  /* Mobile: compact legend (range stacked below name, swatch aligned with name baseline) */
   @media (max-width:600px){
     .cmpb-legend{gap:14px;margin-top:10px;}
-    .cmpb-legend-item{font-size:12px;}
-    .cmpb-leg-range{display:block;margin:1px 0 0 0;font-size:10px;}
+    .cmpb-legend-item{font-size:12px;align-items:flex-start;}
+    .cmpb-swatch{margin-top:3px;}
+    .cmpb-leg-name{display:block;line-height:1.2;}
+    .cmpb-leg-range{display:block;margin:1px 0 0 0;font-size:10px;line-height:1.2;}
   }
 </style>
 </body></html>

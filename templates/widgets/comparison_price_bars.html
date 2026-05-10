@@ -136,11 +136,13 @@
   .cmpp-leg-range {font-size:11px;color:#999;font-weight:400;margin-right:6px;}
   .cmpp-note {font-size:11px;color:#aaa;font-style:italic;margin-top:8px;text-align:right;line-height:1.5;flex-shrink:0;}
 
-  /* Mobile: compact legend so it fits without breaking the 480px box */
+  /* Mobile: compact legend (range stacked below name, swatch aligned with name baseline) */
   @media (max-width:600px){
     .cmpp-legend{gap:14px;margin-top:10px;}
-    .cmpp-legend-item{font-size:12px;}
-    .cmpp-leg-range{display:block;margin:1px 0 0 0;font-size:10px;}
+    .cmpp-legend-item{font-size:12px;align-items:flex-start;}
+    .cmpp-swatch{margin-top:3px;}
+    .cmpp-leg-name{display:block;line-height:1.2;}
+    .cmpp-leg-range{display:block;margin:1px 0 0 0;font-size:10px;line-height:1.2;}
   }
 </style>
 </body></html>
