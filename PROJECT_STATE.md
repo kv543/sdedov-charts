@@ -310,6 +310,20 @@ The user reviewed the comparison summary table and decided it doesn't belong on 
 
 6. **`app.py`**: widget order updated — slot 8 is now `comparison_price_bars` instead of `comparison_summary`. Land widget renumbered to `09-land.html`.
 
+### Iteration 6 — gunicorn workers reduced to 1 (OOM fix)
+
+After deploying iteration 5 to Railway, the app started failing with `Application failed to respond`. Deploy logs showed:
+
+```
+[ERROR] Worker (pid:3) was sent SIGKILL! Perhaps out of memory?
+```
+
+The OOM happened during multipart upload parsing in `/process`. Two gunicorn workers each holding pandas + the in-memory `_last_data` + the upload-time multipart buffer exceeded Railway's RAM.
+
+**Fix**: `Procfile` `--workers 2` → `--workers 1`. This was already on the open TODO list from session 3 ("gunicorn uses 2 workers — shared in-memory `_last_data` dict is NOT shared between workers... Consider fixing gunicorn to 1 worker"). Resolves the OOM and also fixes potential cross-worker inconsistency.
+
+The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): the JSON payload grew with the compound dimension (per-compound KPIs, transactions per compound, comparison section), and the source Excel grew to 1,519 rows. Combined headroom was lost.
+
 ### Sanity checks (passed)
 - `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
 - KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.
