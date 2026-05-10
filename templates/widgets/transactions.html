@@ -295,9 +295,7 @@ const TBL_DATA = {{ data.transactions | tojson }};
     #tbl-main td:nth-child(6) { display: none; }
   }
   /* Mobile: single column — let the container grow to show all rows */
-  @media (max-width: 600px) {
-    #tbl-container { height: auto; min-height: 480px; }
-  }
+  @media (max-width: 600px) { #tbl-container { height: auto; min-height: 480px; } }
 
   /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
   .tbl-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
