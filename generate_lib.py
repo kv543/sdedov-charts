@@ -400,9 +400,11 @@ def generate_all_data(
         }
 
     # ── 7. השוואה בין מתחמים — 12 חודשים אחרונים ────────────
-    # מ"ר ממוצע לפי חדרים — שתי סדרות
-    eshkol_ppm_by_rooms = to_i(_rooms_mean(df_real_ppm, "ppm", "eshkol", cut_12))
-    merkaz_ppm_by_rooms = to_i(_rooms_mean(df_real_ppm, "ppm", "merkaz", cut_12))
+    # שני גרפי עמודות השוואתיים: מ"ר ממוצע + מחיר דירה ממוצע (במיליוני ש"ח)
+    eshkol_ppm_by_rooms   = to_i(_rooms_mean(df_real_ppm,   "ppm",   "eshkol", cut_12))
+    merkaz_ppm_by_rooms   = to_i(_rooms_mean(df_real_ppm,   "ppm",   "merkaz", cut_12))
+    eshkol_price_by_rooms = to_m(_rooms_mean(df_real_price, "price", "eshkol", cut_12))
+    merkaz_price_by_rooms = to_m(_rooms_mean(df_real_price, "price", "merkaz", cut_12))
 
     # תוויות חודש לפועל לכל מתחם — כדי לציין בסאב-טייטל מה הטווח האמיתי
     def _range_label(compound, src):
@@ -416,28 +418,15 @@ def generate_all_data(
     range_eshkol = _range_label("eshkol", df_real)
     range_merkaz = _range_label("merkaz", df_real)
 
-    # טבלת סיכום
-    def _stats(compound):
-        d_count = _slice(df_count, compound, cut_12)
-        d_price = _slice(df_real_price, compound, cut_12)
-        d_sqm   = _slice(df_real_sqm,   compound, cut_12)
-        d_ppm   = _slice(df_real_ppm,   compound, cut_12)
-        return {
-            "transactions": int(len(d_count)),
-            "real_rows":    int(len(d_price)),
-            "avg_price":    round(safe_float(d_price["price"].mean())) if len(d_price) else 0,
-            "avg_sqm":      round(safe_float(d_sqm["sqm"].mean()), 1) if len(d_sqm) else 0,
-            "avg_ppm":      round(safe_float(d_ppm["ppm"].mean())) if len(d_ppm) else 0,
-            "median_price": round(safe_float(d_price["price"].median())) if len(d_price) else 0,
-            "median_ppm":   round(safe_float(d_ppm["ppm"].median())) if len(d_ppm) else 0,
-        }
+    _shared_note = "האיכלוס במתחם המרכזי צפוי בממוצע כ-3-4 שנים לאחר מתחם אשכול"
 
     comparison = {
         "ppm_by_rooms": {
             "title":    'מחיר ממוצע למ"ר לפי מס\' חדרים — השוואת מתחמים',
             "subtitle": '12 חודשים אחרונים, ש"ח למ"ר',
-            "note":     "* עסקאות מימוש אופציה במרכז משקפות תנאי שננעלו במועד חתימת האופציה המקורית",
+            "note":     _shared_note,
             "labels":   ROOMS_BAR_ORDER,
+            "format":   "shekel_int",   # display hint for the widget
             "series": [
                 {"name": "אשכול", "key": "eshkol", "data": eshkol_ppm_by_rooms,
                  "color": COMPOUND_COLORS["eshkol"], "range": range_eshkol},
@@ -447,23 +436,20 @@ def generate_all_data(
             "yMin": 0,
             "yMax": 100000
         },
-        "summary": {
-            "title":    "השוואה מספרית בין מתחמים",
-            "subtitle": "12 חודשים אחרונים",
-            "note":     "* עסקאות מימוש אופציה במרכז משקפות תנאי שננעלו במועד חתימת האופציה המקורית",
-            "compounds": {
-                "eshkol": {"label": "אשכול", "color": COMPOUND_COLORS["eshkol"], "range": range_eshkol, "stats": _stats("eshkol")},
-                "merkaz": {"label": "מרכז",  "color": COMPOUND_COLORS["merkaz"], "range": range_merkaz, "stats": _stats("merkaz")},
-            },
-            "rows": [
-                {"key": "transactions", "label": "סך עסקאות (כולל אופציה)", "format": "int"},
-                {"key": "real_rows",    "label": 'עסקאות עם נתוני מ"ר',     "format": "int"},
-                {"key": "avg_price",    "label": "מחיר ממוצע לדירה",         "format": "shekel"},
-                {"key": "median_price", "label": "מחיר חציוני לדירה",        "format": "shekel"},
-                {"key": "avg_sqm",      "label": 'שטח ממוצע (מ"ר)',         "format": "sqm"},
-                {"key": "avg_ppm",      "label": 'מחיר ממוצע למ"ר',          "format": "shekel_int"},
-                {"key": "median_ppm",   "label": 'מחיר חציוני למ"ר',         "format": "shekel_int"},
-            ]
+        "price_by_rooms": {
+            "title":    'מחיר דירה ממוצע לפי מס\' חדרים — השוואת מתחמים',
+            "subtitle": '12 חודשים אחרונים, מיליוני ש"ח',
+            "note":     _shared_note,
+            "labels":   ROOMS_BAR_ORDER,
+            "format":   "million",
+            "series": [
+                {"name": "אשכול", "key": "eshkol", "data": eshkol_price_by_rooms,
+                 "color": COMPOUND_COLORS["eshkol"], "range": range_eshkol},
+                {"name": "מרכז",  "key": "merkaz", "data": merkaz_price_by_rooms,
+                 "color": COMPOUND_COLORS["merkaz"], "range": range_merkaz}
+            ],
+            "yMin": 0,
+            "yMax": 14
         }
     }
 

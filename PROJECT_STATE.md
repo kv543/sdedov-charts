@@ -290,6 +290,26 @@ After iteration 3, only the monthly average-ppm view (`charts.price`) had a rema
 
 3. **Title change**: `charts.price.title` from `'התפתחות המחיר הממוצע למ"ר בשדה דב'` → `'התפתחות המחיר הממוצע למ"ר לפי מתחם'`.
 
+### Iteration 5 — comparison summary table replaced with second bar chart
+
+The user reviewed the comparison summary table and decided it doesn't belong on the public site.
+
+1. **Replaced `comparison.summary` (table)** with `comparison.price_by_rooms` — a second bar chart showing average apartment price (in millions ₪) per rooms category, אשכול vs מרכז. Data layout mirrors `ppm_by_rooms`. The two bar charts now sit side-by-side and tell complementary stories: ppm shows the per-meter premium, price shows the actual buyer's check.
+
+2. **New widget `templates/widgets/comparison_price_bars.html`** — near-clone of `comparison_bars.html`, but formatted in millions (`X.XX מ' ₪`). Values like 6.32 / 9.70 / 11.95 etc.
+
+3. **`comparison_summary.html`** is no longer registered in `app.py`'s `WIDGET_FILES` / `WIDGET_NAMES` (file kept on disk for reference but unused). Same for `summary` field — removed from `comparison` dict in `generate_lib.py`.
+
+4. **Dashboard `index.html`**:
+   - Refactored `renderCompareBars` into a generic `_renderCmpChart(c, ids, fmt)` helper.
+   - Two callers: `renderComparePpm` (existing, formats as "K") and `renderComparePrice` (new, formats as decimals + "מיליון ש"ח").
+   - Replaced the summary table HTML with `cmp-price-container` (mirror of `cmp-bars-container`).
+   - Two chart instances: `cmpPpmInst`, `cmpPriceInst`.
+
+5. **Note text changed** in `comparison.{ppm,price}_by_rooms.note` from "* עסקאות מימוש אופציה במרכז משקפות תנאי שננעלו במועד חתימת האופציה המקורית" to "האיכלוס במתחם המרכזי צפוי בממוצע כ-3-4 שנים לאחר מתחם אשכול". Both bar charts use the same shared note (`_shared_note` constant in `generate_lib.py`).
+
+6. **`app.py`**: widget order updated — slot 8 is now `comparison_price_bars` instead of `comparison_summary`. Land widget renumbered to `09-land.html`.
+
 ### Sanity checks (passed)
 - `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
 - KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.

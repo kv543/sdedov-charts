@@ -216,29 +216,29 @@ def export_json():
 
 # רשימת קבצי ווידג'ט לייצוא (שם קובץ, שם תבנית)
 WIDGET_FILES = [
-    ("01-kpi.html",                 "widgets/kpi.html"),
-    ("02-charts.html",              "widgets/charts.html"),
-    ("03-pie.html",                 "widgets/pie.html"),
-    ("04-rooms-bar.html",           "widgets/rooms_bar.html"),
-    ("05-ranges.html",              "widgets/ranges.html"),
-    ("06-transactions.html",        "widgets/transactions.html"),
-    ("07-comparison-bars.html",     "widgets/comparison_bars.html"),
-    ("08-comparison-summary.html",  "widgets/comparison_summary.html"),
+    ("01-kpi.html",                       "widgets/kpi.html"),
+    ("02-charts.html",                    "widgets/charts.html"),
+    ("03-pie.html",                       "widgets/pie.html"),
+    ("04-rooms-bar.html",                 "widgets/rooms_bar.html"),
+    ("05-ranges.html",                    "widgets/ranges.html"),
+    ("06-transactions.html",              "widgets/transactions.html"),
+    ("07-comparison-bars.html",           "widgets/comparison_bars.html"),
+    ("08-comparison-price-bars.html",     "widgets/comparison_price_bars.html"),
 ]
 
 WIDGET_FILES_LAND = ("09-land.html", "widgets/land.html")
 
 # (שם קובץ, תבנית, שם לתצוגה, תיאור, אופציונלי)
 WIDGET_NAMES = [
-    ("01-kpi.html",                "widgets/kpi.html",                "כרטיסי KPI",                  "סיכום מספרי — עסקאות, מחיר, פרויקטים",    False),
-    ("02-charts.html",             "widgets/charts.html",             "גרף מכירות לאורך זמן",        "כמות, כמות מצטברת, מחיר למ\"ר",            False),
-    ("03-pie.html",                "widgets/pie.html",                "התפלגות מכירות",               "לפי מספר חדרים / לפי עלות דירה",          False),
-    ("04-rooms-bar.html",          "widgets/rooms_bar.html",          "מחיר דירה ממוצע לפי חדרים",   "מחיר / שטח / מחיר למ\"ר",                  False),
-    ("05-ranges.html",             "widgets/ranges.html",             "כמות דירות לפי טווח מחיר",    "דירות זולות מ-4M ויקרות מ-10M",            False),
-    ("06-transactions.html",       "widgets/transactions.html",       "טבלת עסקאות",                 "10 יקרות / 10 זולות ביותר",                False),
-    ("07-comparison-bars.html",    "widgets/comparison_bars.html",    "השוואת מתחמים — מ\"ר לפי חדרים", "אשכול מול מרכז, 12 חודשים אחרונים",    False),
-    ("08-comparison-summary.html", "widgets/comparison_summary.html", "השוואת מתחמים — טבלת סיכום",  "אינדיקטורים מספריים בין אשכול למרכז",     False),
-    ("09-land.html",               "widgets/land.html",               "עלות קרקע ליחידת דיור",       "גרף התפתחות מחיר מכרזי קרקע",             True),
+    ("01-kpi.html",                      "widgets/kpi.html",                      "כרטיסי KPI",                    "סיכום מספרי — עסקאות, מחיר, פרויקטים",   False),
+    ("02-charts.html",                   "widgets/charts.html",                   "גרף מכירות לאורך זמן",          "כמות, כמות מצטברת, מחיר למ\"ר",           False),
+    ("03-pie.html",                      "widgets/pie.html",                      "התפלגות מכירות",                 "לפי מספר חדרים / לפי עלות דירה",         False),
+    ("04-rooms-bar.html",                "widgets/rooms_bar.html",                "מחיר דירה ממוצע לפי חדרים",     "מחיר / שטח / מחיר למ\"ר",                 False),
+    ("05-ranges.html",                   "widgets/ranges.html",                   "כמות דירות לפי טווח מחיר",      "דירות זולות מ-4M ויקרות מ-10M",           False),
+    ("06-transactions.html",             "widgets/transactions.html",             "טבלת עסקאות",                   "10 יקרות / 10 זולות ביותר",               False),
+    ("07-comparison-bars.html",          "widgets/comparison_bars.html",          "השוואת מתחמים — מ\"ר לפי חדרים", "אשכול מול מרכז, 12 חודשים אחרונים",   False),
+    ("08-comparison-price-bars.html",    "widgets/comparison_price_bars.html",    "השוואת מתחמים — מחיר דירה",     "אשכול מול מרכז, מיליוני ש\"ח, 12 חודשים", False),
+    ("09-land.html",                     "widgets/land.html",                     "עלות קרקע ליחידת דיור",         "גרף התפתחות מחיר מכרזי קרקע",             True),
 ]
 
 

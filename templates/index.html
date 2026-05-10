@@ -204,32 +204,21 @@ select:hover,select:focus{border-color:#61C0CC;}
 .meta-stats-extra{margin-right:auto;display:flex;gap:14px;color:#888;flex-wrap:wrap;}
 .meta-stats-extra strong{color:#2d6b75;font-weight:600;}
 
-/* ── Comparison widgets ── */
-#cmp-bars-container,#cmp-summary-container{
+/* ── Comparison widgets (two side-by-side bar charts) ── */
+#cmp-bars-container,#cmp-price-container{
   width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 18px rgba(0,0,0,0.07);
   font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;
   display:flex;flex-direction:column;padding:22px 24px 20px;min-height:480px;
 }
-#cmp-bars-header,#cmp-summary-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
-#cmp-bars-title,#cmp-summary-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;text-align:right;}
-#cmp-bars-subtitle,#cmp-summary-subtitle{font-size:13px;color:#777;margin-top:3px;}
-#cmp-bars-wrap{flex:1;position:relative;min-height:300px;}
-#cmp-bars-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+#cmp-bars-header,#cmp-price-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+#cmp-bars-title,#cmp-price-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;text-align:right;}
+#cmp-bars-subtitle,#cmp-price-subtitle{font-size:13px;color:#777;margin-top:3px;}
+#cmp-bars-wrap,#cmp-price-wrap{flex:1;position:relative;min-height:300px;}
+#cmp-bars-wrap canvas,#cmp-price-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
 .cmp-legend{display:flex;justify-content:center;gap:24px;margin-top:14px;flex-wrap:wrap;}
 .cmp-legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#444;}
 .cmp-legend-swatch{width:14px;height:14px;border-radius:3px;}
 .cmp-note{font-size:11px;color:#aaa;font-style:italic;margin-top:10px;text-align:right;line-height:1.5;}
-#cmp-summary-table{width:100%;border-collapse:collapse;font-size:14px;direction:rtl;flex:1;}
-#cmp-summary-table th{padding:12px 14px;text-align:right;font-weight:600;color:#1a2e35;background:#f7fbfc;border-bottom:2px solid #d0dfe2;font-size:13px;}
-#cmp-summary-table td{padding:11px 14px;text-align:right;color:#333;border-bottom:1px solid #eef2f3;}
-#cmp-summary-table tbody tr:hover{background:#f9fcfd;}
-#cmp-summary-table .label-col{font-weight:500;color:#496970;}
-#cmp-summary-table .num-col{font-variant-numeric:tabular-nums;font-weight:600;}
-#cmp-summary-table .winner{color:#1a2e35;}
-#cmp-summary-table .winner::after{content:" ★";color:#61C0CC;font-size:11px;}
-.cmp-compound-head{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
-.cmp-compound-dot{width:11px;height:11px;border-radius:50%;}
-.cmp-compound-range{font-size:11px;color:#999;font-weight:400;margin-top:2px;}
 
 /* ── Loading / Error ── */
 #chart-loading,#pie-loading,#rooms-loading,#pr-loading,#tbl-loading{text-align:center;padding:40px;color:#888;font-size:15px;}
@@ -669,15 +658,16 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
         <div class="cmp-note" id="cmp-bars-note"></div>
       </div>
 
-      <div id="cmp-summary-container">
-        <div id="cmp-summary-header">
+      <div id="cmp-price-container">
+        <div id="cmp-price-header">
           <div>
-            <div id="cmp-summary-title"></div>
-            <div id="cmp-summary-subtitle"></div>
+            <div id="cmp-price-title"></div>
+            <div id="cmp-price-subtitle"></div>
           </div>
         </div>
-        <table id="cmp-summary-table"><thead></thead><tbody></tbody></table>
-        <div class="cmp-note" id="cmp-summary-note"></div>
+        <div id="cmp-price-wrap"><canvas id="cmpPriceChart"></canvas></div>
+        <div class="cmp-legend" id="cmp-price-legend"></div>
+        <div class="cmp-note" id="cmp-price-note"></div>
       </div>
 
     </div>
@@ -758,7 +748,7 @@ function animArc(el,pct,dur){const end=ARC_LEN*(1-Math.min(pct,1));el.style.stro
 function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){const p=Math.min((now-t0)/dur,1);el.textContent=fmt(end*easeOut(p));if(p<1)requestAnimationFrame(tick);})(t0);}
 
 // ── Chart instances ─────────────────────────────────────────
-let mainInst=null, pieInst=null, roomsInst=null, prInst=null, cmpBarsInst=null;
+let mainInst=null, pieInst=null, roomsInst=null, prInst=null, cmpPpmInst=null, cmpPriceInst=null;
 let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null, KPI_DATA=null, CMP_DATA=null, META_DATA=null;
 // per-widget compound state — each widget filters independently
 // (chart and pr time-series are NOT filtered by compound: time attribution of
@@ -1081,126 +1071,104 @@ function initTransactionsTable(data){
 }
 
 // ══════════════════════════════════════════════════════════
-// השוואת מתחמים — גרף עמודות + טבלת סיכום
+// השוואת מתחמים — שני גרפי עמודות (מ"ר ומחיר דירה)
 // ══════════════════════════════════════════════════════════
-const cmpLabelPlugin={id:'cmpAboveBar',afterDatasetsDraw(chart){
-  const{ctx,data,scales:{x,y}}=chart;
-  ctx.save();ctx.font='600 12px Heebo,Arial,sans-serif';ctx.fillStyle='#222';ctx.textAlign='center';ctx.textBaseline='bottom';
-  data.datasets.forEach((ds,di)=>{
-    ds.data.forEach((val,i)=>{
-      const meta=chart.getDatasetMeta(di).data[i];
-      if(!meta) return;
-      ctx.fillText((val||0).toLocaleString('he-IL'), meta.x, meta.y-4);
+function _cmpLabelPlugin(formatLabel){
+  /* Plugin factory — each chart instance gets its own label formatter. */
+  return {id:'cmpAboveBar',afterDatasetsDraw(chart){
+    const{ctx,data}=chart;
+    ctx.save();ctx.font='600 12px Heebo,Arial,sans-serif';ctx.fillStyle='#222';ctx.textAlign='center';ctx.textBaseline='bottom';
+    data.datasets.forEach((ds,di)=>{
+      ds.data.forEach((val,i)=>{
+        const meta=chart.getDatasetMeta(di).data[i];
+        if(!meta||val==null) return;
+        ctx.fillText(formatLabel(val), meta.x, meta.y-4);
+      });
     });
-  });
-  ctx.restore();
-}};
+    ctx.restore();
+  }};
+}
 
-function fmtMoney(v){return Math.round(v).toLocaleString('he-IL')+' ₪';}
-function fmtMoneyM(v){return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+" מ' ₪";}
+function _renderCmpChart(c, ids, fmt){
+  /* Generic render for the comparison bar charts.
+     fmt = {label:fn, tooltip:fn, yTick:fn} — each takes a numeric value, returns string. */
+  document.getElementById(ids.title).textContent    = c.title;
+  document.getElementById(ids.subtitle).textContent = c.subtitle || '';
+  document.getElementById(ids.note).textContent     = c.note     || '';
 
-function renderCompareBars(d){
-  if(!d) return;
-  const c=d.ppm_by_rooms;
-  document.getElementById('cmp-bars-title').textContent=c.title;
-  document.getElementById('cmp-bars-subtitle').textContent=c.subtitle||'';
-  document.getElementById('cmp-bars-note').textContent=c.note||'';
-
-  // legend
-  const leg=document.getElementById('cmp-bars-legend');
-  leg.innerHTML='';
-  c.series.forEach(s=>{
-    const item=document.createElement('div');item.className='cmp-legend-item';
-    item.innerHTML=`<span class="cmp-legend-swatch" style="background:${s.color}"></span><span>${s.name}<span class="cmp-compound-range" style="margin-right:6px">${s.range||''}</span></span>`;
+  const leg = document.getElementById(ids.legend);
+  leg.innerHTML = '';
+  c.series.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'cmp-legend-item';
+    item.innerHTML = `<span class="cmp-legend-swatch" style="background:${s.color}"></span>` +
+      `<span>${s.name}<span class="cmp-compound-range" style="margin-right:6px">${s.range||''}</span></span>`;
     leg.appendChild(item);
   });
 
-  const datasets=c.series.map(s=>({
-    label:s.name, data:s.data,
-    backgroundColor:hexToRgba(s.color,0.85),
-    hoverBackgroundColor:s.color,
-    borderRadius:6, borderSkipped:false
+  const datasets = c.series.map(s => ({
+    label: s.name, data: s.data,
+    backgroundColor: hexToRgba(s.color, 0.85),
+    hoverBackgroundColor: s.color,
+    borderRadius: 6, borderSkipped: false
   }));
 
-  if(cmpBarsInst){
-    cmpBarsInst.data.labels=c.labels;cmpBarsInst.data.datasets=datasets;
-    cmpBarsInst.options.scales.y.min=c.yMin??0;
-    cmpBarsInst.options.scales.y.max=c.yMax;
-    cmpBarsInst.update();
-    return;
-  }
-  cmpBarsInst=new Chart(document.getElementById('cmpBarsChart'),{
-    type:'bar', plugins:[cmpLabelPlugin],
-    data:{labels:c.labels, datasets},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:30}},
-      animation:{duration:600,easing:'easeInOutQuart'},
-      plugins:{
-        legend:{display:false},
-        tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.raw.toLocaleString('he-IL')+' ש"ח למ"ר'},bodyFont:{family:font},titleFont:{family:font}}
+  if (ids.inst.get()) { ids.inst.get().destroy(); ids.inst.set(null); }
+
+  const inst = new Chart(document.getElementById(ids.canvas), {
+    type: 'bar',
+    plugins: [_cmpLabelPlugin(fmt.label)],
+    data: { labels: c.labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, layout: { padding: { top: 30 } },
+      animation: { duration: 600, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: { rtl: true, callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + fmt.tooltip(ctx.raw) },
+          bodyFont:{family:font}, titleFont:{family:font} }
       },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{family:font,size:13,weight:'600'},color:'#333'}},
-        y:{grid:{color:'#f0f0f0'},beginAtZero:true,min:c.yMin??0,max:c.yMax,ticks:{font:{family:font,size:11},callback:v=>(v/1000).toLocaleString('he-IL')+'K'}}
-      }}
+      scales: {
+        x: { grid:{display:false}, ticks:{font:{family:font,size:13,weight:'600'},color:'#333'} },
+        y: { grid:{color:'#f0f0f0'}, beginAtZero:true, min:c.yMin??0, max:c.yMax,
+             ticks:{font:{family:font,size:11}, callback: fmt.yTick} }
+      }
+    }
+  });
+  ids.inst.set(inst);
+}
+
+function renderComparePpm(d){
+  if(!d || !d.ppm_by_rooms) return;
+  _renderCmpChart(d.ppm_by_rooms, {
+    title:'cmp-bars-title', subtitle:'cmp-bars-subtitle', note:'cmp-bars-note',
+    legend:'cmp-bars-legend', canvas:'cmpBarsChart',
+    inst:{get:()=>cmpPpmInst, set:v=>cmpPpmInst=v}
+  }, {
+    label:   v => (v/1000).toLocaleString('he-IL',{maximumFractionDigits:1})+'K',
+    tooltip: v => v.toLocaleString('he-IL')+' ש"ח למ"ר',
+    yTick:   v => (v/1000).toLocaleString('he-IL')+'K'
   });
 }
 
-function fmtSummaryValue(val, format){
-  if(val===null||val===undefined) return '—';
-  if(format==='shekel')     return fmtMoneyM(val);
-  if(format==='shekel_int') return val.toLocaleString('he-IL')+' ₪';
-  if(format==='sqm')        return val.toLocaleString('he-IL')+' מ"ר';
-  return val.toLocaleString('he-IL');
-}
-
-function renderCompareSummary(d){
-  if(!d) return;
-  const s=d.summary;
-  document.getElementById('cmp-summary-title').textContent=s.title;
-  document.getElementById('cmp-summary-subtitle').textContent=s.subtitle||'';
-  document.getElementById('cmp-summary-note').textContent=s.note||'';
-
-  const compounds=Object.keys(s.compounds);  // ['eshkol','merkaz']
-  const tbl=document.getElementById('cmp-summary-table');
-  const thead=tbl.querySelector('thead');
-  const tbody=tbl.querySelector('tbody');
-
-  // header
-  thead.innerHTML='';
-  const trh=document.createElement('tr');
-  trh.appendChild(Object.assign(document.createElement('th'),{innerHTML:'אינדיקטור'}));
-  compounds.forEach(ck=>{
-    const cmp=s.compounds[ck];
-    const th=document.createElement('th');
-    th.innerHTML=`<div class="cmp-compound-head"><span class="cmp-compound-dot" style="background:${cmp.color}"></span><span>${cmp.label}</span></div><div class="cmp-compound-range">${cmp.range||''}</div>`;
-    trh.appendChild(th);
-  });
-  thead.appendChild(trh);
-
-  // body
-  tbody.innerHTML='';
-  s.rows.forEach(row=>{
-    const tr=document.createElement('tr');
-    const tdLabel=document.createElement('td');tdLabel.className='label-col';tdLabel.textContent=row.label;tr.appendChild(tdLabel);
-    // Determine "winner" — bigger value (for transactions/avg_price/avg_ppm/avg_sqm — all bigger=better-or-just-larger)
-    const vals=compounds.map(ck=>s.compounds[ck].stats[row.key]);
-    const max=Math.max(...vals.map(v=>v||0));
-    compounds.forEach((ck,i)=>{
-      const td=document.createElement('td');td.className='num-col';
-      const v=vals[i];
-      td.textContent=fmtSummaryValue(v,row.format);
-      if(v===max && max>0) td.classList.add('winner');
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
+function renderComparePrice(d){
+  if(!d || !d.price_by_rooms) return;
+  const fmt2 = v => Number(v).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2});
+  _renderCmpChart(d.price_by_rooms, {
+    title:'cmp-price-title', subtitle:'cmp-price-subtitle', note:'cmp-price-note',
+    legend:'cmp-price-legend', canvas:'cmpPriceChart',
+    inst:{get:()=>cmpPriceInst, set:v=>cmpPriceInst=v}
+  }, {
+    label:   v => fmt2(v),
+    tooltip: v => fmt2(v)+' מיליון ש"ח',
+    yTick:   v => v+" מ'"
   });
 }
 
 function initComparison(d){
   if(!d) return;
   document.getElementById('comparison-section').style.display='block';
-  renderCompareBars(d);
-  renderCompareSummary(d);
+  renderComparePpm(d);
+  renderComparePrice(d);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1465,7 +1433,7 @@ document.getElementById('btn-export-json').addEventListener('click',()=>{window.
 document.getElementById('btn-export-html').addEventListener('click',()=>{window.open('/export/copy','_blank');});
 document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
-  mainInst=null;pieInst=null;roomsInst=null;prInst=null;cmpBarsInst=null;
+  mainInst=null;pieInst=null;roomsInst=null;prInst=null;cmpPpmInst=null;cmpPriceInst=null;
   MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;KPI_DATA=null;CMP_DATA=null;META_DATA=null;
   kpiCompound='all';pieCompound='all';roomsCompound='all';tblCompound='all';
   mainKey='count';mainFilter='all';pieKey='rooms';pieFilter='all';roomsKey='price';roomsFilter='all';prFilter='all';
