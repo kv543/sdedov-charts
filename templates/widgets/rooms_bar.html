@@ -19,6 +19,11 @@
       <div id="rooms-select-hint">לחצו למעבר בין גרפים</div>
     </div>
   </div>
+  <div class="cmp-pill rooms-compound-pill">
+    <button class="rooms-comp-tab active" data-compound="all">הכל</button>
+    <button class="rooms-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="rooms-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
   <div id="rooms-chart-wrap"><canvas id="roomsChart"></canvas></div>
   <div id="rooms-tabs">
     <button class="rooms-tab active" data-filter="all">הכל</button>
@@ -38,7 +43,7 @@
     return `rgba(${r},${g},${b},${a})`;
   }
 
-  let inst = null, key = 'price', currentFilter = 'all';
+  let inst = null, key = 'price', currentFilter = 'all', currentCompound = 'all';
 
   function fmtLbl(type, val) {
     if (type === 'price')       return val.toLocaleString('he-IL') + " מ' ₪";
@@ -70,7 +75,8 @@
 
   function render(k) {
     const c    = ROOMS_DATA[k];
-    const vals = c.data[currentFilter];   // ← data is now {all, 24, 12}
+    const byC  = (c.data && c.data[currentCompound]) || c.data['all'] || {};
+    const vals = byC[currentFilter] || byC['all'] || [];
     document.getElementById('rooms-title').textContent = c.title;
     document.getElementById('rooms-subtitle').innerHTML =
       c.subtitle + '<span style="color:#777;font-size:13px">, ללא עסקאות אופציה</span>';
@@ -155,6 +161,15 @@
       render(key);
     });
   });
+
+  document.querySelectorAll('.rooms-comp-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll('.rooms-comp-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
 })();
 </script>
 
@@ -196,5 +211,20 @@
   .rooms-tab:focus{outline:none !important;box-shadow:none !important;}
   .rooms-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
   .rooms-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .rooms-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .rooms-compound-pill .rooms-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .rooms-compound-pill .rooms-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .rooms-compound-pill .rooms-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .rooms-compound-pill .rooms-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .rooms-compound-pill .rooms-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .rooms-compound-pill .rooms-comp-tab:focus{outline:none !important;box-shadow:none !important;}
 </style>
 </body></html>

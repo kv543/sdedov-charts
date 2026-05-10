@@ -18,6 +18,11 @@
       <div id="pie-select-hint">לחצו למעבר בין גרפים</div>
     </div>
   </div>
+  <div class="cmp-pill pie-compound-pill">
+    <button class="pie-comp-tab active" data-compound="all">הכל</button>
+    <button class="pie-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="pie-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
   <div id="pie-chart-wrap"><canvas id="pieChart"></canvas></div>
   <div id="pie-tabs">
     <button class="pie-tab active" data-filter="all">הכל</button>
@@ -31,7 +36,7 @@
 (function(){
   const PIE_DATA = {{ data.pie | tojson }};
   const font = "'Heebo','Arial',sans-serif";
-  let inst = null, key = 'rooms', pieFilter = 'all';
+  let inst = null, key = 'rooms', pieFilter = 'all', currentCompound = 'all';
 
   const plugin = {id:'pieLabels', afterDatasetsDraw(chart){
     const {ctx, data} = chart, meta = chart.getDatasetMeta(0);
@@ -53,7 +58,8 @@
 
   function render(k) {
     const c    = PIE_DATA[k];
-    const vals = c.data[pieFilter];          // ← {all, 24, 12}
+    const byC  = (c.data && c.data[currentCompound]) || c.data['all'] || {};
+    const vals = byC[pieFilter] || byC['all'] || [];
     const total = vals.reduce((a, b) => a + b, 0);
     document.getElementById('pie-title').textContent = c.title;
     document.getElementById('pie-subtitle').textContent = c.subtitle || '';
@@ -109,6 +115,15 @@
       render(key);
     });
   });
+
+  document.querySelectorAll('.pie-comp-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll('.pie-comp-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
 })();
 </script>
 
@@ -150,5 +165,20 @@
   .pie-tab:focus{outline:none !important;box-shadow:none !important;}
   .pie-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
   .pie-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .pie-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .pie-compound-pill .pie-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .pie-compound-pill .pie-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .pie-compound-pill .pie-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .pie-compound-pill .pie-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .pie-compound-pill .pie-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .pie-compound-pill .pie-comp-tab:focus{outline:none !important;box-shadow:none !important;}
 </style>
 </body></html>

@@ -1,6 +1,6 @@
 # Project State — sdedov-charts
 
-> **Last updated:** 2026-04-05 (session 3)
+> **Last updated:** 2026-05-10 (session 4)
 > **Purpose:** Single source of truth for resuming development after any break.
 > **Rule:** Update this file at the end of every work session.
 
@@ -129,6 +129,144 @@ WordPress/Elementor theme was overriding `.tab.active` with a red background and
 
 ---
 
+## 2d. Changes Made in Session 2026-05-10 (Session 4)
+
+### Trigger / context
+Tax-authority data (Feb–Apr 2026) introduced a new `סוג עסקה` value: **"מימוש אופציה"** (option exercise).
+- These rows replace pre-existing "אופציה" rows when the buyer signs the actual purchase deal.
+- Per Yuval: do **NOT** count them as new transactions (they are re-classifications of existing options).
+- BUT they carry **real** price/sqm/ppm data (224/224 non-null), unlike pure "אופציה" rows (3/692).
+- The 222 rows in גוש 6900/חלקה 23 are the **first ever real-data sales** in the central compound (Vogue + First).
+- This unlocks compound-level comparison (Eshkol vs Central) for the first time.
+
+### Compound classification — new dimension
+A new mapping file `שיוך גוש חלקה לפרוייקטים.xlsx` was provided. Encoded inline in `generate_lib.py` as `COMPOUND_MAP`:
+
+| מתחם | גוש | חלקות |
+|---|---|---|
+| **אשכול** | 6634 | 6, 15, 149, 150, 164, 165, 166, 167, 168, 169, 208, 209, 219, 221, 223, 238, 242, 243, 246, 312, 314, 324 |
+| **אשכול** | 7186 | 3 |
+| **מרכז** | 6900 | 23 |
+| **מרכז** | 6896 | 204, 34, 46, 47 |
+| **מרכז** | 6884 | 2 |
+| **מרכז** | 6885 | 4, 19, 20 |
+
+Rows whose (גוש, חלקה) is not in the map are dropped (treated as "not Sde Dov").
+
+In the current Excel file (sdedov-db-0326.xlsx, 1519 rows after compound filter):
+- **אשכול** = 522 rows (1 אופציה + 521 דירה), data 03/2023–04/2026.
+- **מרכז** = 997 rows (691 אופציה + 82 דירה + 224 מימוש אופציה), real-data rows 07/2025–04/2026.
+
+Note: 6896/204 has projects spanning Eshkol/Central/North in reality, but the user's mapping classifies it as **מרכז** for analysis purposes.
+
+### `generate_lib.py` — major rewrite
+Old single filter `is_option = str.contains("אופציה")` (which matched both "אופציה" and "מימוש אופציה") was replaced with two distinct datasets:
+
+- **`df_count`** = transaction-counting set: rows where `סוג עסקה ∈ {"אופציה", "דירה"}`
+  - Used for: KPI `total_transactions`, monthly count chart, cumulative chart.
+  - Excludes "מימוש אופציה" — it's a reclassification of an existing option, not a new transaction.
+- **`df_real`** = real-data set for deep analysis: rows where `סוג עסקה ∈ {"דירה", "מימוש אופציה"}`
+  - Used for: monthly ppm chart, pie, rooms_bar, ranges, transactions table, comparison.
+  - Includes "מימוש אופציה" — they have full price/sqm/ppm data.
+
+Helpers added:
+- `classify_compound(gush, chelka)` — returns "eshkol" | "merkaz" | None.
+- `_add_numeric_cols(df)` — adds price/ppm/sqm/year/month/rooms_label/_date_ym.
+- `_slice(df, compound, cutoff=None)` — filter helper for compound × time slicing.
+
+### JSON schema — BREAKING CHANGE
+Every widget's data is now keyed by `[compound][time]` where:
+- `compound ∈ {"all", "eshkol", "merkaz"}`
+- `time ∈ {"all", "24", "12"}` (where applicable)
+
+Examples:
+```json
+"kpi": {"all": {...}, "eshkol": {...}, "merkaz": {...}}
+"charts.count.data": {"all": [...], "eshkol": [...], "merkaz": [...]}
+"pie.rooms.data": {"all": {"all":[...], "24":[...], "12":[...]}, "eshkol": {...}, "merkaz": {...}}
+"rooms_charts.price.data": {"all": {"all":[...], "24":[...], "12":[...]}, "eshkol": {...}, "merkaz": {...}}
+"price_ranges.cheap.data": {"all": [...], "eshkol": [...], "merkaz": [...]}
+"transactions": {"all": {"expensive":[...], "cheap":[...]}, "eshkol": {...}, "merkaz": {...}}
+```
+
+New top-level keys:
+- **`comparison`** — dedicated comparison data (12-month window):
+  - `comparison.ppm_by_rooms.series` = `[{name, key, data, color, range}, ...]` (אשכול + מרכז).
+  - `comparison.summary` = table data: `compounds.{eshkol,merkaz}.stats`, plus `rows[]` defining rows (label, key, format).
+- **`meta`** — now exposed as a JSON file too (was internal). Includes `total_count`, `total_real`, `total_raw`, `compounds.{eshkol,merkaz}`, `by_type.{אופציה,דירה,מימוש אופציה}`, `date_range`, `max_ym`.
+
+### `app.py` changes
+1. `JSON_FILES` extended with `shadeh-dov-comparison.json` and `shadeh-dov-meta.json`.
+2. `WIDGET_FILES` and `WIDGET_NAMES` extended with two new comparison widgets, land widget renumbered 09.
+
+### Dashboard `templates/index.html` — global compound filter
+1. New global tab bar (`.compound-bar` / `.compound-tab[data-compound="all|eshkol|merkaz"]`) at the top.
+2. New compound stats line shows row counts per compound and per type (אופציה/דירה/מימוש).
+3. All render functions updated to read `data[compoundFilter]`:
+   - `renderKPI()` (now reads from `KPI_DATA[compoundFilter]`)
+   - `filteredMain()`, `renderPieChart()`, `renderRoomsChart()`, `filteredPR()`, `renderTbl()`
+4. New `rerenderAllForCompound()` function called when global compound tab changes.
+5. New `initComparison()` + `renderCompareBars()` + `renderCompareSummary()` for the comparison section.
+6. Meta-bar fields renamed: `total` → `total_count`, `no_option` → `total_real`.
+
+### Elementor widget templates — per-widget compound tabs
+Each widget got an independent compound tab row (since Elementor widgets are independent on the live page). State variable `currentCompound = 'all'` per widget. CSS class pattern: `.{prefix}-comp-tab` with active states pseudo-namespaced per widget.
+
+Updated:
+- `kpi.html`         — wrapped JS in IIFE, added `render()` function reading `KPI_ALL[currentCompound]`.
+- `charts.html`      — `getFilteredData()` now uses `c.data[currentCompound]`.
+- `pie.html`         — `c.data[currentCompound][pieFilter]`.
+- `rooms_bar.html`   — `c.data[currentCompound][currentFilter]`.
+- `ranges.html`      — `PR_DATA.cheap.data[currentCompound]`.
+- `transactions.html` — `getRows(key)` helper using `TBL_DATA[currentCompound]`.
+
+New widget templates:
+- `comparison_bars.html` — grouped bar chart, אשכול vs מרכז, ppm by rooms, 12-month window.
+- `comparison_summary.html` — comparison table with indicators (transactions, real_rows, avg_price, median_price, avg_sqm, avg_ppm, median_ppm). Includes "★ winner" indicator for max value per row.
+
+### Important: deployment coordination
+This is a **breaking JSON-schema change**. The old widgets cannot consume the new JSON, and vice versa. Required deployment order:
+1. Push code to Railway (auto-deploy).
+2. Re-upload Excel via dashboard at `/` (regenerates `/tmp/sdedov_last/*.json` with new schema).
+3. Download new JSONs via `/export/json`, upload to WordPress under `/wp-content/uploads/data/`.
+4. Replace each Elementor HTML widget with new HTML from `/export/copy`.
+
+The live dynamic-fetch widgets (separate codebase that fetches JSON from WordPress at runtime) **must** be updated separately by the user to consume the new schema; otherwise they'll show empty/broken charts.
+
+### Iteration 2 — UI refinement (within session 4)
+
+After previewing the initial implementation, the global compound filter and the original 3-button compound tabs were replaced with a more compact and consistent design:
+
+1. **Per-widget compound filter on the dashboard too** (no more global bar). Each widget tracks its own compound state independently. State variables: `kpiCompound`, `mainCompound`, `pieCompound`, `roomsCompound`, `prCompound`, `tblCompound`. The single `compoundFilter` global was removed; `rerenderAllForCompound()` and `initCompoundTabs()` were replaced with `initPerWidgetCompoundPills()` + `_bindCompoundPill()` helper.
+
+2. **Compact "segmented pill" design** for the compound filter, replacing the previous 3-outlined-button design:
+   - Single rounded pill container (`background:#eef3f4`, `border-radius:14px`, `padding:2px`) with 3 fused inner buttons.
+   - Active button: filled with compound color (`#677e85` for "all", `#496970` for אשכול, `#61C0CC` for מרכז), white text, subtle shadow.
+   - Short labels: "הכל / אשכול / מרכז" (was "כל המתחמים / אשכול / מרכז").
+   - Approximate footprint: ~140-160px wide, ~26px tall (down from ~250px wide previously).
+   - Shared CSS class `.cmp-pill` in `index.html`; per-widget pseudo-namespaced classes (e.g. `.kpi-compound-pill`) in Elementor templates to avoid cross-widget bleed.
+
+3. **Dynamic KPI subtitle per compound** — the "מתוך 16,000 יחידות דיור ברובע שדה דב" text now changes based on the selected compound:
+   - all → "מתוך 16,000 יחידות דיור ברובע שדה דב"
+   - eshkol → "מתוך 4,844 יחידות דיור במתחם אשכול"
+   - merkaz → "מתוך 7,128 יחידות דיור במתחם המרכזי"
+   - The gauge arc's denominator also switches accordingly so the fill ratio makes sense per compound.
+   - Backed by new `kpi[compound].total_units` and `kpi[compound].units_label` fields in the JSON; defined inline in `generate_lib.py` as `COMPOUND_TOTAL_UNITS` and `COMPOUND_UNITS_LABEL` constants.
+
+4. **Compound stats moved into the meta bar** (used to live in the global compound bar above). Now appears on the right side of `meta-bar`: "522 אשכול · 997 מרכז · אופציה 692 · דירה 603 · מימוש 224". Helper class: `.meta-stats-extra`.
+
+5. **Considered but dropped**: an "average build year" row in the comparison summary table. Initial intent was to convey "lower price ↔ later delivery", but the data shows the means are essentially equal (אשכול 2029.7, מרכז 2029.7) due to a bimodal distribution in מרכז (216×2028 in 6900/23 vs 80×2034 in 6896/204). The hypothesis doesn't hold at the compound aggregate level, so the row was omitted to avoid misleading viewers.
+
+### Sanity checks (passed)
+- `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
+- KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.
+- All 8 widget templates + dashboard render through Jinja without error.
+- All Elementor fragments are clean (no DOCTYPE/html/body wrappers).
+- Comparison ppm_by_rooms (12mo): אשכול [73390, 80016, 85620, 86510], מרכז [67344, 64908, 64340, 66006].
+- **6896/204 fully-מרכז classification is empirically valid** — see section 9 "Watch flags" for the verification and re-evaluation trigger.
+
+---
+
 ## 3. Architecture
 
 ### Frontend
@@ -197,15 +335,17 @@ WordPress/Elementor theme was overriding `.tab.active` with a red background and
 | GET | `/export/copy` | HTML page with copy-to-clipboard buttons for all 7 widget HTML codes |
 | GET | `/export/html` | ZIP of 6-7 self-contained widget HTML files |
 
-### Widget Templates (`templates/widgets/`)
+### Widget Templates (`templates/widgets/`) — see section 2d for compound-dim details
 | File | Widget | Data key(s) used |
 |---|---|---|
-| `kpi.html` | 4 KPI cards with animated counters + gauge | `data.kpi` |
-| `charts.html` | Monthly line chart (count / cumulative / price/sqm) | `data.charts` |
-| `pie.html` | Pie chart (by rooms / by price range) | `data.pie` |
-| `rooms_bar.html` | Bar chart by room count (price / size / ppm) | `data.rooms_charts` |
-| `ranges.html` | Line chart: cheap (<4M) vs expensive (>10M) over time | `data.price_ranges` |
-| `transactions.html` | Table: top 10 most/least expensive transactions | `data.transactions` |
+| `kpi.html` | 4 KPI cards with animated counters + gauge | `data.kpi[compound]` |
+| `charts.html` | Monthly line chart (count / cumulative / price/sqm) | `data.charts[k].data[compound]` |
+| `pie.html` | Pie chart (by rooms / by price range) | `data.pie[k].data[compound][time]` |
+| `rooms_bar.html` | Bar chart by room count (price / size / ppm) | `data.rooms_charts[k].data[compound][time]` |
+| `ranges.html` | Line chart: cheap (<4M) vs expensive (>10M) over time | `data.price_ranges[k].data[compound]` |
+| `transactions.html` | Table: top 10 most/least expensive transactions | `data.transactions[compound][k]` |
+| `comparison_bars.html` | Grouped bar: ppm by rooms, אשכול vs מרכז | `data.comparison.ppm_by_rooms` |
+| `comparison_summary.html` | Side-by-side table of indicators per compound | `data.comparison.summary` |
 | `land.html` | Land cost per unit — line + range band, external tooltip | `data.land_chart.tenders` |
 
 ### Excel Column Requirements (Main DB)
@@ -262,7 +402,18 @@ WordPress/Elementor theme was overriding `.tab.active` with a red background and
 
 ## 7. Next Step
 
-All 6 widgets are deployed and working on the live Elementor site. No critical pending work. See TODO list for optional cleanup tasks.
+**Deployment of session 4 changes** (breaking JSON-schema change):
+1. Push to Railway main branch (auto-deploys).
+2. Open dashboard, re-upload `sdedov-db-0326.xlsx` (or newer) — regenerates `/tmp/*.json` in new schema.
+3. Verify dashboard works: global compound tab toggles all widgets, comparison section visible.
+4. Download `sdedov-data.zip` from `/export/json`, upload contents to WordPress `/wp-content/uploads/data/`.
+   New files: `shadeh-dov-comparison.json`, `shadeh-dov-meta.json`. Existing 6 files have new internal schema.
+5. Replace Elementor HTML widgets:
+   - Open `/export/copy`, copy each fragment, paste into corresponding Elementor HTML widget.
+   - 8 main widgets + 1 land widget; 2 of the 8 are new (comparison_bars, comparison_summary).
+6. Update the live dynamic-fetch widget code (separate codebase) to handle new schema, OR drop dynamic fetch and use only the baked-in HTML from step 5.
+
+**Open question for user**: when ready, May 2026 transactions can be added by uploading a newer Excel — no code changes needed (current code handles it transparently).
 
 ---
 
@@ -286,6 +437,11 @@ All 6 widgets are deployed and working on the live Elementor site. No critical p
 3. The app is live on Railway — just push to `main` branch to deploy
 4. Password: set via `APP_PASSWORD` env var on Railway (default: `sdedov2024`)
 
+### Watch flags (re-evaluate when triggered):
+- **6896/204 compound assignment** (currently 100% מרכז in `COMPOUND_MAP`):
+  Plot 6896/204 actually contains projects from multiple compounds — 5 are מרכז (גינדי, חג׳ג׳, א.א.י, האחים ישראל) and 1 is אשכול (אוטופיה). We classify the entire plot as מרכז because verification at session-4 time showed: (a) all 80 transactions in this plot started **July 2025 or later** — exactly aligned with the central-compound selling onset, with **zero pre-June-2025 transactions**; (b) all 80 rows have **build year 2034** (planning year of the central-compound projects), whereas other אוטופיה rows in the data (from גוש 6634) all have **build year 2029**. So no observable אוטופיה sales here yet.
+  **Re-evaluation trigger**: if a future Excel upload shows transactions in 6896/204 with **build year ≠ 2034** (especially 2029), or with sale dates **before June 2025**, those are likely אוטופיה rows and the compound classification needs to become row-level (e.g., split 6896/204 by `שנת בניה`: 2034→מרכז, 2029→אשכול) rather than plot-level.
+
 ### Jinja2 gotcha (IMPORTANT):
 - Widget templates use `{{ data.xxx | tojson }}` to embed data
 - **Never use `{#` in CSS within widget templates** — Jinja2 parses it as a comment tag start
@@ -307,9 +463,13 @@ GET /export/copy → render_template each widget → copy-to-clipboard UI
 ```
 
 ### Excel structure notes:
-- Main DB: one row per transaction; columns in Hebrew
+- Main DB: one row per transaction; columns in Hebrew. Required columns also include `גוש`, `חלקה` (used for compound classification — see section 2d).
 - Land DB: one row per **winner** within a tender; grouped by `סדר כרונולוגי`
-- Option transactions (`סוג עסקה` contains "אופציה") are filtered out from all analysis
+- `סוג עסקה` values:
+  - `אופציה` — counted as transaction, but excluded from price/sqm/ppm analysis (no real values)
+  - `דירה` — counted as transaction AND included in real-data analysis
+  - `מימוש אופציה` — **NOT** counted as transaction (it's a re-classification of a prior `אופציה`), BUT included in real-data analysis (full price/sqm/ppm values)
+- Rows whose `(גוש, חלקה)` is not in `COMPOUND_MAP` are dropped (treated as not Sde Dov)
 - Land date format: `DD.M.YY` (e.g. `23.8.21`) — custom parser in `generate_land_chart_data`
 
 ### Elementor integration:

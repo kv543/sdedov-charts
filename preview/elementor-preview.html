@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he"><head><meta charset="UTF-8">
+<title>Elementor Widgets Preview — שדה דב</title>
+<style>
+body {margin:0;padding:32px 16px;background:#f0ebe3;font-family:'Heebo',Arial,sans-serif;}
+.ep-banner {max-width:1100px;margin:0 auto 24px;padding:14px 22px;background:#1a2e35;color:#fff;border-radius:10px;}
+.ep-banner h1 {font-size:18px;font-weight:700;margin:0 0 6px;}
+.ep-banner p {font-size:13px;opacity:.85;margin:0;line-height:1.5;}
+.ep-list {max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:24px;}
+.ep-widget-label {font-size:12px;color:#777;padding:6px 12px;margin-bottom:6px;background:#fff;display:inline-block;border-radius:6px;font-weight:600;}
+</style></head><body>
+<div class="ep-banner">
+<h1>סימולציית עמוד Elementor — pill קומפקטי + 2 וויג'טים השוואתיים</h1>
+<p>כל ויג'ט עצמאי עם מסנן מתחם משלו (pill קטן). שני האחרונים תמיד מציגים את שני המתחמים יחד.</p>
+</div>
+<div class="ep-list"><div class="ep-widget-block"><div class="ep-widget-label">▸ כרטיסי KPI</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');</style>
+<div class="kpi-pill-wrap">
+  <div class="cmp-pill kpi-compound-pill">
+    <button class="kpi-comp-tab active" data-compound="all">הכל</button>
+    <button class="kpi-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="kpi-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+</div>
+
+<div id="kpi-grid">
+
+  <div class="d-card" id="card-sold">
+    <div class="top-zone">
+      <svg class="d-gauge-svg" viewBox="0 0 200 108" preserveAspectRatio="none">
+        <path d="M 20 108 A 80 80 0 0 1 180 108" class="g-track"/>
+        <path d="M 20 108 A 80 80 0 0 1 180 108" class="g-fill" id="arc-count"/>
+      </svg>
+    </div>
+    <div class="card-body">
+      <div class="kpi-val kpi-val-lg" id="num-count">–</div>
+      <div class="kpi-unit-teal">דירות נמכרו</div>
+      <div class="sold-sub" id="sold-sub-text">מתוך 16,000 יחידות דיור ברובע שדה דב</div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-ppm">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="10" rx="2"/>
+          <line x1="6" y1="7" x2="6" y2="12"/><line x1="10" y1="7" x2="10" y2="10"/>
+          <line x1="14" y1="7" x2="14" y2="12"/><line x1="18" y1="7" x2="18" y2="10"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="ppm-inline">
+        <span class="kpi-val kpi-val-lg" id="num-ppm">–</span>
+        <span class="ppm-unit-inline">₪</span>
+      </div>
+      <div class="kpi-unit-teal">מחיר ממוצע למ"ר</div>
+      <div class="sold-sub">ללא עסקאות אופציה</div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-rooms">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="rooms-row">
+        <div class="rooms-num-line">
+          <span class="kpi-val kpi-val-lg" id="num-3r">–</span>
+          <span class="rooms-unit">מ' ש"ח</span>
+        </div>
+        <div class="rooms-sublbl">מחיר ממוצע לדירת 3 חדרים</div>
+      </div>
+      <div class="rooms-divider"></div>
+      <div class="rooms-row">
+        <div class="rooms-num-line">
+          <span class="kpi-val kpi-val-lg" id="num-4r">–</span>
+          <span class="rooms-unit">מ' ש"ח</span>
+        </div>
+        <div class="rooms-sublbl">מחיר ממוצע לדירת 4 חדרים</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-card" id="card-proj">
+    <div class="top-zone">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="9" y1="21" x2="9" y2="6"/><line x1="5" y1="21" x2="13" y2="21"/>
+          <line x1="3" y1="8" x2="21" y2="8"/><line x1="9" y1="6" x2="21" y2="10"/>
+          <line x1="9" y1="6" x2="3" y2="10"/><line x1="17" y1="8" x2="17" y2="14"/>
+          <path d="M15 14 Q17 17 19 14"/>
+        </svg>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-val kpi-val-lg" id="num-proj">–</div>
+      <div class="kpi-unit-teal">פרויקטים בשיווק</div>
+    </div>
+    <a href="#" class="proj-link" id="proj-link-el">לכל הפרויקטים ←</a>
+  </div>
+
+</div>
+
+<script>
+(function(){
+const KPI_ALL = {"all": {"avg_ppm": 76474, "avg_price": 6896722, "avg_price_3rooms": 6.4, "avg_price_4rooms": 8.58, "avg_sqm": 88.9, "projects_count": 7, "projects_url": "https://sdedov.co.il/projects/", "total_transactions": 1295, "total_units": 16000, "units_label": "\u05d1\u05e8\u05d5\u05d1\u05e2 \u05e9\u05d3\u05d4 \u05d3\u05d1"}, "eshkol": {"avg_ppm": 82890, "avg_price": 7503858, "avg_price_3rooms": 6.81, "avg_price_4rooms": 9.65, "avg_sqm": 89.0, "projects_count": 7, "projects_url": "https://sdedov.co.il/projects/", "total_transactions": 522, "total_units": 4844, "units_label": "\u05d1\u05de\u05ea\u05d7\u05dd \u05d0\u05e9\u05db\u05d5\u05dc"}, "merkaz": {"avg_ppm": 65549, "avg_price": 5863004, "avg_price_3rooms": 5.07, "avg_price_4rooms": 6.61, "avg_sqm": 88.8, "projects_count": 7, "projects_url": "https://sdedov.co.il/projects/", "total_transactions": 773, "total_units": 7128, "units_label": "\u05d1\u05de\u05ea\u05d7\u05dd \u05d4\u05de\u05e8\u05db\u05d6\u05d9"}};
+const DUR = 1400;
+const ARC_LEN = Math.PI * 80;
+let currentCompound = 'all';
+
+function easeOut(t){ return 1 - Math.pow(1-t, 3); }
+function fmtN(n){ return Math.round(n).toLocaleString('he-IL'); }
+function fmtDec(n,d){ return n.toLocaleString('he-IL',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+function animArc(el, pct, dur){
+  const end = ARC_LEN * (1 - Math.min(pct, 1));
+  el.style.strokeDasharray = ARC_LEN + ' ' + (ARC_LEN + 10);
+  el.style.strokeDashoffset = ARC_LEN;
+  const t0 = performance.now();
+  (function tick(now){
+    const p = Math.min((now - t0) / dur, 1);
+    el.style.strokeDashoffset = ARC_LEN - (ARC_LEN - end) * easeOut(p);
+    if(p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+function animNum(el, end, fmt, dur){
+  const t0 = performance.now();
+  (function tick(now){
+    const p = Math.min((now - t0) / dur, 1);
+    el.textContent = fmt(end * easeOut(p));
+    if(p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
+function render(){
+  const KPI = (KPI_ALL && KPI_ALL[currentCompound]) || KPI_ALL['all'] || KPI_ALL;
+  const totalUnits = KPI.total_units || 16000;
+  const unitsLabel = KPI.units_label || 'ברובע שדה דב';
+  animArc(document.getElementById('arc-count'), KPI.total_transactions / totalUnits, DUR);
+  animNum(document.getElementById('num-count'), KPI.total_transactions, n => fmtN(n), DUR);
+  animNum(document.getElementById('num-ppm'),   KPI.avg_ppm,            n => fmtN(n), DUR);
+  animNum(document.getElementById('num-3r'),    KPI.avg_price_3rooms,   n => fmtDec(n, 2), DUR);
+  animNum(document.getElementById('num-4r'),    KPI.avg_price_4rooms,   n => fmtDec(n, 2), DUR);
+  animNum(document.getElementById('num-proj'),  KPI.projects_count,     n => Math.round(n), DUR);
+  document.getElementById('sold-sub-text').textContent =
+    'מתוך ' + fmtN(totalUnits) + ' יחידות דיור ' + unitsLabel;
+  const lnk = document.getElementById('proj-link-el');
+  if(KPI.projects_url) lnk.href = KPI.projects_url;
+}
+
+render();
+
+document.querySelectorAll('.kpi-comp-tab').forEach(btn => {
+  btn.addEventListener('click', function(){
+    currentCompound = this.dataset.compound;
+    document.querySelectorAll('.kpi-comp-tab').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    render();
+  });
+});
+})();
+</script>
+
+<style>
+  #kpi-grid {
+    display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+    font-family:'Heebo',Arial,sans-serif;direction:rtl;width:100%;box-sizing:border-box;
+  }
+  .d-card {
+    background:#fff;border-radius:16px;padding:20px 16px 18px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    box-shadow:0 2px 18px rgba(73,105,112,0.10);border-top:3px solid #61C0CC;box-sizing:border-box;
+  }
+  .top-zone {width:100%;height:88px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .d-gauge-svg {width:100%;height:40px;display:block;}
+  .g-track {fill:none;stroke:#e8f0f2;stroke-width:14;stroke-linecap:round;}
+  .g-fill  {fill:none;stroke:#61C0CC;stroke-width:14;stroke-linecap:round;}
+  .stat-icon {
+    width:40px;height:40px;background:#f0f8f9;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;color:#61C0CC;
+  }
+  .stat-icon svg {width:21px;height:21px;}
+  .card-body {flex:1;display:flex;flex-direction:column;align-items:center;padding-top:12px;width:100%;}
+  .kpi-val {font-family:'Heebo',Arial,sans-serif;font-weight:800;color:#496970;line-height:1.05;direction:ltr;}
+  .kpi-val-lg {font-size:34px;}
+  .kpi-unit-teal {font-size:13px;font-weight:500;color:#82C2D2;margin-top:4px;}
+  .sold-sub {font-size:10.5px;color:#bbb;margin-top:5px;line-height:1.5;}
+  .ppm-inline {display:flex;align-items:baseline;gap:5px;direction:rtl;}
+  .ppm-unit-inline {font-size:14px;font-weight:500;color:#496970;white-space:nowrap;}
+  .rooms-row {display:flex;flex-direction:column;align-items:center;width:100%;}
+  .rooms-num-line {display:flex;align-items:baseline;gap:5px;direction:rtl;}
+  .rooms-unit {font-size:13px;font-weight:500;color:#496970;white-space:nowrap;}
+  .rooms-sublbl {font-size:11px;color:#61C0CC;margin-top:3px;}
+  .rooms-divider {width:40px;height:1px;background:#e8f0f2;margin:10px auto;}
+  .proj-link {
+    display:inline-block;color:#61C0CC;font-family:'Heebo',Arial,sans-serif;
+    font-size:12px;text-decoration:none;border-bottom:1px solid rgba(97,192,204,0.3);margin-top:auto;
+  }
+  @media (max-width:900px) { #kpi-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:500px) { #kpi-grid { grid-template-columns:1fr; } }
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .kpi-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;margin:0 auto 14px;font-family:'Heebo',Arial,sans-serif;}
+  .kpi-compound-pill .kpi-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .kpi-compound-pill .kpi-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .kpi-compound-pill .kpi-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .kpi-compound-pill .kpi-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .kpi-compound-pill .kpi-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .kpi-compound-pill .kpi-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+  .kpi-pill-wrap{display:flex;justify-content:center;font-family:'Heebo',Arial,sans-serif;direction:rtl;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ גרף מכירות לאורך זמן</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style>
+<div id="chart-container">
+  <div id="chart-header">
+    <div id="chart-title"></div>
+    <div id="chart-select-wrap">
+      <select id="chart-select">
+        <option value="count">כמות עסקאות</option>
+        <option value="cumulative">כמות מצטברת</option>
+        <option value="price">מחיר למ״ר</option>
+      </select>
+      <div id="chart-select-hint">לחצו למעבר בין גרפים</div>
+    </div>
+  </div>
+  <div class="cmp-pill chart-compound-pill">
+    <button class="chart-comp-tab active" data-compound="all">הכל</button>
+    <button class="chart-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="chart-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+  <div id="chart-wrap"><canvas id="mainChart"></canvas></div>
+  <div id="chart-tabs">
+    <button class="chart-tab active" data-filter="all">הכל</button>
+    <button class="chart-tab" data-filter="24">24 חודשים</button>
+    <button class="chart-tab" data-filter="12">12 חודשים</button>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+const CHARTS     = {"count": {"color": "#496970", "data": {"all": [12, 9, 8, 21, 23, 20, 13, 5, 3, 7, 10, 14, 18, 12, 26, 31, 29, 7, 22, 9, 22, 10, 8, 6, 1, 2, 6, 269, 383, 53, 37, 22, 53, 62, 26, 21, 13, 2], "eshkol": [12, 9, 8, 21, 23, 20, 13, 5, 3, 7, 10, 14, 18, 12, 26, 31, 29, 7, 22, 9, 22, 10, 8, 6, 1, 2, 6, 10, 12, 14, 21, 7, 29, 48, 9, 7, 9, 2], "merkaz": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 259, 371, 39, 16, 15, 24, 14, 17, 14, 4, 0]}, "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1 \u05dc\u05e4\u05d9 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd", "tooltipType": "count", "yMax": null, "yMin": 0}, "cumulative": {"color": "#496970", "data": {"all": [12, 21, 29, 50, 73, 93, 106, 111, 114, 121, 131, 145, 163, 175, 201, 232, 261, 268, 290, 299, 321, 331, 339, 345, 346, 348, 354, 623, 1006, 1059, 1096, 1118, 1171, 1233, 1259, 1280, 1293, 1295], "eshkol": [12, 21, 29, 50, 73, 93, 106, 111, 114, 121, 131, 145, 163, 175, 201, 232, 261, 268, 290, 299, 321, 331, 339, 345, 346, 348, 354, 364, 376, 390, 411, 418, 447, 495, 504, 511, 520, 522], "merkaz": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 259, 630, 669, 685, 700, 724, 738, 755, 769, 773, 773]}, "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05de\u05e6\u05d8\u05d1\u05e8\u05ea \u05e9\u05dc \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1", "tooltipType": "cumulative", "yMax": null, "yMin": 0}, "price": {"color": "#61C0CC", "data": {"all": [81051, 76957, 76625, 83225, 85051, 86126, 87038, 74098, 87897, 85855, 80412, 86434, 85631, 82455, 81900, 84261, 83928, 83303, 83974, 75349, 93709, 86794, 87455, 87272, 75780, 81395, 96773, 98618, 87601, 83379, 82657, 81292, 81230, 74639, 82552, 80138, 60569, 57031], "eshkol": [81051, 76957, 76625, 83225, 85051, 86126, 87038, 74098, 87897, 85855, 80412, 86434, 85631, 82455, 81900, 84261, 83928, 83303, 83974, 75349, 93709, 86794, 87455, 87272, 75780, 81395, 96773, 98618, 88472, 85507, 84204, 81058, 78910, 72035, 71797, 81219, 78087, 83977], "merkaz": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77150, 78413, 79049, 81564, 84969, 86001, 88602, 79740, 59584, 56133]}, "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05d4\u05ea\u05e4\u05ea\u05d7\u05d5\u05ea \u05d4\u05de\u05d7\u05d9\u05e8 \u05d4\u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1", "tooltipType": "price", "yMax": 120000, "yMin": 0}};
+const font       = "'Heebo','Arial',sans-serif";
+let chartInstance   = null;
+let currentKey      = "count";
+let currentFilter   = "all";
+let currentCompound = "all";
+
+function getFilteredData(key) {
+  const c   = CHARTS[key];
+  const arr = (c.data && c.data[currentCompound]) || c.data["all"] || [];
+  if (currentFilter === "all") return { labels: c.labels, data: arr };
+  const n = parseInt(currentFilter);
+  return { labels: c.labels.slice(-n), data: arr.slice(-n) };
+}
+function hexToRgba(hex, alpha) {
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function tooltipCallback(type) {
+  if (type==="price")      return ctx=>" ₪"+ctx.raw.toLocaleString("he-IL");
+  if (type==="cumulative") return ctx=>" "+ctx.raw.toLocaleString("he-IL")+" דירות (מצטבר)";
+  return ctx=>" "+ctx.raw+" דירות";
+}
+function yTickCallback(type) {
+  return type==="price" ? val=>"₪"+val.toLocaleString("he-IL") : val=>val;
+}
+function renderChart(key) {
+  const c=CHARTS[key], fd=getFilteredData(key);
+  document.getElementById("chart-title").textContent=c.title;
+  const yScaleOptions={grid:{color:"#f0f0f0"},beginAtZero:true,
+    ticks:{font:{family:font,size:11},callback:yTickCallback(c.tooltipType)}};
+  if(c.yMax!=null){yScaleOptions.min=c.yMin;yScaleOptions.max=c.yMax;}
+  if(chartInstance){
+    chartInstance.data.labels=fd.labels;
+    chartInstance.data.datasets[0].data=fd.data;
+    chartInstance.data.datasets[0].label=c.title;
+    chartInstance.data.datasets[0].borderColor=c.color;
+    chartInstance.data.datasets[0].backgroundColor=hexToRgba(c.color,0.08);
+    chartInstance.data.datasets[0].pointBackgroundColor=c.color;
+    chartInstance.options.plugins.tooltip.callbacks.label=tooltipCallback(c.tooltipType);
+    chartInstance.options.scales.y=yScaleOptions;
+    chartInstance.update();
+  } else {
+    document.getElementById("chart-tabs").style.display="flex";
+    chartInstance=new Chart(document.getElementById("mainChart"),{
+      type:"line",
+      data:{labels:fd.labels,datasets:[{label:c.title,data:fd.data,borderColor:c.color,
+        backgroundColor:hexToRgba(c.color,0.08),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,
+        pointBackgroundColor:c.color,tension:0.3,fill:true}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:"easeInOutQuart"},
+        plugins:{legend:{display:false},title:{display:false},
+          tooltip:{rtl:true,callbacks:{label:tooltipCallback(c.tooltipType)},bodyFont:{family:font},titleFont:{family:font}}},
+        scales:{x:{grid:{color:"#f0f0f0"},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},
+          y:yScaleOptions}}
+    });
+  }
+}
+renderChart(currentKey);
+document.getElementById("chart-select").addEventListener("change",function(){
+  this.classList.add("used");
+  document.getElementById("chart-select-hint").style.display="none";
+  if(this.value===currentKey)return;
+  currentKey=this.value; renderChart(currentKey);
+});
+document.querySelectorAll(".chart-tab").forEach(btn=>btn.addEventListener("click",function(){
+  currentFilter=this.dataset.filter;
+  document.querySelectorAll(".chart-tab").forEach(b=>b.classList.remove("active"));
+  this.classList.add("active");
+  renderChart(currentKey);
+}));
+document.querySelectorAll(".chart-comp-tab").forEach(btn=>btn.addEventListener("click",function(){
+  currentCompound=this.dataset.compound;
+  document.querySelectorAll(".chart-comp-tab").forEach(b=>b.classList.remove("active"));
+  this.classList.add("active");
+  renderChart(currentKey);
+}));
+})();
+</script>
+<style>
+  #chart-container{width:100%;min-height:420px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;}
+  #chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;}
+  #chart-title{flex:1;text-align:right;font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #chart-select-wrap{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  #chart-select{width:auto;max-width:160px;padding:7px 12px;border:2px solid #ddd;border-radius:8px;
+    background:#fff;color:#444;font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;
+    cursor:pointer;outline:none;direction:rtl;appearance:auto;-webkit-appearance:auto;
+    animation:chart-select-pulse 2.4s ease-in-out infinite;}
+  #chart-select.used{animation:none;border-color:#ddd;}
+  #chart-select:hover,#chart-select:focus{border-color:#61C0CC;}
+  #chart-select-hint{font-size:11px;font-weight:500;color:#61C0CC;text-align:center;white-space:nowrap;}
+  @keyframes chart-select-pulse{0%{border-color:#ddd;background:#fff}50%{border-color:#61C0CC;background:#d6f0f3}100%{border-color:#ddd;background:#fff}}
+  #chart-wrap{flex:1;position:relative;min-height:260px;}
+  #chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+  #chart-tabs{display:flex;justify-content:center;gap:16px;margin-top:12px;}
+  .chart-tab{padding:3px 8px;border:none !important;background:none !important;color:#aaa;font-family:'Heebo',Arial,sans-serif;
+    font-size:13px;cursor:pointer;border-radius:4px;outline:none !important;-webkit-appearance:none;appearance:none;box-shadow:none !important;}
+  .chart-tab:focus{outline:none !important;box-shadow:none !important;}
+  .chart-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
+  .chart-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .chart-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .chart-compound-pill .chart-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .chart-compound-pill .chart-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .chart-compound-pill .chart-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .chart-compound-pill .chart-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .chart-compound-pill .chart-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .chart-compound-pill .chart-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ התפלגות מכירות</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style>
+<div id="pie-container">
+  <div id="pie-header">
+    <div id="pie-title-wrap">
+      <div id="pie-title"></div>
+      <div id="pie-subtitle"></div>
+    </div>
+    <div id="pie-select-wrap">
+      <select id="pie-select">
+        <option value="rooms">לפי מספר חדרים</option>
+        <option value="price">לפי עלות דירה</option>
+      </select>
+      <div id="pie-select-hint">לחצו למעבר בין גרפים</div>
+    </div>
+  </div>
+  <div class="cmp-pill pie-compound-pill">
+    <button class="pie-comp-tab active" data-compound="all">הכל</button>
+    <button class="pie-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="pie-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+  <div id="pie-chart-wrap"><canvas id="pieChart"></canvas></div>
+  <div id="pie-tabs">
+    <button class="pie-tab active" data-filter="all">הכל</button>
+    <button class="pie-tab" data-filter="24">24 חודשים</button>
+    <button class="pie-tab" data-filter="12">12 חודשים</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  const PIE_DATA = {"price": {"colors": ["#496970", "#64929C", "#82C2D2", "#61C0CC"], "data": {"all": {"12": [130, 209, 76, 64], "24": [140, 280, 122, 110], "all": [171, 333, 162, 161]}, "eshkol": {"12": [43, 62, 29, 39], "24": [53, 133, 75, 85], "all": [84, 186, 115, 136]}, "merkaz": {"12": [87, 147, 47, 25], "24": [87, 147, 47, 25], "all": [87, 147, 47, 25]}}, "labels": ["\u05e2\u05d3 4 \u05de\u0027 \u20aa", "4-7 \u05de\u0027 \u20aa", "7-10 \u05de\u0027 \u20aa", "\u05de\u05e2\u05dc 10 \u05de\u0027 \u20aa"], "subtitle": "\u05dc\u05dc\u05d0 \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4", "title": "\u05d4\u05ea\u05e4\u05dc\u05d2\u05d5\u05ea \u05de\u05db\u05d9\u05e8\u05d5\u05ea \u05dc\u05e4\u05d9 \u05e2\u05dc\u05d5\u05ea \u05d3\u05d9\u05e8\u05d4"}, "rooms": {"colors": ["#496970", "#64929C", "#689CAB", "#82C2D2", "#61C0CC"], "data": {"all": {"12": [161, 125, 116, 70, 7], "24": [210, 175, 158, 101, 8], "all": [248, 242, 206, 120, 11]}, "eshkol": {"12": [59, 57, 44, 11, 2], "24": [108, 107, 86, 42, 3], "all": [146, 174, 134, 61, 6]}, "merkaz": {"12": [102, 68, 72, 59, 5], "24": [102, 68, 72, 59, 5], "all": [102, 68, 72, 59, 5]}}, "labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd", "6+"], "subtitle": "\u05dc\u05dc\u05d0 \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4", "title": "\u05d4\u05ea\u05e4\u05dc\u05d2\u05d5\u05ea \u05de\u05db\u05d9\u05e8\u05d5\u05ea \u05dc\u05e4\u05d9 \u05de\u05e1\u05e4\u05e8 \u05d7\u05d3\u05e8\u05d9\u05dd"}};
+  const font = "'Heebo','Arial',sans-serif";
+  let inst = null, key = 'rooms', pieFilter = 'all', currentCompound = 'all';
+
+  const plugin = {id:'pieLabels', afterDatasetsDraw(chart){
+    const {ctx, data} = chart, meta = chart.getDatasetMeta(0);
+    const vals = data.datasets[0].data;
+    const total = vals.reduce((a, b) => a + b, 0);
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    meta.data.forEach((arc, i) => {
+      const {startAngle, endAngle, x, y, outerRadius} = arc;
+      const mid = (startAngle + endAngle) / 2;
+      const pct = Math.round(vals[i] / total * 100);
+      if (pct < 5) return;
+      const r = outerRadius * 0.63, lx = x + Math.cos(mid) * r, ly = y + Math.sin(mid) * r;
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 14px Heebo,Arial,sans-serif'; ctx.fillText(data.labels[i], lx, ly - 9);
+      ctx.font = '400 11px Heebo,Arial,sans-serif'; ctx.fillText(pct + '%', lx, ly + 9);
+    });
+    ctx.restore();
+  }};
+
+  function render(k) {
+    const c    = PIE_DATA[k];
+    const byC  = (c.data && c.data[currentCompound]) || c.data['all'] || {};
+    const vals = byC[pieFilter] || byC['all'] || [];
+    const total = vals.reduce((a, b) => a + b, 0);
+    document.getElementById('pie-title').textContent = c.title;
+    document.getElementById('pie-subtitle').textContent = c.subtitle || '';
+    if (inst) {
+      inst.data.labels = c.labels;
+      inst.data.datasets[0].data = vals;
+      inst.data.datasets[0].backgroundColor = c.colors;
+      inst.data.datasets[0].hoverBackgroundColor = c.colors;
+      inst.options.plugins.tooltip.callbacks.label =
+        ctx => ' ' + ctx.label + ': ' + Math.round(ctx.raw / total * 100) + '%';
+      inst.update();
+    } else {
+      inst = new Chart(document.getElementById('pieChart'), {
+        type: 'pie', plugins: [plugin],
+        data: {
+          labels: c.labels,
+          datasets: [{
+            data: vals,
+            backgroundColor: c.colors,
+            hoverBackgroundColor: c.colors,
+            borderWidth: 2, borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: true, aspectRatio: 1.4,
+          animation: {duration: 600, easing: 'easeInOutQuart'},
+          plugins: {
+            legend: {display: false}, title: {display: false},
+            tooltip: {
+              rtl: true,
+              callbacks: {label: ctx => ' ' + ctx.label + ': ' + Math.round(ctx.raw / total * 100) + '%'},
+              bodyFont: {family: font}, titleFont: {family: font}
+            }
+          }
+        }
+      });
+    }
+  }
+
+  render(key);
+
+  document.getElementById('pie-select').addEventListener('change', function() {
+    this.classList.add('used');
+    document.getElementById('pie-select-hint').style.display = 'none';
+    key = this.value; render(key);
+  });
+
+  document.querySelectorAll('.pie-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      pieFilter = this.dataset.filter;
+      document.querySelectorAll('.pie-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
+
+  document.querySelectorAll('.pie-comp-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll('.pie-comp-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
+})();
+</script>
+
+<style>
+  #pie-container {
+    width:100%;min-height:480px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;
+  }
+  #pie-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #pie-title-wrap {flex:1;text-align:right;}
+  #pie-title   {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #pie-subtitle {font-size:13px;color:#777;margin-top:3px;}
+  #pie-select-wrap {flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  #pie-select-hint {font-size:11px;font-weight:500;color:#61C0CC;white-space:nowrap;}
+  #pie-select {
+    width:auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#444;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;
+    direction:rtl;appearance:auto;-webkit-appearance:auto;animation:pie-pulse 2.4s ease-in-out infinite;
+  }
+  #pie-select.used   {animation:none;}
+  #pie-select:hover,
+  #pie-select:focus  {border-color:#61C0CC;}
+  @keyframes pie-pulse {
+    0%   {border-color:#ddd;background:#fff}
+    50%  {border-color:#61C0CC;background:#d6f0f3}
+    100% {border-color:#ddd;background:#fff}
+  }
+  #pie-chart-wrap {flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;max-height:320px;}
+  #pie-chart-wrap canvas {max-width:480px;width:100%;height:auto!important;max-height:320px;}
+
+  /* ── טאבי סינון ─────────────────────────────────────────── */
+  #pie-tabs {display:flex;justify-content:center;gap:16px;margin-top:12px;}
+  .pie-tab{
+    padding:3px 8px;border:none !important;background:none !important;color:#aaa;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;
+    border-radius:4px;outline:none !important;-webkit-appearance:none;appearance:none;box-shadow:none !important;
+  }
+  .pie-tab:focus{outline:none !important;box-shadow:none !important;}
+  .pie-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
+  .pie-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .pie-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .pie-compound-pill .pie-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .pie-compound-pill .pie-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .pie-compound-pill .pie-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .pie-compound-pill .pie-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .pie-compound-pill .pie-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .pie-compound-pill .pie-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ מחיר ממוצע לפי חדרים</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style>
+<div id="rooms-container">
+  <div id="rooms-header">
+    <div id="rooms-title-wrap">
+      <div id="rooms-title"></div>
+      <div id="rooms-subtitle"></div>
+    </div>
+    <div id="rooms-select-wrap">
+      <select id="rooms-select">
+        <option value="price">מחיר ממוצע לדירה</option>
+        <option value="size">שטח ממוצע</option>
+        <option value="pricePerSqm">מחיר ממוצע למ"ר</option>
+      </select>
+      <div id="rooms-select-hint">לחצו למעבר בין גרפים</div>
+    </div>
+  </div>
+  <div class="cmp-pill rooms-compound-pill">
+    <button class="rooms-comp-tab active" data-compound="all">הכל</button>
+    <button class="rooms-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="rooms-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+  <div id="rooms-chart-wrap"><canvas id="roomsChart"></canvas></div>
+  <div id="rooms-tabs">
+    <button class="rooms-tab active" data-filter="all">הכל</button>
+    <button class="rooms-tab" data-filter="24">24 חודשים</button>
+    <button class="rooms-tab" data-filter="12">12 חודשים</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  const ROOMS_DATA = {"price": {"color": "#689CAB", "data": {"all": {"12": [3.41, 5.73, 7.78, 9.6], "24": [3.6, 5.92, 8.21, 10.17], "all": [3.63, 6.4, 8.58, 10.33]}, "eshkol": {"12": [3.34, 6.32, 9.7, 11.95], "24": [3.75, 6.34, 9.58, 11.59], "all": [3.76, 6.81, 9.65, 11.46]}, "merkaz": {"12": [3.45, 5.07, 6.61, 9.16], "24": [3.45, 5.07, 6.61, 9.16], "all": [3.45, 5.07, 6.61, 9.16]}}, "labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd"], "subtitle": "\u05d1\u05de\u05d9\u05dc\u05d9\u05d5\u05e0\u05d9 \u05e9\"\u05d7", "title": "\u05de\u05d7\u05d9\u05e8 \u05d3\u05d9\u05e8\u05d4 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05e4\u05d9 \u05de\u05e1\u0027 \u05d7\u05d3\u05e8\u05d9\u05dd", "tooltipType": "price", "yMax": 14, "yMin": 0}, "pricePerSqm": {"color": "#61C0CC", "data": {"all": {"12": [69488, 72889, 72412, 69228], "24": [73049, 75005, 75851, 74280], "all": [75287, 76945, 77479, 75402]}, "eshkol": {"12": [73390, 80016, 85620, 86510], "24": [78817, 80004, 85718, 85904], "all": [81069, 80638, 84645, 84489]}, "merkaz": {"12": [67344, 64908, 64340, 66006], "24": [67344, 64908, 64340, 66006], "all": [67344, 64908, 64340, 66006]}}, "labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd"], "subtitle": "\u05d1\u05e9\"\u05d7", "title": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05dc\u05e4\u05d9 \u05de\u05e1\u0027 \u05d7\u05d3\u05e8\u05d9\u05dd", "tooltipType": "pricePerSqm", "yMax": 100000, "yMin": 20000}, "size": {"color": "#61C0CC", "data": {"all": {"12": [49.4, 78.1, 107.0, 135.8], "24": [49.6, 78.1, 107.6, 134.8], "all": [48.7, 82.0, 109.4, 135.0]}, "eshkol": {"12": [44.9, 78.0, 113.2, 137.2], "24": [47.3, 78.1, 111.4, 133.7], "all": [46.4, 83.2, 112.8, 134.5]}, "merkaz": {"12": [51.8, 78.2, 103.1, 135.5], "24": [51.8, 78.2, 103.1, 135.5], "all": [51.8, 78.2, 103.1, 135.5]}}, "labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd"], "subtitle": "\u05d1\u05de\u05d8\u05e8\u05d9\u05dd \u05e8\u05d1\u05d5\u05e2\u05d9\u05dd", "title": "\u05e9\u05d8\u05d7 \u05d3\u05d9\u05e8\u05d4 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05e4\u05d9 \u05de\u05e1\u0027 \u05d7\u05d3\u05e8\u05d9\u05dd", "tooltipType": "size", "yMax": 160, "yMin": 0}};
+  const font = "'Heebo','Arial',sans-serif";
+
+  function hexToRgba(hex, a) {
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  let inst = null, key = 'price', currentFilter = 'all', currentCompound = 'all';
+
+  function fmtLbl(type, val) {
+    if (type === 'price')       return val.toLocaleString('he-IL') + " מ' ₪";
+    if (type === 'pricePerSqm') return val.toLocaleString('he-IL') + ' ₪';
+    return val.toLocaleString('he-IL') + ' מ"ר';
+  }
+  function fmtTt(type, val) {
+    if (type === 'price')       return ' ' + val.toLocaleString('he-IL') + ' מיליון ש"ח';
+    if (type === 'pricePerSqm') return ' ' + val.toLocaleString('he-IL') + ' ש"ח למ"ר';
+    return ' ' + val.toLocaleString('he-IL') + ' מ"ר';
+  }
+
+  const lblPlugin = {
+    id: 'aboveBar',
+    afterDatasetsDraw(chart) {
+      const { ctx, data, scales: { x, y } } = chart;
+      const type = ROOMS_DATA[key] ? ROOMS_DATA[key].tooltipType : 'price';
+      ctx.save();
+      ctx.font = 'bold 13px Heebo,Arial,sans-serif';
+      ctx.fillStyle = '#222';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      data.datasets[0].data.forEach((val, i) => {
+        ctx.fillText(fmtLbl(type, val), x.getPixelForValue(i), y.getPixelForValue(val) - 6);
+      });
+      ctx.restore();
+    }
+  };
+
+  function render(k) {
+    const c    = ROOMS_DATA[k];
+    const byC  = (c.data && c.data[currentCompound]) || c.data['all'] || {};
+    const vals = byC[currentFilter] || byC['all'] || [];
+    document.getElementById('rooms-title').textContent = c.title;
+    document.getElementById('rooms-subtitle').innerHTML =
+      c.subtitle + '<span style="color:#777;font-size:13px">, ללא עסקאות אופציה</span>';
+
+    const yTick = c.tooltipType === 'price'
+      ? v => v + " מ'"
+      : c.tooltipType === 'pricePerSqm'
+        ? v => (v / 1000).toLocaleString('he-IL') + 'K'
+        : v => v + ' מ"ר';
+
+    if (inst) {
+      inst.data.labels                      = c.labels;
+      inst.data.datasets[0].data            = vals;
+      inst.data.datasets[0].backgroundColor = vals.map(() => hexToRgba(c.color, 0.85));
+      inst.data.datasets[0].hoverBackgroundColor = vals.map(() => c.color);
+      inst.options.plugins.tooltip.callbacks.label = ctx => fmtTt(c.tooltipType, ctx.raw);
+      inst.options.scales.y.ticks.callback  = yTick;
+      inst.options.scales.y.min = c.yMin ?? 0;
+      inst.options.scales.y.max = c.yMax;
+      inst.update();
+    } else {
+      inst = new Chart(document.getElementById('roomsChart'), {
+        type: 'bar',
+        plugins: [lblPlugin],
+        data: {
+          labels: c.labels,
+          datasets: [{
+            data: vals,
+            backgroundColor:      vals.map(() => hexToRgba(c.color, 0.85)),
+            hoverBackgroundColor: vals.map(() => c.color),
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 36 } },
+          animation: { duration: 600, easing: 'easeInOutQuart' },
+          plugins: {
+            legend: { display: false },
+            title:  { display: false },
+            tooltip: {
+              rtl: true,
+              callbacks: { label: ctx => fmtTt(c.tooltipType, ctx.raw) },
+              bodyFont:  { family: font },
+              titleFont: { family: font }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: font, size: 13, weight: '600' }, color: '#333' }
+            },
+            y: {
+              grid: { color: '#f0f0f0' },
+              beginAtZero: !c.yMin,
+              min: c.yMin ?? 0,
+              max: c.yMax,
+              ticks: { font: { family: font, size: 11 }, callback: yTick }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  render(key);
+
+  document.getElementById('rooms-select').addEventListener('change', function() {
+    this.classList.add('used');
+    document.getElementById('rooms-select-hint').style.display = 'none';
+    key = this.value;
+    render(key);
+  });
+
+  document.querySelectorAll('.rooms-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentFilter = this.dataset.filter;
+      document.querySelectorAll('.rooms-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
+
+  document.querySelectorAll('.rooms-comp-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll('.rooms-comp-tab').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      render(key);
+    });
+  });
+})();
+</script>
+
+<style>
+  #rooms-container {
+    width:100%;min-height:480px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;
+  }
+  #rooms-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #rooms-title-wrap {flex:1;text-align:right;}
+  #rooms-title    {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #rooms-subtitle {font-size:13px;color:#777;margin-top:3px;}
+  #rooms-select-wrap {flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  #rooms-select-hint {font-size:11px;font-weight:500;color:#61C0CC;white-space:nowrap;}
+  #rooms-select {
+    width:auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#444;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;
+    direction:rtl;appearance:auto;-webkit-appearance:auto;animation:rooms-pulse 2.4s ease-in-out infinite;
+  }
+  #rooms-select.used   {animation:none;}
+  #rooms-select:hover,
+  #rooms-select:focus  {border-color:#61C0CC;}
+  @keyframes rooms-pulse {
+    0%   {border-color:#ddd;background:#fff}
+    50%  {border-color:#61C0CC;background:#d6f0f3}
+    100% {border-color:#ddd;background:#fff}
+  }
+  #rooms-chart-wrap {flex:1;position:relative;min-height:280px;}
+  #rooms-chart-wrap canvas {position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+
+  /* ── טאבי סינון — זהים לגרף הקווים ─────────────────────── */
+  #rooms-tabs {display:flex;justify-content:center;gap:16px;margin-top:12px;}
+  .rooms-tab{
+    padding:3px 8px;border:none !important;background:none !important;color:#aaa;
+    font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;
+    border-radius:4px;outline:none !important;-webkit-appearance:none;appearance:none;box-shadow:none !important;
+  }
+  .rooms-tab:focus{outline:none !important;box-shadow:none !important;}
+  .rooms-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
+  .rooms-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .rooms-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .rooms-compound-pill .rooms-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .rooms-compound-pill .rooms-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .rooms-compound-pill .rooms-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .rooms-compound-pill .rooms-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .rooms-compound-pill .rooms-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .rooms-compound-pill .rooms-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ כמות דירות לפי טווח מחיר</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style>
+<div id="pr-container">
+  <div id="pr-header">
+    <div id="pr-title-wrap">
+      <div id="pr-title">כמות דירות שנמכרו לפי טווח מחיר</div>
+      <div id="pr-subtitle">ללא עסקאות אופציה</div>
+    </div>
+  </div>
+  <div class="cmp-pill pr-compound-pill">
+    <button class="pr-comp-tab active" data-compound="all">הכל</button>
+    <button class="pr-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="pr-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+  <div id="pr-chart-wrap"><canvas id="prChart"></canvas></div>
+  <div id="pr-tabs">
+    <button class="pr-tab active" data-filter="all">הכל</button>
+    <button class="pr-tab" data-filter="8">8 רבעונים</button>
+    <button class="pr-tab" data-filter="4">4 רבעונים</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  const PR_DATA = {"cheap": {"color": "#61C0CC", "data": {"all": [6, 4, 14, 1, 3, 10, 3, 0, 0, 0, 9, 42, 55, 24], "eshkol": [6, 4, 14, 1, 3, 10, 3, 0, 0, 0, 7, 32, 4, 0], "merkaz": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 10, 51, 24]}, "labels": ["\u05e8\u05d1\u05e2\u05d5\u05df 1 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2026", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2026"]}, "expensive": {"color": "#496970", "data": {"all": [1, 10, 15, 3, 18, 17, 15, 11, 4, 11, 14, 22, 17, 1], "eshkol": [1, 10, 15, 3, 18, 17, 15, 11, 4, 11, 9, 17, 2, 1], "merkaz": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 15, 0]}, "labels": ["\u05e8\u05d1\u05e2\u05d5\u05df 1 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2023", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2024", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 3 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 4 2025", "\u05e8\u05d1\u05e2\u05d5\u05df 1 2026", "\u05e8\u05d1\u05e2\u05d5\u05df 2 2026"]}};
+  const font    = "'Heebo','Arial',sans-serif";
+  function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+  let inst=null, filter='all', currentCompound='all';
+  function getFiltered(){
+    const cheapArr=(PR_DATA.cheap.data && PR_DATA.cheap.data[currentCompound]) || PR_DATA.cheap.data['all'] || [];
+    const expArr  =(PR_DATA.expensive.data && PR_DATA.expensive.data[currentCompound]) || PR_DATA.expensive.data['all'] || [];
+    if(filter==='all') return{labels:PR_DATA.cheap.labels, cheap:cheapArr, exp:expArr};
+    const n=parseInt(filter);
+    return{labels:PR_DATA.cheap.labels.slice(-n), cheap:cheapArr.slice(-n), exp:expArr.slice(-n)};
+  }
+  function render(){
+    const fd=getFiltered();
+    if(inst){
+      inst.data.labels=fd.labels;
+      inst.data.datasets[0].data=fd.cheap;
+      inst.data.datasets[1].data=fd.exp;
+      inst.update();
+    } else {
+      inst=new Chart(document.getElementById('prChart'),{
+        type:'line',
+        data:{labels:fd.labels,datasets:[
+          {label:'מחיר נמוך מ-4 מיליון ש"ח',data:fd.cheap,borderColor:'#61C0CC',backgroundColor:hexToRgba('#61C0CC',0.08),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#61C0CC',tension:0.3,fill:true},
+          {label:'מחיר גבוה מ-10 מיליון ש"ח',data:fd.exp,borderColor:'#496970',backgroundColor:hexToRgba('#496970',0.06),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#496970',tension:0.3,fill:true}
+        ]},
+        options:{
+          responsive:true,maintainAspectRatio:false,animation:{duration:600},
+          plugins:{
+            legend:{display:true,position:'bottom',rtl:true,labels:{font:{family:font,size:13},padding:20,usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8}},
+            title:{display:false},
+            tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.raw+' דירות — '+ctx.dataset.label},bodyFont:{family:font},titleFont:{family:font}}
+          },
+          scales:{
+            x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},
+            y:{grid:{color:'#f0f0f0'},beginAtZero:true,ticks:{font:{family:font,size:11}}}
+          }
+        }
+      });
+    }
+  }
+  render();
+  document.querySelectorAll('.pr-tab').forEach(btn=>btn.addEventListener('click',function(){
+    filter=this.dataset.filter;
+    document.querySelectorAll('.pr-tab').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');render();
+  }));
+  document.querySelectorAll('.pr-comp-tab').forEach(btn=>btn.addEventListener('click',function(){
+    currentCompound=this.dataset.compound;
+    document.querySelectorAll('.pr-comp-tab').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');render();
+  }));
+})();
+</script>
+
+<style>
+  #pr-container{width:100%;min-height:480px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;}
+  #pr-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #pr-title-wrap{flex:1;text-align:right;}
+  #pr-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #pr-subtitle{font-size:13px;color:#777;margin-top:3px;}
+  #pr-chart-wrap{flex:1;position:relative;min-height:260px;}
+  #pr-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+  #pr-tabs{display:flex;justify-content:center;gap:16px;margin-top:12px;}
+  .pr-tab{padding:3px 8px;border:none !important;background:none !important;color:#aaa;font-family:'Heebo',Arial,sans-serif;
+    font-size:13px;cursor:pointer;border-radius:4px;outline:none !important;-webkit-appearance:none;appearance:none;box-shadow:none !important;}
+  .pr-tab:focus{outline:none !important;box-shadow:none !important;}
+  .pr-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
+  .pr-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .pr-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .pr-compound-pill .pr-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .pr-compound-pill .pr-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .pr-compound-pill .pr-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .pr-compound-pill .pr-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .pr-compound-pill .pr-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .pr-compound-pill .pr-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ טבלת עסקאות</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');</style>
+<div id="tbl-container">
+  <div id="tbl-header">
+    <div id="tbl-title-wrap">
+      <div id="tbl-title"></div>
+      <div id="tbl-subtitle">ללא עסקאות אופציה</div>
+    </div>
+    <select id="tbl-select">
+      <option value="expensive">עסקאות יקרות ביותר</option>
+      <option value="cheap">עסקאות זולות ביותר</option>
+    </select>
+  </div>
+  <div class="cmp-pill tbl-compound-pill">
+    <button class="tbl-comp-tab active" data-compound="all">הכל</button>
+    <button class="tbl-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="tbl-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
+  <div id="tbl-loading">טוען נתונים...</div>
+  <div id="tbl-error"></div>
+  <div id="tbl-wrap" style="display:none">
+    <table id="tbl-main">
+      <thead><tr>
+        <th data-sort="date" class="sortable">תאריך</th>
+        <th>מתחם</th>
+        <th data-sort="price" class="sortable">מחיר</th>
+        <th>שטח</th>
+        <th>חדרים</th>
+        <th>שנת בנייה</th>
+        <th data-sort="ppm" class="sortable">מחיר למ"ר</th>
+      </tr></thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const TBL_DATA = {"all": {"cheap": [{"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "4 \u05d1\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "ppm": 71743, "price": 2295772, "rooms": 1, "sqm": 32}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "8 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 60474, "price": 2358505, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "1 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 60265, "price": 2410610, "rooms": 2, "sqm": 40}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "27 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 61992, "price": 2417700, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "14 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 69402, "price": 2429069, "rooms": 1, "sqm": 35}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "31 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 61521, "price": 2460826, "rooms": 2, "sqm": 40}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "13 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 56253, "price": 2475146, "rooms": 2, "sqm": 44}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "20 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 63510, "price": 2476895, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "28 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 61237, "price": 2510721, "rooms": 2, "sqm": 41}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "5 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 63001, "price": 2520021, "rooms": 2, "sqm": 40}], "expensive": [{"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "21 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "ppm": 86122, "price": 43750000, "rooms": 1, "sqm": 508}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "29 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "ppm": 94937, "price": 30000000, "rooms": 6, "sqm": 316}, {"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "23 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 112039, "price": 27785651, "rooms": 5, "sqm": 248}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "15 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "ppm": 122066, "price": 26000000, "rooms": 4, "sqm": 213}, {"build_year": 2031, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "15 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 107181, "price": 25402000, "rooms": 6, "sqm": 237}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "10 \u05d1\u05d9\u05d5\u05e0\u05d9 2024", "ppm": 98810, "price": 24900000, "rooms": 7, "sqm": 252}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "6 \u05d1\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "ppm": 119547, "price": 21757520, "rooms": 6, "sqm": 182}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "22 \u05d1\u05de\u05e8\u05e5 2023", "ppm": 100495, "price": 20300000, "rooms": 6, "sqm": 202}, {"build_year": 2030, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "25 \u05d1\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "ppm": 102564, "price": 20000000, "rooms": 5, "sqm": 195}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "29 \u05d1\u05d9\u05d5\u05dc\u05d9 2025", "ppm": 99502, "price": 20000000, "rooms": 5, "sqm": 201}]}, "eshkol": {"cheap": [{"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "4 \u05d1\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "ppm": 71743, "price": 2295772, "rooms": 1, "sqm": 32}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "8 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 60474, "price": 2358505, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "1 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 60265, "price": 2410610, "rooms": 2, "sqm": 40}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "27 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 61992, "price": 2417700, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "14 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 69402, "price": 2429069, "rooms": 1, "sqm": 35}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "31 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 61521, "price": 2460826, "rooms": 2, "sqm": 40}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "20 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 63510, "price": 2476895, "rooms": 2, "sqm": 39}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "28 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 61237, "price": 2510721, "rooms": 2, "sqm": 41}, {"build_year": 2031, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "5 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 63001, "price": 2520021, "rooms": 2, "sqm": 40}, {"build_year": 2030, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "22 \u05d1\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "ppm": 84200, "price": 2526000, "rooms": 1, "sqm": 30}], "expensive": [{"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "21 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "ppm": 86122, "price": 43750000, "rooms": 1, "sqm": 508}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "29 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "ppm": 94937, "price": 30000000, "rooms": 6, "sqm": 316}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "15 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "ppm": 122066, "price": 26000000, "rooms": 4, "sqm": 213}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "10 \u05d1\u05d9\u05d5\u05e0\u05d9 2024", "ppm": 98810, "price": 24900000, "rooms": 7, "sqm": 252}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "6 \u05d1\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "ppm": 119547, "price": 21757520, "rooms": 6, "sqm": 182}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "22 \u05d1\u05de\u05e8\u05e5 2023", "ppm": 100495, "price": 20300000, "rooms": 6, "sqm": 202}, {"build_year": 2030, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "25 \u05d1\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "ppm": 102564, "price": 20000000, "rooms": 5, "sqm": 195}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "29 \u05d1\u05d9\u05d5\u05dc\u05d9 2025", "ppm": 99502, "price": 20000000, "rooms": 5, "sqm": 201}, {"build_year": 2030, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "24 \u05d1\u05d9\u05d5\u05dc\u05d9 2024", "ppm": 138298, "price": 19500000, "rooms": 5, "sqm": 141}, {"build_year": 2029, "complex": "\u05d0\u05e9\u05db\u05d5\u05dc", "compound": "eshkol", "date": "18 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "ppm": 114286, "price": 18400000, "rooms": 5, "sqm": 161}]}, "merkaz": {"cheap": [{"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "13 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 56253, "price": 2475146, "rooms": 2, "sqm": 44}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "15 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 57524, "price": 2588563, "rooms": 2, "sqm": 45}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "9 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 58307, "price": 2623805, "rooms": 2, "sqm": 45}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "14 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 59165, "price": 2662415, "rooms": 2, "sqm": 45}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "22 \u05d1\u05de\u05e8\u05e5 2026", "ppm": 48753, "price": 2681403, "rooms": 2, "sqm": 55}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "6 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 48786, "price": 2683243, "rooms": 2, "sqm": 55}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "6 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 48576, "price": 2720231, "rooms": 2, "sqm": 56}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "26 \u05d1\u05de\u05e8\u05e5 2026", "ppm": 49236, "price": 2757218, "rooms": 2, "sqm": 56}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "6 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 49897, "price": 2794205, "rooms": 2, "sqm": 56}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "19 \u05d1\u05d0\u05e4\u05e8\u05d9\u05dc 2026", "ppm": 63830, "price": 2808520, "rooms": 2, "sqm": 44}], "expensive": [{"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "23 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 112039, "price": 27785651, "rooms": 5, "sqm": 248}, {"build_year": 2031, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "15 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 107181, "price": 25402000, "rooms": 6, "sqm": 237}, {"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "6 \u05d1\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "ppm": 93323, "price": 16798207, "rooms": 5, "sqm": 180}, {"build_year": 2031, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "15 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 93537, "price": 15153000, "rooms": 6, "sqm": 162}, {"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "29 \u05d1\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "ppm": 78352, "price": 14886786, "rooms": 5, "sqm": 190}, {"build_year": 2028, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "29 \u05d1\u05de\u05e8\u05e5 2026", "ppm": 74746, "price": 14650281, "rooms": 6, "sqm": 196}, {"build_year": 2031, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "29 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 96267, "price": 14440000, "rooms": 6, "sqm": 150}, {"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "23 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 91812, "price": 13955423, "rooms": 5, "sqm": 152}, {"build_year": 2034, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "12 \u05d1\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "ppm": 92007, "price": 13341032, "rooms": 5, "sqm": 145}, {"build_year": 2031, "complex": "\u05de\u05e8\u05db\u05d6", "compound": "merkaz", "date": "29 \u05d1\u05d3\u05e6\u05de\u05d1\u05e8 2025", "ppm": 90626, "price": 13322000, "rooms": 6, "sqm": 147}]}};
+
+(function() {
+  const TABLE_TITLES = {
+    expensive: "10 העסקאות היקרות ביותר בשדה דב",
+    cheap:     "10 העסקאות הזולות ביותר בשדה דב"
+  };
+  const MONTHS_HE = {ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
+
+  let TABLE_CURRENT_KEY = "expensive";
+  let TABLE_SORT_COL    = "price";
+  let TABLE_SORT_DIR    = "desc";
+  let currentCompound   = "all";
+
+  function getRows(key) {
+    const byC = (TBL_DATA && TBL_DATA[currentCompound]) || TBL_DATA["all"] || {expensive:[], cheap:[]};
+    return byC[key] || [];
+  }
+
+  function dateToNum(dateStr) {
+    const parts = dateStr.trim().split(" ");
+    const day   = parseInt(parts[0]) || 0;
+    const month = MONTHS_HE[parts[1].replace("ב", "")] || 0;
+    const year  = parseInt(parts[2]) || 0;
+    return year * 10000 + month * 100 + day;
+  }
+  function formatDateShort(dateStr) {
+    const parts = dateStr.trim().split(" ");
+    const day   = parseInt(parts[0]) || 0;
+    const month = MONTHS_HE[parts[1].replace("ב", "")] || 0;
+    const year  = parseInt(parts[2]) || 0;
+    return day + "." + month + "." + String(year).slice(-2);
+  }
+  function fmtPrice(val) {
+    const m = val / 1000000;
+    return m.toLocaleString("he-IL", {minimumFractionDigits:2, maximumFractionDigits:2}) + " מ' ₪";
+  }
+  function fmtPpm(val) {
+    return "₪" + val.toLocaleString("he-IL");
+  }
+  function getSorted(rows) {
+    if (!TABLE_SORT_COL) return [...rows];
+    return [...rows].sort((a, b) => {
+      let va, vb;
+      if (TABLE_SORT_COL === "date")  { va = dateToNum(a.date);  vb = dateToNum(b.date); }
+      if (TABLE_SORT_COL === "price") { va = a.price;  vb = b.price; }
+      if (TABLE_SORT_COL === "ppm")   { va = a.ppm;    vb = b.ppm; }
+      return TABLE_SORT_DIR === "asc" ? va - vb : vb - va;
+    });
+  }
+  function updateSortHeaders() {
+    document.querySelectorAll("#tbl-main th.sortable").forEach(th => {
+      const col = th.dataset.sort;
+      const arrow = th.querySelector(".sort-arrow");
+      if (arrow) arrow.remove();
+      if (col === TABLE_SORT_COL) {
+        const span = document.createElement("span");
+        span.className = "sort-arrow";
+        span.textContent = TABLE_SORT_DIR === "asc" ? " ↑" : " ↓";
+        th.appendChild(span);
+      }
+    });
+  }
+  function renderTable(key) {
+    document.getElementById("tbl-title").textContent = TABLE_TITLES[key];
+    const rows = getSorted(getRows(key));
+    const tbody = document.getElementById("tbl-body");
+    tbody.innerHTML = "";
+    rows.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      tr.className = i % 2 === 0 ? "row-even" : "row-odd";
+      tr.innerHTML =
+        `<td>${formatDateShort(r.date)}</td>` +
+        `<td>${r.complex}</td>` +
+        `<td class="num">${fmtPrice(r.price)}</td>` +
+        `<td class="num">${r.sqm} מ"ר</td>` +
+        `<td class="num">${r.rooms}</td>` +
+        `<td class="num">${r.build_year}</td>` +
+        `<td class="num">${fmtPpm(r.ppm)}</td>`;
+      tbody.appendChild(tr);
+    });
+    updateSortHeaders();
+  }
+
+  /* נתונים אפויים — מסתירים spinner ומציגים טבלה מיד */
+  document.getElementById("tbl-loading").style.display = "none";
+  document.getElementById("tbl-wrap").style.display    = "block";
+  renderTable(TABLE_CURRENT_KEY);
+
+  document.getElementById("tbl-select").addEventListener("change", function() {
+    const key = this.value;
+    if (key === TABLE_CURRENT_KEY) return;
+    TABLE_CURRENT_KEY = key;
+    TABLE_SORT_COL = "price";
+    TABLE_SORT_DIR = key === "cheap" ? "asc" : "desc";
+    renderTable(key);
+  });
+
+  document.querySelectorAll("#tbl-main th.sortable").forEach(th => {
+    th.addEventListener("click", function() {
+      const col = this.dataset.sort;
+      if (TABLE_SORT_COL === col) {
+        TABLE_SORT_DIR = TABLE_SORT_DIR === "asc" ? "desc" : "asc";
+      } else {
+        TABLE_SORT_COL = col;
+        TABLE_SORT_DIR = "asc";
+      }
+      renderTable(TABLE_CURRENT_KEY);
+    });
+  });
+
+  document.querySelectorAll(".tbl-comp-tab").forEach(btn => {
+    btn.addEventListener("click", function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll(".tbl-comp-tab").forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
+      renderTable(TABLE_CURRENT_KEY);
+    });
+  });
+})();
+</script>
+
+<style>
+  #tbl-container {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    min-height: 480px;
+    padding: 22px 24px 20px;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 18px rgba(0,0,0,0.07);
+    font-family: 'Heebo', Arial, sans-serif;
+    direction: rtl;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  #tbl-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 16px;
+  }
+  #tbl-title-wrap { flex: 1; text-align: right; }
+  #tbl-title {
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.4;
+  }
+  #tbl-subtitle {
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #777;
+    margin-top: 3px;
+  }
+  #tbl-select {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 200px;
+    padding: 7px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    color: #444;
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    direction: rtl;
+    appearance: auto;
+    -webkit-appearance: auto;
+  }
+  #tbl-select:hover,
+  #tbl-select:focus { border-color: #61C0CC; }
+
+  #tbl-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    flex: 1;
+    max-height: 360px;
+    width: 100%;
+    min-width: 0;
+  }
+  #tbl-main {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 13px;
+    direction: rtl;
+  }
+  #tbl-main thead tr { background: #496970; color: #fff; }
+  #tbl-main th {
+    padding: 10px 12px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  #tbl-main th.sortable { cursor: pointer; user-select: none; }
+  #tbl-main th.sortable:hover { background: #3d5860; }
+  .sort-arrow { font-size: 11px; opacity: 0.9; }
+  #tbl-main td {
+    padding: 9px 12px;
+    text-align: right;
+    color: #333;
+    white-space: nowrap;
+  }
+  #tbl-main td.num { font-variant-numeric: tabular-nums; }
+  #tbl-main tr.row-even { background: #fff; }
+  #tbl-main tr.row-odd  { background: #f4f9fa; }
+  #tbl-main tbody tr:hover { background: #e8f5f7; }
+
+  #tbl-loading {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 15px;
+  }
+  #tbl-loading::before {
+    content: "";
+    display: block;
+    width: 34px;
+    height: 34px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #496970;
+    border-radius: 50%;
+    animation: spin4 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  #tbl-error {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    color: #e53e3e;
+    background: #fff5f5;
+    border-radius: 8px;
+    font-family: 'Heebo', Arial, sans-serif;
+    font-size: 14px;
+  }
+  @keyframes spin4 { to { transform: rotate(360deg); } }
+
+  @media (max-width: 1200px) {
+    #tbl-main { font-size: 11px; }
+    #tbl-main th { padding: 8px 7px; font-size: 11px; }
+    #tbl-main td { padding: 7px 7px; }
+    #tbl-main th:nth-child(6),
+    #tbl-main td:nth-child(6) { display: none; }
+  }
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .tbl-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .tbl-compound-pill .tbl-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .tbl-compound-pill .tbl-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .tbl-compound-pill .tbl-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .tbl-compound-pill .tbl-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .tbl-compound-pill .tbl-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .tbl-compound-pill .tbl-comp-tab:focus{outline:none !important;box-shadow:none !important;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ השוואת מתחמים — מ"ר לפי חדרים</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');</style>
+<div id="cmpb-container">
+  <div id="cmpb-header">
+    <div id="cmpb-title-wrap">
+      <div id="cmpb-title"></div>
+      <div id="cmpb-subtitle"></div>
+    </div>
+  </div>
+  <div id="cmpb-wrap"><canvas id="cmpbChart"></canvas></div>
+  <div class="cmpb-legend" id="cmpb-legend"></div>
+  <div class="cmpb-note" id="cmpb-note"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  const CMP_DATA = {"ppm_by_rooms": {"labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd"], "note": "* \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05de\u05d9\u05de\u05d5\u05e9 \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d1\u05de\u05e8\u05db\u05d6 \u05de\u05e9\u05e7\u05e4\u05d5\u05ea \u05ea\u05e0\u05d0\u05d9 \u05e9\u05e0\u05e0\u05e2\u05dc\u05d5 \u05d1\u05de\u05d5\u05e2\u05d3 \u05d7\u05ea\u05d9\u05de\u05ea \u05d4\u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea", "series": [{"color": "#496970", "data": [73390, 80016, 85620, 86510], "key": "eshkol", "name": "\u05d0\u05e9\u05db\u05d5\u05dc", "range": "\u05de\u05d0\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026"}, {"color": "#61C0CC", "data": [67344, 64908, 64340, 66006], "key": "merkaz", "name": "\u05de\u05e8\u05db\u05d6", "range": "\u05d9\u05d5\u05dc\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026"}], "subtitle": "12 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd \u05d0\u05d7\u05e8\u05d5\u05e0\u05d9\u05dd, \u05e9\"\u05d7 \u05dc\u05de\"\u05e8", "title": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05dc\u05e4\u05d9 \u05de\u05e1\u0027 \u05d7\u05d3\u05e8\u05d9\u05dd \u2014 \u05d4\u05e9\u05d5\u05d5\u05d0\u05ea \u05de\u05ea\u05d7\u05de\u05d9\u05dd", "yMax": 100000, "yMin": 0}, "summary": {"compounds": {"eshkol": {"color": "#496970", "label": "\u05d0\u05e9\u05db\u05d5\u05dc", "range": "\u05de\u05d0\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026", "stats": {"avg_ppm": 80313, "avg_price": 6563443, "avg_sqm": 79.5, "median_ppm": 81633, "median_price": 5985000, "real_rows": 173, "transactions": 174}}, "merkaz": {"color": "#61C0CC", "label": "\u05de\u05e8\u05db\u05d6", "range": "\u05d9\u05d5\u05dc\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026", "stats": {"avg_ppm": 65549, "avg_price": 5863004, "avg_sqm": 88.8, "median_ppm": 58742, "median_price": 5089856, "real_rows": 306, "transactions": 773}}}, "note": "* \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05de\u05d9\u05de\u05d5\u05e9 \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d1\u05de\u05e8\u05db\u05d6 \u05de\u05e9\u05e7\u05e4\u05d5\u05ea \u05ea\u05e0\u05d0\u05d9 \u05e9\u05e0\u05e0\u05e2\u05dc\u05d5 \u05d1\u05de\u05d5\u05e2\u05d3 \u05d7\u05ea\u05d9\u05de\u05ea \u05d4\u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea", "rows": [{"format": "int", "key": "transactions", "label": "\u05e1\u05da \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea (\u05db\u05d5\u05dc\u05dc \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4)"}, {"format": "int", "key": "real_rows", "label": "\u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05e2\u05dd \u05e0\u05ea\u05d5\u05e0\u05d9 \u05de\"\u05e8"}, {"format": "shekel", "key": "avg_price", "label": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05d3\u05d9\u05e8\u05d4"}, {"format": "shekel", "key": "median_price", "label": "\u05de\u05d7\u05d9\u05e8 \u05d7\u05e6\u05d9\u05d5\u05e0\u05d9 \u05dc\u05d3\u05d9\u05e8\u05d4"}, {"format": "sqm", "key": "avg_sqm", "label": "\u05e9\u05d8\u05d7 \u05de\u05de\u05d5\u05e6\u05e2 (\u05de\"\u05e8)"}, {"format": "shekel_int", "key": "avg_ppm", "label": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8"}, {"format": "shekel_int", "key": "median_ppm", "label": "\u05de\u05d7\u05d9\u05e8 \u05d7\u05e6\u05d9\u05d5\u05e0\u05d9 \u05dc\u05de\"\u05e8"}], "subtitle": "12 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd \u05d0\u05d7\u05e8\u05d5\u05e0\u05d9\u05dd", "title": "\u05d4\u05e9\u05d5\u05d5\u05d0\u05d4 \u05de\u05e1\u05e4\u05e8\u05d9\u05ea \u05d1\u05d9\u05df \u05de\u05ea\u05d7\u05de\u05d9\u05dd"}};
+  const font = "'Heebo','Arial',sans-serif";
+
+  function hexToRgba(hex, a) {
+    const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  const c = (CMP_DATA && CMP_DATA.ppm_by_rooms) ? CMP_DATA.ppm_by_rooms : null;
+  if (!c) return;
+
+  document.getElementById('cmpb-title').textContent    = c.title    || '';
+  document.getElementById('cmpb-subtitle').textContent = c.subtitle || '';
+  document.getElementById('cmpb-note').textContent     = c.note     || '';
+
+  // Legend
+  const leg = document.getElementById('cmpb-legend');
+  c.series.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'cmpb-legend-item';
+    item.innerHTML = '<span class="cmpb-swatch" style="background:'+s.color+'"></span>'
+      + '<span><span class="cmpb-leg-name">'+s.name+'</span>'
+      + '<span class="cmpb-leg-range">'+(s.range || '')+'</span></span>';
+    leg.appendChild(item);
+  });
+
+  const datasets = c.series.map(s => ({
+    label: s.name,
+    data:  s.data,
+    backgroundColor:      hexToRgba(s.color, 0.85),
+    hoverBackgroundColor: s.color,
+    borderRadius:  6,
+    borderSkipped: false
+  }));
+
+  const labelPlugin = {
+    id: 'cmpbAboveBar',
+    afterDatasetsDraw(chart) {
+      const { ctx, data } = chart;
+      ctx.save();
+      ctx.font = '600 11.5px Heebo,Arial,sans-serif';
+      ctx.fillStyle = '#222';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        ds.data.forEach((val, i) => {
+          const m = meta.data[i];
+          if (!m) return;
+          const txt = (val/1000).toLocaleString('he-IL', {maximumFractionDigits:1}) + 'K';
+          ctx.fillText(txt, m.x, m.y - 4);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  new Chart(document.getElementById('cmpbChart'), {
+    type: 'bar',
+    plugins: [labelPlugin],
+    data: { labels: c.labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 26 } },
+      animation: { duration: 700, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          rtl: true,
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw.toLocaleString('he-IL') + ' ש"ח למ"ר'
+          },
+          bodyFont:  { family: font },
+          titleFont: { family: font }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: font, size: 13, weight: '600' }, color: '#333' }
+        },
+        y: {
+          grid: { color: '#f0f0f0' },
+          beginAtZero: true,
+          min: c.yMin ?? 0,
+          max: c.yMax,
+          ticks: {
+            font: { family: font, size: 11 },
+            callback: v => (v / 1000).toLocaleString('he-IL') + 'K'
+          }
+        }
+      }
+    }
+  });
+})();
+</script>
+
+<style>
+  #cmpb-container {
+    width:100%;min-height:480px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;
+  }
+  #cmpb-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #cmpb-title-wrap {flex:1;text-align:right;}
+  #cmpb-title    {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #cmpb-subtitle {font-size:13px;color:#777;margin-top:3px;}
+  #cmpb-wrap {flex:1;position:relative;min-height:300px;}
+  #cmpb-wrap canvas {position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+
+  .cmpb-legend {display:flex;justify-content:center;gap:24px;margin-top:14px;flex-wrap:wrap;}
+  .cmpb-legend-item {display:flex;align-items:center;gap:8px;font-size:13px;color:#444;}
+  .cmpb-swatch {width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+  .cmpb-leg-name {font-weight:600;color:#1a2e35;}
+  .cmpb-leg-range {font-size:11px;color:#999;font-weight:400;margin-right:6px;}
+  .cmpb-note {font-size:11px;color:#aaa;font-style:italic;margin-top:10px;text-align:right;line-height:1.5;}
+</style></div></div><div class="ep-widget-block"><div class="ep-widget-label">▸ השוואת מתחמים — טבלת סיכום</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap');</style>
+<div id="cmps-container">
+  <div id="cmps-header">
+    <div id="cmps-title-wrap">
+      <div id="cmps-title"></div>
+      <div id="cmps-subtitle"></div>
+    </div>
+  </div>
+  <div id="cmps-tbl-wrap">
+    <table id="cmps-table">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="cmps-note" id="cmps-note"></div>
+</div>
+
+<script>
+(function(){
+  const CMP_DATA = {"ppm_by_rooms": {"labels": ["2 \u05d7\u05d3\u05e8\u05d9\u05dd", "3 \u05d7\u05d3\u05e8\u05d9\u05dd", "4 \u05d7\u05d3\u05e8\u05d9\u05dd", "5 \u05d7\u05d3\u05e8\u05d9\u05dd"], "note": "* \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05de\u05d9\u05de\u05d5\u05e9 \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d1\u05de\u05e8\u05db\u05d6 \u05de\u05e9\u05e7\u05e4\u05d5\u05ea \u05ea\u05e0\u05d0\u05d9 \u05e9\u05e0\u05e0\u05e2\u05dc\u05d5 \u05d1\u05de\u05d5\u05e2\u05d3 \u05d7\u05ea\u05d9\u05de\u05ea \u05d4\u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea", "series": [{"color": "#496970", "data": [73390, 80016, 85620, 86510], "key": "eshkol", "name": "\u05d0\u05e9\u05db\u05d5\u05dc", "range": "\u05de\u05d0\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026"}, {"color": "#61C0CC", "data": [67344, 64908, 64340, 66006], "key": "merkaz", "name": "\u05de\u05e8\u05db\u05d6", "range": "\u05d9\u05d5\u05dc\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026"}], "subtitle": "12 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd \u05d0\u05d7\u05e8\u05d5\u05e0\u05d9\u05dd, \u05e9\"\u05d7 \u05dc\u05de\"\u05e8", "title": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05dc\u05e4\u05d9 \u05de\u05e1\u0027 \u05d7\u05d3\u05e8\u05d9\u05dd \u2014 \u05d4\u05e9\u05d5\u05d5\u05d0\u05ea \u05de\u05ea\u05d7\u05de\u05d9\u05dd", "yMax": 100000, "yMin": 0}, "summary": {"compounds": {"eshkol": {"color": "#496970", "label": "\u05d0\u05e9\u05db\u05d5\u05dc", "range": "\u05de\u05d0\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026", "stats": {"avg_ppm": 80313, "avg_price": 6563443, "avg_sqm": 79.5, "median_ppm": 81633, "median_price": 5985000, "real_rows": 173, "transactions": 174}}, "merkaz": {"color": "#61C0CC", "label": "\u05de\u05e8\u05db\u05d6", "range": "\u05d9\u05d5\u05dc\u05d9 2025 \u2013 \u05d0\u05e4\u05e8\u05d9\u05dc 2026", "stats": {"avg_ppm": 65549, "avg_price": 5863004, "avg_sqm": 88.8, "median_ppm": 58742, "median_price": 5089856, "real_rows": 306, "transactions": 773}}}, "note": "* \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05de\u05d9\u05de\u05d5\u05e9 \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d1\u05de\u05e8\u05db\u05d6 \u05de\u05e9\u05e7\u05e4\u05d5\u05ea \u05ea\u05e0\u05d0\u05d9 \u05e9\u05e0\u05e0\u05e2\u05dc\u05d5 \u05d1\u05de\u05d5\u05e2\u05d3 \u05d7\u05ea\u05d9\u05de\u05ea \u05d4\u05d0\u05d5\u05e4\u05e6\u05d9\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea", "rows": [{"format": "int", "key": "transactions", "label": "\u05e1\u05da \u05e2\u05e1\u05e7\u05d0\u05d5\u05ea (\u05db\u05d5\u05dc\u05dc \u05d0\u05d5\u05e4\u05e6\u05d9\u05d4)"}, {"format": "int", "key": "real_rows", "label": "\u05e2\u05e1\u05e7\u05d0\u05d5\u05ea \u05e2\u05dd \u05e0\u05ea\u05d5\u05e0\u05d9 \u05de\"\u05e8"}, {"format": "shekel", "key": "avg_price", "label": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05d3\u05d9\u05e8\u05d4"}, {"format": "shekel", "key": "median_price", "label": "\u05de\u05d7\u05d9\u05e8 \u05d7\u05e6\u05d9\u05d5\u05e0\u05d9 \u05dc\u05d3\u05d9\u05e8\u05d4"}, {"format": "sqm", "key": "avg_sqm", "label": "\u05e9\u05d8\u05d7 \u05de\u05de\u05d5\u05e6\u05e2 (\u05de\"\u05e8)"}, {"format": "shekel_int", "key": "avg_ppm", "label": "\u05de\u05d7\u05d9\u05e8 \u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8"}, {"format": "shekel_int", "key": "median_ppm", "label": "\u05de\u05d7\u05d9\u05e8 \u05d7\u05e6\u05d9\u05d5\u05e0\u05d9 \u05dc\u05de\"\u05e8"}], "subtitle": "12 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd \u05d0\u05d7\u05e8\u05d5\u05e0\u05d9\u05dd", "title": "\u05d4\u05e9\u05d5\u05d5\u05d0\u05d4 \u05de\u05e1\u05e4\u05e8\u05d9\u05ea \u05d1\u05d9\u05df \u05de\u05ea\u05d7\u05de\u05d9\u05dd"}};
+  const s = (CMP_DATA && CMP_DATA.summary) ? CMP_DATA.summary : null;
+  if (!s) return;
+
+  document.getElementById('cmps-title').textContent    = s.title    || '';
+  document.getElementById('cmps-subtitle').textContent = s.subtitle || '';
+  document.getElementById('cmps-note').textContent     = s.note     || '';
+
+  function fmtVal(v, format) {
+    if (v === null || v === undefined) return '—';
+    if (format === 'shekel')     return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2}) + " מ' ₪";
+    if (format === 'shekel_int') return v.toLocaleString('he-IL') + ' ₪';
+    if (format === 'sqm')        return v.toLocaleString('he-IL') + ' מ"ר';
+    return v.toLocaleString('he-IL');
+  }
+
+  const compounds = Object.keys(s.compounds);    // ['eshkol','merkaz']
+  const tbl   = document.getElementById('cmps-table');
+  const thead = tbl.querySelector('thead');
+  const tbody = tbl.querySelector('tbody');
+
+  // header
+  const trh = document.createElement('tr');
+  const thLbl = document.createElement('th');
+  thLbl.className = 'cmps-th-label';
+  thLbl.textContent = 'אינדיקטור';
+  trh.appendChild(thLbl);
+  compounds.forEach(ck => {
+    const cmp = s.compounds[ck];
+    const th  = document.createElement('th');
+    th.innerHTML =
+      '<div class="cmps-comp-head">' +
+        '<span class="cmps-comp-dot" style="background:' + cmp.color + '"></span>' +
+        '<span>' + cmp.label + '</span>' +
+      '</div>' +
+      '<div class="cmps-comp-range">' + (cmp.range || '') + '</div>';
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+
+  // body
+  s.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    const tdLabel = document.createElement('td');
+    tdLabel.className = 'cmps-label-col';
+    tdLabel.textContent = row.label;
+    tr.appendChild(tdLabel);
+
+    const vals = compounds.map(ck => s.compounds[ck].stats[row.key]);
+    const max  = Math.max(...vals.map(v => v || 0));
+    compounds.forEach((ck, i) => {
+      const td = document.createElement('td');
+      td.className = 'cmps-num-col';
+      const v = vals[i];
+      td.textContent = fmtVal(v, row.format);
+      if (v === max && max > 0) td.classList.add('cmps-winner');
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+
+<style>
+  #cmps-container {
+    width:100%;min-height:480px;padding:22px 24px 20px;background:#fff;border-radius:14px;
+    box-shadow:0 2px 18px rgba(0,0,0,0.07);font-family:'Heebo',Arial,sans-serif;direction:rtl;
+    box-sizing:border-box;display:flex;flex-direction:column;
+  }
+  #cmps-header {display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+  #cmps-title-wrap {flex:1;text-align:right;}
+  #cmps-title    {font-size:17px;font-weight:700;color:#222;line-height:1.4;}
+  #cmps-subtitle {font-size:13px;color:#777;margin-top:3px;}
+  #cmps-tbl-wrap {flex:1;overflow-x:auto;}
+  #cmps-table {width:100%;border-collapse:collapse;font-size:14px;direction:rtl;font-family:'Heebo',Arial,sans-serif;}
+  #cmps-table th {padding:12px 14px;text-align:right;font-weight:600;color:#1a2e35;background:#f7fbfc;border-bottom:2px solid #d0dfe2;font-size:13px;}
+  #cmps-table .cmps-th-label {color:#496970;}
+  #cmps-table td {padding:11px 14px;text-align:right;color:#333;border-bottom:1px solid #eef2f3;}
+  #cmps-table tbody tr:hover {background:#f9fcfd;}
+  #cmps-table .cmps-label-col {font-weight:500;color:#496970;}
+  #cmps-table .cmps-num-col   {font-variant-numeric:tabular-nums;font-weight:600;}
+  #cmps-table .cmps-winner    {color:#1a2e35;}
+  #cmps-table .cmps-winner::after {content:" ★";color:#61C0CC;font-size:11px;}
+  .cmps-comp-head {display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+  .cmps-comp-dot  {width:11px;height:11px;border-radius:50%;}
+  .cmps-comp-range {font-size:11px;color:#999;font-weight:400;margin-top:3px;text-align:left;}
+  .cmps-note {font-size:11px;color:#aaa;font-style:italic;margin-top:14px;text-align:right;line-height:1.5;}
+</style></div></div></div>
+</body></html>

@@ -181,6 +181,51 @@ select:hover,select:focus{border-color:#61C0CC;}
 .chart-tab.active,.pr-tab.active,.rooms-tab.active,.pie-tab.active{color:#61C0CC;text-decoration:underline;font-weight:600;}
 .chart-tab:hover:not(.active),.pr-tab:hover:not(.active),.rooms-tab:hover:not(.active),.pie-tab:hover:not(.active){color:#555;background:#f0f0f0;}
 
+/* ── Compound filter pill (per-widget, compact) ── */
+.cmp-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;}
+.cmp-pill button{
+  padding:4px 11px;border:none;background:transparent;
+  color:#677e85;font-family:'Heebo',Arial,sans-serif;
+  font-size:11.5px;font-weight:600;border-radius:12px;
+  cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;
+  box-shadow:none;white-space:nowrap;transition:all .18s ease;
+}
+.cmp-pill button:hover:not(.active){color:#2d6b75;}
+.cmp-pill button.active{background:#677e85;color:#fff;box-shadow:0 1px 4px rgba(73,105,112,0.18);}
+.cmp-pill button[data-compound="eshkol"].active{background:#496970;}
+.cmp-pill button[data-compound="merkaz"].active{background:#61C0CC;}
+.cmp-pill button:focus{outline:none;box-shadow:none;}
+.cmp-pill-wrap{display:flex;justify-content:center;margin:0 auto 12px;}
+.meta-stats-extra{margin-right:auto;display:flex;gap:14px;color:#888;flex-wrap:wrap;}
+.meta-stats-extra strong{color:#2d6b75;font-weight:600;}
+
+/* ── Comparison widgets ── */
+#cmp-bars-container,#cmp-summary-container{
+  width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 18px rgba(0,0,0,0.07);
+  font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;
+  display:flex;flex-direction:column;padding:22px 24px 20px;min-height:480px;
+}
+#cmp-bars-header,#cmp-summary-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
+#cmp-bars-title,#cmp-summary-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;text-align:right;}
+#cmp-bars-subtitle,#cmp-summary-subtitle{font-size:13px;color:#777;margin-top:3px;}
+#cmp-bars-wrap{flex:1;position:relative;min-height:300px;}
+#cmp-bars-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+.cmp-legend{display:flex;justify-content:center;gap:24px;margin-top:14px;flex-wrap:wrap;}
+.cmp-legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#444;}
+.cmp-legend-swatch{width:14px;height:14px;border-radius:3px;}
+.cmp-note{font-size:11px;color:#aaa;font-style:italic;margin-top:10px;text-align:right;line-height:1.5;}
+#cmp-summary-table{width:100%;border-collapse:collapse;font-size:14px;direction:rtl;flex:1;}
+#cmp-summary-table th{padding:12px 14px;text-align:right;font-weight:600;color:#1a2e35;background:#f7fbfc;border-bottom:2px solid #d0dfe2;font-size:13px;}
+#cmp-summary-table td{padding:11px 14px;text-align:right;color:#333;border-bottom:1px solid #eef2f3;}
+#cmp-summary-table tbody tr:hover{background:#f9fcfd;}
+#cmp-summary-table .label-col{font-weight:500;color:#496970;}
+#cmp-summary-table .num-col{font-variant-numeric:tabular-nums;font-weight:600;}
+#cmp-summary-table .winner{color:#1a2e35;}
+#cmp-summary-table .winner::after{content:" ★";color:#61C0CC;font-size:11px;}
+.cmp-compound-head{display:flex;align-items:center;gap:8px;justify-content:flex-end;}
+.cmp-compound-dot{width:11px;height:11px;border-radius:50%;}
+.cmp-compound-range{font-size:11px;color:#999;font-weight:400;margin-top:2px;}
+
 /* ── Loading / Error ── */
 #chart-loading,#pie-loading,#rooms-loading,#pr-loading,#tbl-loading{text-align:center;padding:40px;color:#888;font-size:15px;}
 
@@ -344,13 +389,21 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
   <!-- Meta bar -->
   <div class="meta-bar" id="meta-bar" style="display:none">
     <span>סה"כ עסקאות: <strong id="meta-total">—</strong></span>
-    <span>ללא אופציה: <strong id="meta-no-opt">—</strong></span>
+    <span>נתוני אמת: <strong id="meta-real">—</strong></span>
     <span>טווח: <strong id="meta-range">—</strong></span>
+    <span class="meta-stats-extra" id="compound-stats"></span>
   </div>
 
   <!-- ══ שורה 1: KPI ══ -->
   <div class="section">
     <div class="section-label">כרטיסי KPI</div>
+    <div class="cmp-pill-wrap">
+      <div class="cmp-pill" id="kpi-cmp-pill">
+        <button data-compound="all" class="active">הכל</button>
+        <button data-compound="eshkol">אשכול</button>
+        <button data-compound="merkaz">מרכז</button>
+      </div>
+    </div>
     <div class="grid-4">
 
       <div class="d-card" id="card-sold">
@@ -363,7 +416,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
         <div class="card-body">
           <div class="kpi-val kpi-val-lg" id="num-count">–</div>
           <div class="kpi-unit-teal">דירות נמכרו</div>
-          <div class="sold-sub">מתוך 16,000 יחידות דיור ברובע שדה דב</div>
+          <div class="sold-sub" id="sold-sub-text">מתוך 16,000 יחידות דיור ברובע שדה דב</div>
         </div>
       </div>
 
@@ -450,6 +503,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
               <option value="price">מחיר למ"ר</option>
             </select>
             <div id="chart-select-hint">לחצו למעבר בין גרפים</div>
+          </div>
+        </div>
+        <div class="cmp-pill-wrap" style="display:none" id="chart-cmp-wrap">
+          <div class="cmp-pill" id="chart-cmp-pill">
+            <button data-compound="all" class="active">הכל</button>
+            <button data-compound="eshkol">אשכול</button>
+            <button data-compound="merkaz">מרכז</button>
           </div>
         </div>
         <div id="chart-loading">ממתין לנתונים...</div>
@@ -543,6 +603,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
             <div id="pie-select-hint">לחצו למעבר בין גרפים</div>
           </div>
         </div>
+        <div class="cmp-pill-wrap" style="display:none" id="pie-cmp-wrap">
+          <div class="cmp-pill" id="pie-cmp-pill">
+            <button data-compound="all" class="active">הכל</button>
+            <button data-compound="eshkol">אשכול</button>
+            <button data-compound="merkaz">מרכז</button>
+          </div>
+        </div>
         <div id="pie-loading">ממתין לנתונים...</div>
         <div id="pie-chart-wrap"><canvas id="pieChart" style="display:none"></canvas></div>
         <div id="pie-tabs" style="display:none">
@@ -567,6 +634,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
             <div id="rooms-select-hint">לחצו למעבר בין גרפים</div>
           </div>
         </div>
+        <div class="cmp-pill-wrap" style="display:none" id="rooms-cmp-wrap">
+          <div class="cmp-pill" id="rooms-cmp-pill">
+            <button data-compound="all" class="active">הכל</button>
+            <button data-compound="eshkol">אשכול</button>
+            <button data-compound="merkaz">מרכז</button>
+          </div>
+        </div>
         <div id="rooms-loading">ממתין לנתונים...</div>
         <div id="rooms-chart-wrap" style="display:none"><canvas id="roomsChart"></canvas></div>
         <div id="rooms-tabs" style="display:none">
@@ -574,6 +648,37 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
           <button class="rooms-tab" data-filter="24">24 חודשים</button>
           <button class="rooms-tab" data-filter="12">12 חודשים</button>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ שורה 3.5: השוואת מתחמים ══ -->
+  <div class="section" id="comparison-section" style="display:none">
+    <div class="section-label">השוואה בין מתחמים</div>
+    <div class="grid-2">
+
+      <div id="cmp-bars-container">
+        <div id="cmp-bars-header">
+          <div>
+            <div id="cmp-bars-title"></div>
+            <div id="cmp-bars-subtitle"></div>
+          </div>
+        </div>
+        <div id="cmp-bars-wrap"><canvas id="cmpBarsChart"></canvas></div>
+        <div class="cmp-legend" id="cmp-bars-legend"></div>
+        <div class="cmp-note" id="cmp-bars-note"></div>
+      </div>
+
+      <div id="cmp-summary-container">
+        <div id="cmp-summary-header">
+          <div>
+            <div id="cmp-summary-title"></div>
+            <div id="cmp-summary-subtitle"></div>
+          </div>
+        </div>
+        <table id="cmp-summary-table"><thead></thead><tbody></tbody></table>
+        <div class="cmp-note" id="cmp-summary-note"></div>
       </div>
 
     </div>
@@ -589,6 +694,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
           <div id="pr-title-wrap">
             <div id="pr-title">כמות דירות שנמכרו לפי טווח מחיר</div>
             <div id="pr-subtitle">ללא עסקאות אופציה</div>
+          </div>
+        </div>
+        <div class="cmp-pill-wrap" style="display:none" id="pr-cmp-wrap">
+          <div class="cmp-pill" id="pr-cmp-pill">
+            <button data-compound="all" class="active">הכל</button>
+            <button data-compound="eshkol">אשכול</button>
+            <button data-compound="merkaz">מרכז</button>
           </div>
         </div>
         <div id="pr-loading">ממתין לנתונים...</div>
@@ -610,6 +722,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
             <option value="expensive">עסקאות יקרות ביותר</option>
             <option value="cheap">עסקאות זולות ביותר</option>
           </select>
+        </div>
+        <div class="cmp-pill-wrap" style="display:none" id="tbl-cmp-wrap">
+          <div class="cmp-pill" id="tbl-cmp-pill">
+            <button data-compound="all" class="active">הכל</button>
+            <button data-compound="eshkol">אשכול</button>
+            <button data-compound="merkaz">מרכז</button>
+          </div>
         </div>
         <div id="tbl-loading">ממתין לנתונים...</div>
         <div id="tbl-wrap" style="display:none">
@@ -647,26 +766,37 @@ function animArc(el,pct,dur){const end=ARC_LEN*(1-Math.min(pct,1));el.style.stro
 function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){const p=Math.min((now-t0)/dur,1);el.textContent=fmt(end*easeOut(p));if(p<1)requestAnimationFrame(tick);})(t0);}
 
 // ── Chart instances ─────────────────────────────────────────
-let mainInst=null, pieInst=null, roomsInst=null, prInst=null;
-let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null;
+let mainInst=null, pieInst=null, roomsInst=null, prInst=null, cmpBarsInst=null;
+let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null, KPI_DATA=null, CMP_DATA=null, META_DATA=null;
+// per-widget compound state — each widget filters independently
+let kpiCompound='all', mainCompound='all', pieCompound='all', roomsCompound='all', prCompound='all', tblCompound='all';
 let mainKey='count', mainFilter='all';
 let pieKey='rooms', pieFilter='all';
 let roomsKey='price', roomsFilter='all';
 let prFilter='all';
 let tblKey='expensive', tblSortCol='price', tblSortDir='desc';
 
+const COMPOUND_LABELS={all:'כל המתחמים', eshkol:'אשכול', merkaz:'מרכז'};
+
 // ══════════════════════════════════════════════════════════
 // KPI
 // ══════════════════════════════════════════════════════════
-function renderKPI(d){
+function renderKPI(){
+  if(!KPI_DATA) return;
+  const d=KPI_DATA[kpiCompound] || KPI_DATA['all'];
   const DUR=1400;
-  animArc(document.getElementById('arc-count'),d.total_transactions/16000,DUR);
+  const totalUnits = d.total_units || 16000;
+  const unitsLabel = d.units_label || 'ברובע שדה דב';
+  animArc(document.getElementById('arc-count'),d.total_transactions/totalUnits,DUR);
   animNum(document.getElementById('num-count'),d.total_transactions,n=>fmtN(n),DUR);
   animNum(document.getElementById('num-ppm'),  d.avg_ppm,           n=>fmtN(n),DUR);
   animNum(document.getElementById('num-3r'),   d.avg_price_3rooms,  n=>fmtDec(n,2),DUR);
   animNum(document.getElementById('num-4r'),   d.avg_price_4rooms,  n=>fmtDec(n,2),DUR);
   animNum(document.getElementById('num-proj'), d.projects_count,    n=>Math.round(n),DUR);
-  document.getElementById('data-badge').textContent=fmtN(d.total_transactions)+' עסקאות';
+  document.getElementById('sold-sub-text').textContent =
+    'מתוך ' + fmtN(totalUnits) + ' יחידות דיור ' + unitsLabel;
+  const tag=kpiCompound==='all'?'':' ('+COMPOUND_LABELS[kpiCompound]+')';
+  document.getElementById('data-badge').textContent=fmtN(d.total_transactions)+' עסקאות'+tag;
   document.getElementById('data-badge').style.background='#2d6b75';
   const lnk=document.getElementById('proj-link-el');
   if(d.projects_url) lnk.href=d.projects_url;
@@ -677,9 +807,10 @@ function renderKPI(d){
 // ══════════════════════════════════════════════════════════
 function filteredMain(k){
   const c=MAIN_DATA[k];
-  if(mainFilter==='all') return {labels:c.labels,data:c.data};
+  const arr=(c.data && c.data[mainCompound]) || c.data['all'] || [];
+  if(mainFilter==='all') return {labels:c.labels,data:arr};
   const n=parseInt(mainFilter);
-  return {labels:c.labels.slice(-n),data:c.data.slice(-n)};
+  return {labels:c.labels.slice(-n),data:arr.slice(-n)};
 }
 function ttCbMain(type){
   if(type==='price') return ctx=>' ₪'+ctx.raw.toLocaleString('he-IL');
@@ -743,7 +874,10 @@ const piePlugin={id:'pieLabels',afterDatasetsDraw(chart){
   });ctx.restore();
 }};
 function renderPieChart(k){
-  const c=PIE_DATA[k],vals=c.data[pieFilter]||c.data['all'],total=vals.reduce((a,b)=>a+b,0);
+  const c=PIE_DATA[k];
+  const byC=(c.data && c.data[pieCompound]) || c.data['all'] || {};
+  const vals=byC[pieFilter] || byC['all'] || [];
+  const total=vals.reduce((a,b)=>a+b,0);
   document.getElementById('pie-title').textContent=c.title;
   document.getElementById('pie-subtitle').textContent=c.subtitle||'';
   if(pieInst){
@@ -804,7 +938,8 @@ function renderRoomsChart(k){
   document.getElementById('rooms-title').textContent=c.title;
   document.getElementById('rooms-subtitle').innerHTML=c.subtitle+'<span style="color:#777;font-size:13px">, ללא עסקאות אופציה</span>';
   const yTick=c.tooltipType==='price'?v=>v+" מ'":c.tooltipType==='pricePerSqm'?v=>(v/1000).toLocaleString('he-IL')+'K':v=>v+' מ"ר';
-  const vals=c.data[roomsFilter]||c.data['all'];
+  const byC=(c.data && c.data[roomsCompound]) || c.data['all'] || {};
+  const vals=byC[roomsFilter] || byC['all'] || [];
   if(roomsInst){
     roomsInst.data.labels=c.labels;roomsInst.data.datasets[0].data=vals;
     roomsInst.data.datasets[0].backgroundColor=vals.map(()=>hexToRgba(c.color,0.85));
@@ -844,9 +979,11 @@ function initRoomsChart(data){
 // גרף מחירי קצה
 // ══════════════════════════════════════════════════════════
 function filteredPR(){
-  if(prFilter==='all') return {labels:PR_DATA.cheap.labels,cheap:PR_DATA.cheap.data,exp:PR_DATA.expensive.data};
+  const cheapArr=(PR_DATA.cheap.data && PR_DATA.cheap.data[prCompound]) || PR_DATA.cheap.data['all'] || [];
+  const expArr  =(PR_DATA.expensive.data && PR_DATA.expensive.data[prCompound]) || PR_DATA.expensive.data['all'] || [];
+  if(prFilter==='all') return {labels:PR_DATA.cheap.labels, cheap:cheapArr, exp:expArr};
   const n=parseInt(prFilter);
-  return {labels:PR_DATA.cheap.labels.slice(-n),cheap:PR_DATA.cheap.data.slice(-n),exp:PR_DATA.expensive.data.slice(-n)};
+  return {labels:PR_DATA.cheap.labels.slice(-n), cheap:cheapArr.slice(-n), exp:expArr.slice(-n)};
 }
 function renderPriceRanges(){
   const fd=filteredPR();
@@ -900,7 +1037,8 @@ function getSortedTbl(rows){
 }
 function renderTbl(k){
   document.getElementById('tbl-title').textContent=TBL_TITLES[k];
-  const rows=getSortedTbl(TBL_DATA[k]);
+  const byC=TBL_DATA[tblCompound] || TBL_DATA['all'] || {expensive:[],cheap:[]};
+  const rows=getSortedTbl(byC[k] || []);
   const tbody=document.getElementById('tbl-body');
   tbody.innerHTML='';
   rows.forEach((r,i)=>{
@@ -929,27 +1067,194 @@ function initTransactionsTable(data){
 }
 
 // ══════════════════════════════════════════════════════════
+// השוואת מתחמים — גרף עמודות + טבלת סיכום
+// ══════════════════════════════════════════════════════════
+const cmpLabelPlugin={id:'cmpAboveBar',afterDatasetsDraw(chart){
+  const{ctx,data,scales:{x,y}}=chart;
+  ctx.save();ctx.font='600 12px Heebo,Arial,sans-serif';ctx.fillStyle='#222';ctx.textAlign='center';ctx.textBaseline='bottom';
+  data.datasets.forEach((ds,di)=>{
+    ds.data.forEach((val,i)=>{
+      const meta=chart.getDatasetMeta(di).data[i];
+      if(!meta) return;
+      ctx.fillText((val||0).toLocaleString('he-IL'), meta.x, meta.y-4);
+    });
+  });
+  ctx.restore();
+}};
+
+function fmtMoney(v){return Math.round(v).toLocaleString('he-IL')+' ₪';}
+function fmtMoneyM(v){return (v/1e6).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})+" מ' ₪";}
+
+function renderCompareBars(d){
+  if(!d) return;
+  const c=d.ppm_by_rooms;
+  document.getElementById('cmp-bars-title').textContent=c.title;
+  document.getElementById('cmp-bars-subtitle').textContent=c.subtitle||'';
+  document.getElementById('cmp-bars-note').textContent=c.note||'';
+
+  // legend
+  const leg=document.getElementById('cmp-bars-legend');
+  leg.innerHTML='';
+  c.series.forEach(s=>{
+    const item=document.createElement('div');item.className='cmp-legend-item';
+    item.innerHTML=`<span class="cmp-legend-swatch" style="background:${s.color}"></span><span>${s.name}<span class="cmp-compound-range" style="margin-right:6px">${s.range||''}</span></span>`;
+    leg.appendChild(item);
+  });
+
+  const datasets=c.series.map(s=>({
+    label:s.name, data:s.data,
+    backgroundColor:hexToRgba(s.color,0.85),
+    hoverBackgroundColor:s.color,
+    borderRadius:6, borderSkipped:false
+  }));
+
+  if(cmpBarsInst){
+    cmpBarsInst.data.labels=c.labels;cmpBarsInst.data.datasets=datasets;
+    cmpBarsInst.options.scales.y.min=c.yMin??0;
+    cmpBarsInst.options.scales.y.max=c.yMax;
+    cmpBarsInst.update();
+    return;
+  }
+  cmpBarsInst=new Chart(document.getElementById('cmpBarsChart'),{
+    type:'bar', plugins:[cmpLabelPlugin],
+    data:{labels:c.labels, datasets},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:30}},
+      animation:{duration:600,easing:'easeInOutQuart'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{rtl:true,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.raw.toLocaleString('he-IL')+' ש"ח למ"ר'},bodyFont:{family:font},titleFont:{family:font}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:font,size:13,weight:'600'},color:'#333'}},
+        y:{grid:{color:'#f0f0f0'},beginAtZero:true,min:c.yMin??0,max:c.yMax,ticks:{font:{family:font,size:11},callback:v=>(v/1000).toLocaleString('he-IL')+'K'}}
+      }}
+  });
+}
+
+function fmtSummaryValue(val, format){
+  if(val===null||val===undefined) return '—';
+  if(format==='shekel')     return fmtMoneyM(val);
+  if(format==='shekel_int') return val.toLocaleString('he-IL')+' ₪';
+  if(format==='sqm')        return val.toLocaleString('he-IL')+' מ"ר';
+  return val.toLocaleString('he-IL');
+}
+
+function renderCompareSummary(d){
+  if(!d) return;
+  const s=d.summary;
+  document.getElementById('cmp-summary-title').textContent=s.title;
+  document.getElementById('cmp-summary-subtitle').textContent=s.subtitle||'';
+  document.getElementById('cmp-summary-note').textContent=s.note||'';
+
+  const compounds=Object.keys(s.compounds);  // ['eshkol','merkaz']
+  const tbl=document.getElementById('cmp-summary-table');
+  const thead=tbl.querySelector('thead');
+  const tbody=tbl.querySelector('tbody');
+
+  // header
+  thead.innerHTML='';
+  const trh=document.createElement('tr');
+  trh.appendChild(Object.assign(document.createElement('th'),{innerHTML:'אינדיקטור'}));
+  compounds.forEach(ck=>{
+    const cmp=s.compounds[ck];
+    const th=document.createElement('th');
+    th.innerHTML=`<div class="cmp-compound-head"><span class="cmp-compound-dot" style="background:${cmp.color}"></span><span>${cmp.label}</span></div><div class="cmp-compound-range">${cmp.range||''}</div>`;
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+
+  // body
+  tbody.innerHTML='';
+  s.rows.forEach(row=>{
+    const tr=document.createElement('tr');
+    const tdLabel=document.createElement('td');tdLabel.className='label-col';tdLabel.textContent=row.label;tr.appendChild(tdLabel);
+    // Determine "winner" — bigger value (for transactions/avg_price/avg_ppm/avg_sqm — all bigger=better-or-just-larger)
+    const vals=compounds.map(ck=>s.compounds[ck].stats[row.key]);
+    const max=Math.max(...vals.map(v=>v||0));
+    compounds.forEach((ck,i)=>{
+      const td=document.createElement('td');td.className='num-col';
+      const v=vals[i];
+      td.textContent=fmtSummaryValue(v,row.format);
+      if(v===max && max>0) td.classList.add('winner');
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function initComparison(d){
+  if(!d) return;
+  document.getElementById('comparison-section').style.display='block';
+  renderCompareBars(d);
+  renderCompareSummary(d);
+}
+
+// ══════════════════════════════════════════════════════════
 // אתחול לוח הבקרה עם הנתונים
 // ══════════════════════════════════════════════════════════
 function loadDashboard(allData){
   document.getElementById('upload-section').style.display='none';
   document.getElementById('dashboard').style.display='block';
 
+  KPI_DATA  = allData.kpi;
+  CMP_DATA  = allData.comparison;
+  META_DATA = allData.meta;
+
   // מטא
   if(allData.meta){
     const mb=document.getElementById('meta-bar');
     mb.style.display='flex';
-    document.getElementById('meta-total').textContent=fmtN(allData.meta.total);
-    document.getElementById('meta-no-opt').textContent=fmtN(allData.meta.no_option);
-    document.getElementById('meta-range').textContent=allData.meta.date_range||'—';
+    document.getElementById('meta-total').textContent = fmtN(allData.meta.total_count || 0);
+    document.getElementById('meta-real').textContent  = fmtN(allData.meta.total_real  || 0);
+    document.getElementById('meta-range').textContent = allData.meta.date_range || '—';
+    renderCompoundStats();
   }
 
-  renderKPI(allData.kpi);
+  renderKPI();
   initMainChart(allData.charts);
   initPieChart(allData.pie);
   initRoomsChart(allData.rooms_charts);
   initPriceRangesChart(allData.price_ranges);
   initTransactionsTable(allData.transactions);
+  initComparison(allData.comparison);
+  initPerWidgetCompoundPills();
+
+  // show all compound pills now that data is loaded
+  ['chart-cmp-wrap','pie-cmp-wrap','rooms-cmp-wrap','pr-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='flex';
+  });
+}
+
+function renderCompoundStats(){
+  if(!META_DATA) return;
+  const c=META_DATA.compounds||{};
+  const t=META_DATA.by_type||{};
+  const html =
+    `<span><strong>${fmtN(c.eshkol||0)}</strong> אשכול</span>` +
+    `<span><strong>${fmtN(c.merkaz||0)}</strong> מרכז</span>` +
+    `<span>אופציה <strong>${fmtN(t['אופציה']||0)}</strong></span>` +
+    `<span>דירה <strong>${fmtN(t['דירה']||0)}</strong></span>` +
+    `<span>מימוש <strong>${fmtN(t['מימוש אופציה']||0)}</strong></span>`;
+  document.getElementById('compound-stats').innerHTML = html;
+}
+
+function _bindCompoundPill(pillId, onChange){
+  const pill=document.getElementById(pillId);
+  if(!pill) return;
+  pill.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',function(){
+    pill.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    onChange(this.dataset.compound);
+  }));
+}
+
+function initPerWidgetCompoundPills(){
+  _bindCompoundPill('kpi-cmp-pill',   c=>{ kpiCompound=c;   renderKPI(); });
+  _bindCompoundPill('chart-cmp-pill', c=>{ mainCompound=c;  if(MAIN_DATA)  renderMainChart(mainKey); });
+  _bindCompoundPill('pie-cmp-pill',   c=>{ pieCompound=c;   if(PIE_DATA)   renderPieChart(pieKey); });
+  _bindCompoundPill('rooms-cmp-pill', c=>{ roomsCompound=c; if(ROOMS_DATA) renderRoomsChart(roomsKey); });
+  _bindCompoundPill('pr-cmp-pill',    c=>{ prCompound=c;    if(PR_DATA)    renderPriceRanges(); });
+  _bindCompoundPill('tbl-cmp-pill',   c=>{ tblCompound=c;   if(TBL_DATA)   renderTbl(tblKey); });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1148,19 +1453,23 @@ document.getElementById('btn-export-json').addEventListener('click',()=>{window.
 document.getElementById('btn-export-html').addEventListener('click',()=>{window.open('/export/copy','_blank');});
 document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
-  mainInst=null;pieInst=null;roomsInst=null;prInst=null;
-  MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;
+  mainInst=null;pieInst=null;roomsInst=null;prInst=null;cmpBarsInst=null;
+  MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;KPI_DATA=null;CMP_DATA=null;META_DATA=null;
+  kpiCompound='all';mainCompound='all';pieCompound='all';roomsCompound='all';prCompound='all';tblCompound='all';
   mainKey='count';mainFilter='all';pieKey='rooms';pieFilter='all';roomsKey='price';roomsFilter='all';prFilter='all';
   tblKey='expensive';tblSortCol='price';tblSortDir='desc';
   // Reset chart loading states
   ['chart-loading','pie-loading','rooms-loading','pr-loading','tbl-loading'].forEach(id=>{
     const el=document.getElementById(id);el.style.display='block';el.textContent='ממתין לנתונים...';
   });
-  ['chart-wrap','chart-tabs','rooms-chart-wrap','pr-chart-wrap','pr-tabs','tbl-wrap'].forEach(id=>{
-    document.getElementById(id).style.display='none';
+  ['chart-wrap','chart-tabs','rooms-chart-wrap','pr-chart-wrap','pr-tabs','tbl-wrap',
+   'chart-cmp-wrap','pie-cmp-wrap','rooms-cmp-wrap','pr-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
   });
   document.getElementById('pieChart').style.display='none';
   document.getElementById('meta-bar').style.display='none';
+  document.getElementById('comparison-section').style.display='none';
+  document.querySelectorAll('.cmp-pill button').forEach(b=>b.classList.toggle('active', b.dataset.compound==='all'));
   document.getElementById('data-badge').textContent='טוען...';
   document.getElementById('data-badge').style.background='#496970';
   // Chart selects

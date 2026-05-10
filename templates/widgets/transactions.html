@@ -15,6 +15,11 @@
       <option value="cheap">עסקאות זולות ביותר</option>
     </select>
   </div>
+  <div class="cmp-pill tbl-compound-pill">
+    <button class="tbl-comp-tab active" data-compound="all">הכל</button>
+    <button class="tbl-comp-tab" data-compound="eshkol">אשכול</button>
+    <button class="tbl-comp-tab" data-compound="merkaz">מרכז</button>
+  </div>
   <div id="tbl-loading">טוען נתונים...</div>
   <div id="tbl-error"></div>
   <div id="tbl-wrap" style="display:none">
@@ -46,6 +51,12 @@ const TBL_DATA = {{ data.transactions | tojson }};
   let TABLE_CURRENT_KEY = "expensive";
   let TABLE_SORT_COL    = "price";
   let TABLE_SORT_DIR    = "desc";
+  let currentCompound   = "all";
+
+  function getRows(key) {
+    const byC = (TBL_DATA && TBL_DATA[currentCompound]) || TBL_DATA["all"] || {expensive:[], cheap:[]};
+    return byC[key] || [];
+  }
 
   function dateToNum(dateStr) {
     const parts = dateStr.trim().split(" ");
@@ -93,7 +104,7 @@ const TBL_DATA = {{ data.transactions | tojson }};
   }
   function renderTable(key) {
     document.getElementById("tbl-title").textContent = TABLE_TITLES[key];
-    const rows = getSorted(TBL_DATA[key]);
+    const rows = getSorted(getRows(key));
     const tbody = document.getElementById("tbl-body");
     tbody.innerHTML = "";
     rows.forEach((r, i) => {
@@ -135,6 +146,15 @@ const TBL_DATA = {{ data.transactions | tojson }};
         TABLE_SORT_COL = col;
         TABLE_SORT_DIR = "asc";
       }
+      renderTable(TABLE_CURRENT_KEY);
+    });
+  });
+
+  document.querySelectorAll(".tbl-comp-tab").forEach(btn => {
+    btn.addEventListener("click", function() {
+      currentCompound = this.dataset.compound;
+      document.querySelectorAll(".tbl-comp-tab").forEach(b => b.classList.remove("active"));
+      this.classList.add("active");
       renderTable(TABLE_CURRENT_KEY);
     });
   });
@@ -275,5 +295,20 @@ const TBL_DATA = {{ data.transactions | tojson }};
     #tbl-main th:nth-child(6),
     #tbl-main td:nth-child(6) { display: none; }
   }
+
+  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
+  .tbl-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
+  .tbl-compound-pill .tbl-comp-tab{
+    padding:4px 11px !important;border:none !important;background:transparent !important;
+    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
+    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
+    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
+    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
+  }
+  .tbl-compound-pill .tbl-comp-tab:hover:not(.active){color:#2d6b75 !important;}
+  .tbl-compound-pill .tbl-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
+  .tbl-compound-pill .tbl-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
+  .tbl-compound-pill .tbl-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
+  .tbl-compound-pill .tbl-comp-tab:focus{outline:none !important;box-shadow:none !important;}
 </style>
 </body></html>
