@@ -141,11 +141,11 @@ body{font-family:'Heebo',Arial,sans-serif;direction:rtl;}
   font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;
   display:flex;flex-direction:column;padding:22px 24px 20px;
 }
-#chart-container{min-height:420px;}
-#pie-container  {min-height:500px;}
-#rooms-container{min-height:500px;}
-#pr-container   {min-height:480px;}
-#tbl-container  {min-height:480px;}
+#chart-container{height:420px;}
+#pie-container  {height:480px;}
+#rooms-container{height:480px;}
+#pr-container   {height:480px;}
+#tbl-container  {height:480px;}
 
 /* ── Headers ── */
 #chart-header,#pie-header,#rooms-header,#tbl-header,#pr-header{
@@ -208,7 +208,7 @@ select:hover,select:focus{border-color:#61C0CC;}
 #cmp-bars-container,#cmp-price-container{
   width:100%;background:#fff;border-radius:14px;box-shadow:0 2px 18px rgba(0,0,0,0.07);
   font-family:'Heebo',Arial,sans-serif;direction:rtl;box-sizing:border-box;
-  display:flex;flex-direction:column;padding:22px 24px 20px;min-height:480px;
+  display:flex;flex-direction:column;padding:22px 24px 20px;height:480px;
 }
 #cmp-bars-header,#cmp-price-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:16px;}
 #cmp-bars-title,#cmp-price-title{font-size:17px;font-weight:700;color:#222;line-height:1.4;text-align:right;}
@@ -226,7 +226,7 @@ select:hover,select:focus{border-color:#61C0CC;}
 /* ── Table ── */
 #tbl-select{flex:0 0 auto;padding:7px 12px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#444;font-family:'Heebo',Arial,sans-serif;font-size:13px;font-weight:600;cursor:pointer;outline:none;direction:rtl;appearance:auto;-webkit-appearance:auto;animation:pulse 2.4s ease-in-out infinite;}
 #tbl-select.used{animation:none;}
-#tbl-wrap{overflow-x:auto;overflow-y:auto;flex:1;max-height:360px;}
+#tbl-wrap{overflow-x:auto;overflow-y:auto;flex:1;}
 #tbl-main{width:100%;border-collapse:collapse;font-family:'Heebo',Arial,sans-serif;font-size:13px;direction:rtl;}
 #tbl-main thead tr{background:#496970;color:#fff;}
 #tbl-main th{padding:10px 12px;text-align:right;font-weight:600;font-size:13px;white-space:nowrap;}
