@@ -175,6 +175,11 @@ select:hover,select:focus{border-color:#61C0CC;}
 #pie-chart-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;}
 #pie-chart-wrap canvas{max-width:480px;width:100%;height:auto!important;}
 
+/* ── Chart legend (used when monthly ppm shows 2 compound lines) ── */
+#chart-legend{justify-content:center;gap:22px;margin-top:10px;flex-wrap:wrap;}
+.ch-leg-item{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#444;}
+.ch-leg-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
 /* ── Tabs ── */
 #chart-tabs,#pr-tabs,#rooms-tabs,#pie-tabs{justify-content:center;gap:16px;margin-top:12px;}
 .chart-tab,.pr-tab,.rooms-tab,.pie-tab{padding:3px 8px;border:none;background:none;color:#aaa;font-family:'Heebo',Arial,sans-serif;font-size:13px;cursor:pointer;border-radius:4px;outline:none;-webkit-appearance:none;appearance:none;}
@@ -508,6 +513,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
         <div id="chart-loading">ממתין לנתונים...</div>
         <div id="chart-error"></div>
         <div id="chart-wrap" style="display:none"><canvas id="mainChart"></canvas></div>
+        <div id="chart-legend" style="display:none"></div>
         <div id="chart-tabs" style="display:none">
           <button class="chart-tab active" data-filter="all">הכל</button>
           <button class="chart-tab" data-filter="24">24 חודשים</button>
@@ -793,42 +799,65 @@ function renderKPI(){
 // ══════════════════════════════════════════════════════════
 // גרף חודשי
 // ══════════════════════════════════════════════════════════
-function filteredMain(k){
-  const c=MAIN_DATA[k];
-  if(mainFilter==='all') return {labels:c.labels,data:c.data};
-  const n=parseInt(mainFilter);
-  return {labels:c.labels.slice(-n),data:c.data.slice(-n)};
-}
 function ttCbMain(type){
-  if(type==='price') return ctx=>' ₪'+ctx.raw.toLocaleString('he-IL');
-  if(type==='cumulative') return ctx=>' '+ctx.raw.toLocaleString('he-IL')+' דירות (מצטבר)';
-  return ctx=>' '+ctx.raw+' דירות';
+  return function(ctx){
+    if(ctx.raw==null) return '';
+    const lbl=ctx.dataset.label||'';
+    const prefix=lbl ? ' '+lbl+': ' : ' ';
+    if(type==='price')      return prefix+'₪'+ctx.raw.toLocaleString('he-IL');
+    if(type==='cumulative') return prefix+ctx.raw.toLocaleString('he-IL')+' דירות (מצטבר)';
+    return prefix+ctx.raw+' דירות';
+  };
 }
 function yTickMain(type){return type==='price'?v=>'₪'+v.toLocaleString('he-IL'):v=>v;}
+function getMainSeries(c){
+  /* Normalize to [{name, data, color}, ...] — supports both single (count/cumulative) and multi (price). */
+  if (c.series && Array.isArray(c.series)) return c.series;
+  return [{name:'', data:c.data, color:c.color}];
+}
+function renderMainLegend(c){
+  const el=document.getElementById('chart-legend');
+  const arr=getMainSeries(c);
+  if(arr.length<=1 || !arr[0].name){ el.style.display='none'; return; }
+  el.style.display='flex';
+  el.innerHTML=arr.map(s=>`<span class="ch-leg-item"><span class="ch-leg-swatch" style="background:${s.color}"></span>${s.name}</span>`).join('');
+}
 function renderMainChart(k){
-  const c=MAIN_DATA[k],fd=filteredMain(k);
+  const c=MAIN_DATA[k];
+  const seriesArr=getMainSeries(c);
+  const isMulti=seriesArr.length>1;
+  const filteredLabels = mainFilter==='all' ? c.labels : c.labels.slice(-parseInt(mainFilter));
+  const datasets = seriesArr.map(s=>{
+    const arr = mainFilter==='all' ? s.data : s.data.slice(-parseInt(mainFilter));
+    return {
+      label: s.name||'',
+      data: arr,
+      borderColor: s.color,
+      backgroundColor: hexToRgba(s.color, isMulti?0.10:0.08),
+      borderWidth:2.5, pointRadius:3, pointHoverRadius:6,
+      pointBackgroundColor:s.color,
+      tension:0.3,
+      fill: !isMulti,
+      spanGaps:false
+    };
+  });
   document.getElementById('chart-title').textContent=c.title;
+  renderMainLegend(c);
+
   const yOpts={grid:{color:'#f0f0f0'},beginAtZero:true,ticks:{font:{family:font,size:11},callback:yTickMain(c.tooltipType)}};
   if(c.yMax!=null){yOpts.min=c.yMin;yOpts.max=c.yMax;}
-  if(mainInst){
-    mainInst.data.labels=fd.labels;mainInst.data.datasets[0].data=fd.data;
-    mainInst.data.datasets[0].borderColor=c.color;
-    mainInst.data.datasets[0].backgroundColor=hexToRgba(c.color,0.08);
-    mainInst.data.datasets[0].pointBackgroundColor=c.color;
-    mainInst.options.plugins.tooltip.callbacks.label=ttCbMain(c.tooltipType);
-    mainInst.options.scales.y=yOpts;mainInst.update();
-  } else {
-    document.getElementById('chart-loading').style.display='none';
-    document.getElementById('chart-wrap').style.display='block';
-    document.getElementById('chart-tabs').style.display='flex';
-    mainInst=new Chart(document.getElementById('mainChart'),{
-      type:'line',
-      data:{labels:fd.labels,datasets:[{label:c.title,data:fd.data,borderColor:c.color,backgroundColor:hexToRgba(c.color,0.08),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:c.color,tension:0.3,fill:true}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},
-        plugins:{legend:{display:false},title:{display:false},tooltip:{rtl:true,callbacks:{label:ttCbMain(c.tooltipType)},bodyFont:{family:font},titleFont:{family:font}}},
-        scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},y:yOpts}}
-    });
-  }
+
+  if(mainInst){ mainInst.destroy(); mainInst=null; }
+  document.getElementById('chart-loading').style.display='none';
+  document.getElementById('chart-wrap').style.display='block';
+  document.getElementById('chart-tabs').style.display='flex';
+  mainInst=new Chart(document.getElementById('mainChart'),{
+    type:'line',
+    data:{labels:filteredLabels, datasets},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:'easeInOutQuart'},
+      plugins:{legend:{display:false},title:{display:false},tooltip:{rtl:true,callbacks:{label:ttCbMain(c.tooltipType)},bodyFont:{family:font},titleFont:{family:font}}},
+      scales:{x:{grid:{color:'#f0f0f0'},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},y:yOpts}}
+  });
 }
 function initMainChart(data){
   MAIN_DATA=data;
@@ -1445,7 +1474,7 @@ document.getElementById('btn-new').addEventListener('click',()=>{
   ['chart-loading','pie-loading','rooms-loading','pr-loading','tbl-loading'].forEach(id=>{
     const el=document.getElementById(id);el.style.display='block';el.textContent='ממתין לנתונים...';
   });
-  ['chart-wrap','chart-tabs','rooms-chart-wrap','pr-chart-wrap','pr-tabs','tbl-wrap',
+  ['chart-wrap','chart-tabs','chart-legend','rooms-chart-wrap','pr-chart-wrap','pr-tabs','tbl-wrap',
    'pie-cmp-wrap','rooms-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });

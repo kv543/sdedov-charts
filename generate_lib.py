@@ -215,24 +215,32 @@ def generate_all_data(
     kpi = {ck: _kpi(ck) for ck in COMPOUND_KEYS}
 
     # ── 2. גרף חודשי — count, cumulative, ppm ────────────────
-    # ללא ממד מתחם: חוסר ודאות בסיווג עסקאות מימוש אופציה לפי חודש המכירה,
-    # ולכן לא מציגים ניתוח זמני לפי מתחם (כל הנתונים — אגרגציה כללית בלבד).
+    # count, cumulative: אגרגציה כללית (אין ודאות סיווג זמני של מימוש אופציה).
+    # ppm: שני קווים נפרדים (אשכול / מרכז) כדי לא לערבב היסטוריה ארוכה
+    #      של אשכול עם נקודת התחלה מאוחרת של מרכז במחירים נעולים מהעבר.
     monthly_all = (df_count.groupby("ym")
                    .agg(count=("price", "count"))
                    .reset_index()
                    .sort_values("ym"))
-    monthly_ppm = (df_real_ppm.groupby("ym")
-                   .agg(avg_ppm=("ppm", "mean"))
-                   .reset_index()
-                   .sort_values("ym"))
+    global_ym_list = list(monthly_all["ym"])
+    labels         = [month_label(y, m) for y, m in global_ym_list]
+    counts         = [int(v) for v in monthly_all["count"]]
+    cumulative     = [int(v) for v in monthly_all["count"].cumsum()]
 
-    labels     = [month_label(y, m) for y, m in monthly_all["ym"]]
-    counts     = [int(v) for v in monthly_all["count"]]
-    cumulative = [int(v) for v in monthly_all["count"].cumsum()]
+    def _monthly_ppm_for(compound):
+        """ממוצע מ"ר חודשי למתחם ספציפי. חודשים בלי נתונים → null (gap בקו)."""
+        sub = df_real_ppm[df_real_ppm["compound"] == compound]
+        if len(sub) == 0:
+            return [None] * len(global_ym_list)
+        means = sub.groupby("ym")["ppm"].mean().to_dict()
+        out = []
+        for ym in global_ym_list:
+            v = means.get(ym)
+            out.append(round(safe_float(v)) if v is not None and not math.isnan(v) else None)
+        return out
 
-    ppm_dict  = {tuple(row["ym"]): round(safe_float(row["avg_ppm"]))
-                 for _, row in monthly_ppm.iterrows()}
-    avg_ppm_m = [ppm_dict.get(ym, 0) for ym in monthly_all["ym"]]
+    ppm_eshkol = _monthly_ppm_for("eshkol")
+    ppm_merkaz = _monthly_ppm_for("merkaz")
 
     charts = {
         "count": {
@@ -254,10 +262,14 @@ def generate_all_data(
             "yMax":        None
         },
         "price": {
-            "title":       'התפתחות המחיר הממוצע למ"ר בשדה דב',
+            "title":       'התפתחות המחיר הממוצע למ"ר לפי מתחם',
             "labels":      labels,
-            "data":        avg_ppm_m,
-            "color":       "#61C0CC",
+            "series": [
+                {"name": "אשכול", "key": "eshkol",
+                 "data": ppm_eshkol, "color": COMPOUND_COLORS["eshkol"]},
+                {"name": "מרכז",  "key": "merkaz",
+                 "data": ppm_merkaz, "color": COMPOUND_COLORS["merkaz"]}
+            ],
             "tooltipType": "price",
             "yMin":        0,
             "yMax":        120000

@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="he"><head><meta charset="UTF-8">
+<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8">
 <title>Elementor Widgets Preview — שדה דב</title>
 <script>/*!
  * Chart.js v4.4.1
@@ -25,8 +24,8 @@ body {margin:0;padding:32px 16px;background:#f0ebe3;font-family:'Heebo',Arial,sa
 .ep-widget-label {font-size:12px;color:#777;padding:6px 12px;margin-bottom:6px;background:#fff;display:inline-block;border-radius:6px;font-weight:600;}
 </style></head><body>
 <div class="ep-banner">
-<h1>סימולציית Elementor — מסנן רק בוויג'טים בלי ציר זמן</h1>
-<p>גרפים כללי/מצטבר/מ"ר/טווחי מחיר ללא מסנן — בגלל אי ודאות סיווג זמני של מימוש אופציה. KPI/פאי/חדרים/טבלה — עם מסנן.</p>
+<h1>סימולציית Elementor — מ"ר לאורך זמן: שני קווים נפרדים</h1>
+<p>בגרף "מחיר למ\"ר" — שני קווים: אשכול (היסטוריה מלאה) ומרכז (החל מיולי 2025). כל קו מציג רק את הנתונים שלו.</p>
 </div>
 <div class="ep-list"><div class="ep-widget-block"><div class="ep-widget-label">▸ כרטיסי KPI</div><div class="ep-widget-frame"><style>@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');</style>
 <div class="kpi-pill-wrap">
@@ -248,6 +247,7 @@ document.querySelectorAll('.kpi-comp-tab').forEach(btn => {
     </div>
   </div>
   <div id="chart-wrap"><canvas id="mainChart"></canvas></div>
+  <div id="chart-legend" style="display:none"></div>
   <div id="chart-tabs">
     <button class="chart-tab active" data-filter="all">הכל</button>
     <button class="chart-tab" data-filter="24">24 חודשים</button>
@@ -257,60 +257,96 @@ document.querySelectorAll('.kpi-comp-tab').forEach(btn => {
 
 <script>
 (function(){
-const CHARTS     = {"count": {"color": "#496970", "data": [12, 9, 8, 21, 23, 20, 13, 5, 3, 7, 10, 14, 18, 12, 26, 31, 29, 7, 22, 9, 22, 10, 8, 6, 1, 2, 6, 269, 383, 53, 37, 22, 53, 62, 26, 21, 13, 2], "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1 \u05dc\u05e4\u05d9 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd", "tooltipType": "count", "yMax": null, "yMin": 0}, "cumulative": {"color": "#496970", "data": [12, 21, 29, 50, 73, 93, 106, 111, 114, 121, 131, 145, 163, 175, 201, 232, 261, 268, 290, 299, 321, 331, 339, 345, 346, 348, 354, 623, 1006, 1059, 1096, 1118, 1171, 1233, 1259, 1280, 1293, 1295], "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05de\u05e6\u05d8\u05d1\u05e8\u05ea \u05e9\u05dc \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1", "tooltipType": "cumulative", "yMax": null, "yMin": 0}, "price": {"color": "#61C0CC", "data": [81051, 76957, 76625, 83225, 85051, 86126, 87038, 74098, 87897, 85855, 80412, 86434, 85631, 82455, 81900, 84261, 83928, 83303, 83974, 75349, 93709, 86794, 87455, 87272, 75780, 81395, 96773, 98618, 87601, 83379, 82657, 81292, 81230, 74639, 82552, 80138, 60569, 57031], "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05d4\u05ea\u05e4\u05ea\u05d7\u05d5\u05ea \u05d4\u05de\u05d7\u05d9\u05e8 \u05d4\u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1", "tooltipType": "price", "yMax": 120000, "yMin": 0}};
+const CHARTS     = {"count": {"color": "#496970", "data": [12, 9, 8, 21, 23, 20, 13, 5, 3, 7, 10, 14, 18, 12, 26, 31, 29, 7, 22, 9, 22, 10, 8, 6, 1, 2, 6, 269, 383, 53, 37, 22, 53, 62, 26, 21, 13, 2], "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1 \u05dc\u05e4\u05d9 \u05d7\u05d5\u05d3\u05e9\u05d9\u05dd", "tooltipType": "count", "yMax": null, "yMin": 0}, "cumulative": {"color": "#496970", "data": [12, 21, 29, 50, 73, 93, 106, 111, 114, 121, 131, 145, 163, 175, 201, 232, 261, 268, 290, 299, 321, 331, 339, 345, 346, 348, 354, 623, 1006, 1059, 1096, 1118, 1171, 1233, 1259, 1280, 1293, 1295], "labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "title": "\u05db\u05de\u05d5\u05ea \u05de\u05e6\u05d8\u05d1\u05e8\u05ea \u05e9\u05dc \u05d3\u05d9\u05e8\u05d5\u05ea \u05e9\u05e0\u05de\u05db\u05e8\u05d5 \u05d1\u05e9\u05d3\u05d4 \u05d3\u05d1", "tooltipType": "cumulative", "yMax": null, "yMin": 0}, "price": {"labels": ["\u05de\u05e8\u05e5 2023", "\u05d0\u05e4\u05e8\u05d9\u05dc 2023", "\u05de\u05d0\u05d9 2023", "\u05d9\u05d5\u05e0\u05d9 2023", "\u05d9\u05d5\u05dc\u05d9 2023", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2023", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2023", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2023", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2023", "\u05d3\u05e6\u05de\u05d1\u05e8 2023", "\u05d9\u05e0\u05d5\u05d0\u05e8 2024", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2024", "\u05de\u05e8\u05e5 2024", "\u05d0\u05e4\u05e8\u05d9\u05dc 2024", "\u05de\u05d0\u05d9 2024", "\u05d9\u05d5\u05e0\u05d9 2024", "\u05d9\u05d5\u05dc\u05d9 2024", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2024", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2024", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2024", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2024", "\u05d3\u05e6\u05de\u05d1\u05e8 2024", "\u05d9\u05e0\u05d5\u05d0\u05e8 2025", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2025", "\u05de\u05e8\u05e5 2025", "\u05d0\u05e4\u05e8\u05d9\u05dc 2025", "\u05de\u05d0\u05d9 2025", "\u05d9\u05d5\u05e0\u05d9 2025", "\u05d9\u05d5\u05dc\u05d9 2025", "\u05d0\u05d5\u05d2\u05d5\u05e1\u05d8 2025", "\u05e1\u05e4\u05d8\u05de\u05d1\u05e8 2025", "\u05d0\u05d5\u05e7\u05d8\u05d5\u05d1\u05e8 2025", "\u05e0\u05d5\u05d1\u05de\u05d1\u05e8 2025", "\u05d3\u05e6\u05de\u05d1\u05e8 2025", "\u05d9\u05e0\u05d5\u05d0\u05e8 2026", "\u05e4\u05d1\u05e8\u05d5\u05d0\u05e8 2026", "\u05de\u05e8\u05e5 2026", "\u05d0\u05e4\u05e8\u05d9\u05dc 2026"], "series": [{"color": "#496970", "data": [81051, 76957, 76625, 83225, 85051, 86126, 87038, 74098, 87897, 85855, 80412, 86434, 85631, 82455, 81900, 84261, 83928, 83303, 83974, 75349, 93709, 86794, 87455, 87272, 75780, 81395, 96773, 98618, 88472, 85507, 84204, 81058, 78910, 72035, 71797, 81219, 78087, 83977], "key": "eshkol", "name": "\u05d0\u05e9\u05db\u05d5\u05dc"}, {"color": "#61C0CC", "data": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 77150, 78413, 79049, 81564, 84969, 86001, 88602, 79740, 59584, 56133], "key": "merkaz", "name": "\u05de\u05e8\u05db\u05d6"}], "title": "\u05d4\u05ea\u05e4\u05ea\u05d7\u05d5\u05ea \u05d4\u05de\u05d7\u05d9\u05e8 \u05d4\u05de\u05de\u05d5\u05e6\u05e2 \u05dc\u05de\"\u05e8 \u05dc\u05e4\u05d9 \u05de\u05ea\u05d7\u05dd", "tooltipType": "price", "yMax": 120000, "yMin": 0}};
 const font       = "'Heebo','Arial',sans-serif";
 let chartInstance = null;
 let currentKey    = "count";
 let currentFilter = "all";
 
-function getFilteredData(key) {
-  const c = CHARTS[key];
-  if (currentFilter === "all") return { labels: c.labels, data: c.data };
-  const n = parseInt(currentFilter);
-  return { labels: c.labels.slice(-n), data: c.data.slice(-n) };
-}
 function hexToRgba(hex, alpha) {
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${alpha})`;
 }
 function tooltipCallback(type) {
-  if (type==="price")      return ctx=>" ₪"+ctx.raw.toLocaleString("he-IL");
-  if (type==="cumulative") return ctx=>" "+ctx.raw.toLocaleString("he-IL")+" דירות (מצטבר)";
-  return ctx=>" "+ctx.raw+" דירות";
+  return function(ctx){
+    if (ctx.raw == null) return '';
+    const lbl = ctx.dataset.label || '';
+    const prefix = lbl ? ' ' + lbl + ': ' : ' ';
+    if (type==='price')      return prefix + '₪' + ctx.raw.toLocaleString('he-IL');
+    if (type==='cumulative') return prefix + ctx.raw.toLocaleString('he-IL') + ' דירות (מצטבר)';
+    return prefix + ctx.raw + ' דירות';
+  };
 }
 function yTickCallback(type) {
   return type==="price" ? val=>"₪"+val.toLocaleString("he-IL") : val=>val;
 }
-function renderChart(key) {
-  const c=CHARTS[key], fd=getFilteredData(key);
-  document.getElementById("chart-title").textContent=c.title;
-  const yScaleOptions={grid:{color:"#f0f0f0"},beginAtZero:true,
-    ticks:{font:{family:font,size:11},callback:yTickCallback(c.tooltipType)}};
-  if(c.yMax!=null){yScaleOptions.min=c.yMin;yScaleOptions.max=c.yMax;}
-  if(chartInstance){
-    chartInstance.data.labels=fd.labels;
-    chartInstance.data.datasets[0].data=fd.data;
-    chartInstance.data.datasets[0].label=c.title;
-    chartInstance.data.datasets[0].borderColor=c.color;
-    chartInstance.data.datasets[0].backgroundColor=hexToRgba(c.color,0.08);
-    chartInstance.data.datasets[0].pointBackgroundColor=c.color;
-    chartInstance.options.plugins.tooltip.callbacks.label=tooltipCallback(c.tooltipType);
-    chartInstance.options.scales.y=yScaleOptions;
-    chartInstance.update();
-  } else {
-    document.getElementById("chart-tabs").style.display="flex";
-    chartInstance=new Chart(document.getElementById("mainChart"),{
-      type:"line",
-      data:{labels:fd.labels,datasets:[{label:c.title,data:fd.data,borderColor:c.color,
-        backgroundColor:hexToRgba(c.color,0.08),borderWidth:2.5,pointRadius:3,pointHoverRadius:6,
-        pointBackgroundColor:c.color,tension:0.3,fill:true}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:600,easing:"easeInOutQuart"},
-        plugins:{legend:{display:false},title:{display:false},
-          tooltip:{rtl:true,callbacks:{label:tooltipCallback(c.tooltipType)},bodyFont:{family:font},titleFont:{family:font}}},
-        scales:{x:{grid:{color:"#f0f0f0"},ticks:{font:{family:font,size:10},maxRotation:45,minRotation:45}},
-          y:yScaleOptions}}
-    });
+function getSeriesArr(c){
+  /* Normalize to array of {name, data, color}. Single-line charts (count, cumulative)
+     use c.data directly; multi-line charts (price) ship c.series. */
+  if (c.series && Array.isArray(c.series)) return c.series;
+  return [{ name: '', data: c.data, color: c.color }];
+}
+function buildDatasets(c, currentFilter){
+  const seriesArr = getSeriesArr(c);
+  const isMulti = seriesArr.length > 1;
+  return seriesArr.map(s => {
+    let arr = s.data;
+    if (currentFilter !== 'all') arr = arr.slice(-parseInt(currentFilter));
+    return {
+      label: s.name || '',
+      data: arr,
+      borderColor: s.color,
+      backgroundColor: isMulti ? hexToRgba(s.color, 0.10) : hexToRgba(s.color, 0.08),
+      borderWidth: 2.5, pointRadius: 3, pointHoverRadius: 6,
+      pointBackgroundColor: s.color,
+      tension: 0.3,
+      fill: !isMulti,
+      spanGaps: false   /* show gap when value is null (merkaz before its data starts) */
+    };
+  });
+}
+function renderLegend(c){
+  const el = document.getElementById('chart-legend');
+  const seriesArr = getSeriesArr(c);
+  if (seriesArr.length <= 1 || !seriesArr[0].name) {
+    el.style.display = 'none';
+    return;
   }
+  el.style.display = 'flex';
+  el.innerHTML = seriesArr.map(s =>
+    `<span class="ch-leg-item"><span class="ch-leg-swatch" style="background:${s.color}"></span>${s.name}</span>`
+  ).join('');
+}
+function renderChart(key) {
+  const c = CHARTS[key];
+  const filteredLabels = currentFilter==='all' ? c.labels : c.labels.slice(-parseInt(currentFilter));
+  const datasets = buildDatasets(c, currentFilter);
+  document.getElementById("chart-title").textContent = c.title;
+  renderLegend(c);
+  const yScaleOptions = { grid:{color:"#f0f0f0"}, beginAtZero:true,
+    ticks:{font:{family:font,size:11}, callback: yTickCallback(c.tooltipType)} };
+  if (c.yMax != null) { yScaleOptions.min = c.yMin; yScaleOptions.max = c.yMax; }
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  document.getElementById("chart-tabs").style.display="flex";
+  chartInstance = new Chart(document.getElementById("mainChart"), {
+    type: "line",
+    data: { labels: filteredLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 600, easing: "easeInOutQuart" },
+      plugins: {
+        legend: { display: false },
+        title:  { display: false },
+        tooltip: { rtl: true, callbacks: { label: tooltipCallback(c.tooltipType) },
+          bodyFont:{family:font}, titleFont:{family:font} }
+      },
+      scales: {
+        x: { grid:{color:"#f0f0f0"}, ticks:{font:{family:font,size:10}, maxRotation:45, minRotation:45} },
+        y: yScaleOptions
+      }
+    }
+  });
 }
 renderChart(currentKey);
 document.getElementById("chart-select").addEventListener("change",function(){
@@ -344,6 +380,9 @@ document.querySelectorAll(".chart-tab").forEach(btn=>btn.addEventListener("click
   @keyframes chart-select-pulse{0%{border-color:#ddd;background:#fff}50%{border-color:#61C0CC;background:#d6f0f3}100%{border-color:#ddd;background:#fff}}
   #chart-wrap{flex:1;position:relative;min-height:260px;}
   #chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+  #chart-legend{justify-content:center;gap:22px;margin-top:10px;flex-wrap:wrap;font-family:'Heebo',Arial,sans-serif;}
+  .ch-leg-item{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#444;}
+  .ch-leg-swatch{display:inline-block;width:12px;height:12px;border-radius:3px;flex-shrink:0;}
   #chart-tabs{display:flex;justify-content:center;gap:16px;margin-top:12px;}
   .chart-tab{padding:3px 8px;border:none !important;background:none !important;color:#aaa;font-family:'Heebo',Arial,sans-serif;
     font-size:13px;cursor:pointer;border-radius:4px;outline:none !important;-webkit-appearance:none;appearance:none;box-shadow:none !important;}

@@ -268,6 +268,28 @@ After previewing the per-widget compound filters, two more refinements:
 
 2. **`projects_count` is now per-compound**: `COMPOUND_PROJECTS_COUNT = {all: 7, eshkol: 5, merkaz: 2}`. The "פרויקטים בשיווק" KPI card updates accordingly when the compound filter changes.
 
+### Iteration 4 — monthly ppm chart split into two compound lines
+
+After iteration 3, only the monthly average-ppm view (`charts.price`) had a remaining problem: the single combined line showed an apparent "drop" in the last few months, when in reality the drop reflects `מימוש אופציה` rows for מרכז (whose prices were locked at the original option-sign date months earlier). Mixing מרכז's locked-in prices with אשכול's current pricing was misleading.
+
+**Solution**: split the monthly ppm chart into TWO lines.
+
+1. **`generate_lib.py`** — for `charts.price` only:
+   - Replaced `data: [...]` with `series: [{name, key, data, color}, ...]`.
+   - אשכול series: full timeline (March 2023 — April 2026).
+   - מרכז series: same length array, but `null` for months without data (results in line gaps in Chart.js). First non-null month: July 2025.
+   - `count` and `cumulative` views unchanged — they keep the simple `data: [...]` shape (no compound split for those).
+
+2. **Both widget code paths** (`templates/widgets/charts.html` and `renderMainChart` in `templates/index.html`):
+   - Added `getMainSeries(c)` helper: returns `c.series` if present, else wraps `c.data` as a single-element series. Keeps backward compatibility.
+   - `buildDatasets` / dataset construction: iterates the series array. Single-series renders with `fill: true` (existing area behavior). Multi-series renders with `fill: false` to avoid overlap.
+   - Added `#chart-legend` element + `renderLegend` / `renderMainLegend` — shown only when there are 2+ named series.
+   - Tooltip callback updated to prefix series name when present (e.g. "אשכול: ₪82,000").
+   - `spanGaps: false` — Chart.js will leave a gap where data is `null` rather than connecting across.
+   - Switched from in-place update (`chartInstance.data...; .update()`) to destroy-and-recreate, since dataset count can change between views.
+
+3. **Title change**: `charts.price.title` from `'התפתחות המחיר הממוצע למ"ר בשדה דב'` → `'התפתחות המחיר הממוצע למ"ר לפי מתחם'`.
+
 ### Sanity checks (passed)
 - `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
 - KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.
