@@ -1024,7 +1024,7 @@ function initPriceRangesChart(data){
 // ══════════════════════════════════════════════════════════
 // טבלת עסקאות
 // ══════════════════════════════════════════════════════════
-const TBL_TITLES={expensive:'10 העסקאות היקרות ביותר בשדה דב',cheap:'10 העסקאות הזולות ביותר בשדה דב'};
+const TBL_TITLES={expensive:'10 העסקאות היקרות ביותר',cheap:'10 העסקאות הזולות ביותר'};
 const MONTHS_MAP={ינואר:1,פברואר:2,מרץ:3,אפריל:4,מאי:5,יוני:6,יולי:7,אוגוסט:8,ספטמבר:9,אוקטובר:10,נובמבר:11,דצמבר:12};
 function dateNum(s){const p=s.trim().split(' ');return parseInt(p[2])*10000+(MONTHS_MAP[p[1].replace(/^ב/,'')]||0)*100+parseInt(p[0]);}
 function formatDateShort(s){const p=s.trim().split(' ');const day=parseInt(p[0],10),month=MONTHS_MAP[p[1].replace(/^ב/,'')]||0,year=parseInt(p[2],10)%100;return day+'.'+month+'.'+String(year).padStart(2,'0');}
