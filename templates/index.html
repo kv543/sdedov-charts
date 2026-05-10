@@ -505,13 +505,6 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
             <div id="chart-select-hint">לחצו למעבר בין גרפים</div>
           </div>
         </div>
-        <div class="cmp-pill-wrap" style="display:none" id="chart-cmp-wrap">
-          <div class="cmp-pill" id="chart-cmp-pill">
-            <button data-compound="all" class="active">הכל</button>
-            <button data-compound="eshkol">אשכול</button>
-            <button data-compound="merkaz">מרכז</button>
-          </div>
-        </div>
         <div id="chart-loading">ממתין לנתונים...</div>
         <div id="chart-error"></div>
         <div id="chart-wrap" style="display:none"><canvas id="mainChart"></canvas></div>
@@ -696,13 +689,6 @@ input:checked+.toggle-slider:before{transform:translateX(20px);}
             <div id="pr-subtitle">ללא עסקאות אופציה</div>
           </div>
         </div>
-        <div class="cmp-pill-wrap" style="display:none" id="pr-cmp-wrap">
-          <div class="cmp-pill" id="pr-cmp-pill">
-            <button data-compound="all" class="active">הכל</button>
-            <button data-compound="eshkol">אשכול</button>
-            <button data-compound="merkaz">מרכז</button>
-          </div>
-        </div>
         <div id="pr-loading">ממתין לנתונים...</div>
         <div id="pr-chart-wrap" style="display:none"><canvas id="prChart"></canvas></div>
         <div id="pr-tabs" style="display:none">
@@ -769,7 +755,9 @@ function animNum(el,end,fmt,dur){const t0=performance.now();(function tick(now){
 let mainInst=null, pieInst=null, roomsInst=null, prInst=null, cmpBarsInst=null;
 let MAIN_DATA=null, PIE_DATA=null, ROOMS_DATA=null, PR_DATA=null, TBL_DATA=null, KPI_DATA=null, CMP_DATA=null, META_DATA=null;
 // per-widget compound state — each widget filters independently
-let kpiCompound='all', mainCompound='all', pieCompound='all', roomsCompound='all', prCompound='all', tblCompound='all';
+// (chart and pr time-series are NOT filtered by compound: time attribution of
+// option-exercise rows is uncertain so we keep the time charts as overall aggregate.)
+let kpiCompound='all', pieCompound='all', roomsCompound='all', tblCompound='all';
 let mainKey='count', mainFilter='all';
 let pieKey='rooms', pieFilter='all';
 let roomsKey='price', roomsFilter='all';
@@ -807,10 +795,9 @@ function renderKPI(){
 // ══════════════════════════════════════════════════════════
 function filteredMain(k){
   const c=MAIN_DATA[k];
-  const arr=(c.data && c.data[mainCompound]) || c.data['all'] || [];
-  if(mainFilter==='all') return {labels:c.labels,data:arr};
+  if(mainFilter==='all') return {labels:c.labels,data:c.data};
   const n=parseInt(mainFilter);
-  return {labels:c.labels.slice(-n),data:arr.slice(-n)};
+  return {labels:c.labels.slice(-n),data:c.data.slice(-n)};
 }
 function ttCbMain(type){
   if(type==='price') return ctx=>' ₪'+ctx.raw.toLocaleString('he-IL');
@@ -979,11 +966,9 @@ function initRoomsChart(data){
 // גרף מחירי קצה
 // ══════════════════════════════════════════════════════════
 function filteredPR(){
-  const cheapArr=(PR_DATA.cheap.data && PR_DATA.cheap.data[prCompound]) || PR_DATA.cheap.data['all'] || [];
-  const expArr  =(PR_DATA.expensive.data && PR_DATA.expensive.data[prCompound]) || PR_DATA.expensive.data['all'] || [];
-  if(prFilter==='all') return {labels:PR_DATA.cheap.labels, cheap:cheapArr, exp:expArr};
+  if(prFilter==='all') return {labels:PR_DATA.cheap.labels, cheap:PR_DATA.cheap.data, exp:PR_DATA.expensive.data};
   const n=parseInt(prFilter);
-  return {labels:PR_DATA.cheap.labels.slice(-n), cheap:cheapArr.slice(-n), exp:expArr.slice(-n)};
+  return {labels:PR_DATA.cheap.labels.slice(-n), cheap:PR_DATA.cheap.data.slice(-n), exp:PR_DATA.expensive.data.slice(-n)};
 }
 function renderPriceRanges(){
   const fd=filteredPR();
@@ -1219,8 +1204,8 @@ function loadDashboard(allData){
   initComparison(allData.comparison);
   initPerWidgetCompoundPills();
 
-  // show all compound pills now that data is loaded
-  ['chart-cmp-wrap','pie-cmp-wrap','rooms-cmp-wrap','pr-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
+  // show compound pills now that data is loaded (time-series widgets — chart, pr — have no compound pill)
+  ['pie-cmp-wrap','rooms-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='flex';
   });
 }
@@ -1250,10 +1235,8 @@ function _bindCompoundPill(pillId, onChange){
 
 function initPerWidgetCompoundPills(){
   _bindCompoundPill('kpi-cmp-pill',   c=>{ kpiCompound=c;   renderKPI(); });
-  _bindCompoundPill('chart-cmp-pill', c=>{ mainCompound=c;  if(MAIN_DATA)  renderMainChart(mainKey); });
   _bindCompoundPill('pie-cmp-pill',   c=>{ pieCompound=c;   if(PIE_DATA)   renderPieChart(pieKey); });
   _bindCompoundPill('rooms-cmp-pill', c=>{ roomsCompound=c; if(ROOMS_DATA) renderRoomsChart(roomsKey); });
-  _bindCompoundPill('pr-cmp-pill',    c=>{ prCompound=c;    if(PR_DATA)    renderPriceRanges(); });
   _bindCompoundPill('tbl-cmp-pill',   c=>{ tblCompound=c;   if(TBL_DATA)   renderTbl(tblKey); });
 }
 
@@ -1455,7 +1438,7 @@ document.getElementById('btn-new').addEventListener('click',()=>{
   // Reset
   mainInst=null;pieInst=null;roomsInst=null;prInst=null;cmpBarsInst=null;
   MAIN_DATA=null;PIE_DATA=null;ROOMS_DATA=null;PR_DATA=null;TBL_DATA=null;KPI_DATA=null;CMP_DATA=null;META_DATA=null;
-  kpiCompound='all';mainCompound='all';pieCompound='all';roomsCompound='all';prCompound='all';tblCompound='all';
+  kpiCompound='all';pieCompound='all';roomsCompound='all';tblCompound='all';
   mainKey='count';mainFilter='all';pieKey='rooms';pieFilter='all';roomsKey='price';roomsFilter='all';prFilter='all';
   tblKey='expensive';tblSortCol='price';tblSortDir='desc';
   // Reset chart loading states
@@ -1463,7 +1446,7 @@ document.getElementById('btn-new').addEventListener('click',()=>{
     const el=document.getElementById(id);el.style.display='block';el.textContent='ממתין לנתונים...';
   });
   ['chart-wrap','chart-tabs','rooms-chart-wrap','pr-chart-wrap','pr-tabs','tbl-wrap',
-   'chart-cmp-wrap','pie-cmp-wrap','rooms-cmp-wrap','pr-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
+   'pie-cmp-wrap','rooms-cmp-wrap','tbl-cmp-wrap'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';
   });
   document.getElementById('pieChart').style.display='none';

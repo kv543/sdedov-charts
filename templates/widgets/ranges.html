@@ -11,11 +11,6 @@
       <div id="pr-subtitle">ללא עסקאות אופציה</div>
     </div>
   </div>
-  <div class="cmp-pill pr-compound-pill">
-    <button class="pr-comp-tab active" data-compound="all">הכל</button>
-    <button class="pr-comp-tab" data-compound="eshkol">אשכול</button>
-    <button class="pr-comp-tab" data-compound="merkaz">מרכז</button>
-  </div>
   <div id="pr-chart-wrap"><canvas id="prChart"></canvas></div>
   <div id="pr-tabs">
     <button class="pr-tab active" data-filter="all">הכל</button>
@@ -30,13 +25,11 @@
   const PR_DATA = {{ data.price_ranges | tojson }};
   const font    = "'Heebo','Arial',sans-serif";
   function hexToRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
-  let inst=null, filter='all', currentCompound='all';
+  let inst=null, filter='all';
   function getFiltered(){
-    const cheapArr=(PR_DATA.cheap.data && PR_DATA.cheap.data[currentCompound]) || PR_DATA.cheap.data['all'] || [];
-    const expArr  =(PR_DATA.expensive.data && PR_DATA.expensive.data[currentCompound]) || PR_DATA.expensive.data['all'] || [];
-    if(filter==='all') return{labels:PR_DATA.cheap.labels, cheap:cheapArr, exp:expArr};
+    if(filter==='all') return{labels:PR_DATA.cheap.labels, cheap:PR_DATA.cheap.data, exp:PR_DATA.expensive.data};
     const n=parseInt(filter);
-    return{labels:PR_DATA.cheap.labels.slice(-n), cheap:cheapArr.slice(-n), exp:expArr.slice(-n)};
+    return{labels:PR_DATA.cheap.labels.slice(-n), cheap:PR_DATA.cheap.data.slice(-n), exp:PR_DATA.expensive.data.slice(-n)};
   }
   function render(){
     const fd=getFiltered();
@@ -73,11 +66,6 @@
     document.querySelectorAll('.pr-tab').forEach(b=>b.classList.remove('active'));
     this.classList.add('active');render();
   }));
-  document.querySelectorAll('.pr-comp-tab').forEach(btn=>btn.addEventListener('click',function(){
-    currentCompound=this.dataset.compound;
-    document.querySelectorAll('.pr-comp-tab').forEach(b=>b.classList.remove('active'));
-    this.classList.add('active');render();
-  }));
 })();
 </script>
 
@@ -97,20 +85,5 @@
   .pr-tab:focus{outline:none !important;box-shadow:none !important;}
   .pr-tab.active{color:#61C0CC !important;text-decoration:underline !important;font-weight:600;background:none !important;border:none !important;outline:none !important;box-shadow:none !important;}
   .pr-tab:hover:not(.active){color:#555;background:#f0f0f0 !important;}
-
-  /* ── מסנן מתחם — pill קומפקטי ─────────────────────── */
-  .pr-compound-pill{display:inline-flex;background:#eef3f4;border-radius:14px;padding:2px;direction:rtl;align-self:center;margin:0 auto 12px;}
-  .pr-compound-pill .pr-comp-tab{
-    padding:4px 11px !important;border:none !important;background:transparent !important;
-    color:#677e85 !important;font-family:'Heebo',Arial,sans-serif !important;
-    font-size:11.5px !important;font-weight:600 !important;border-radius:12px !important;
-    cursor:pointer !important;outline:none !important;-webkit-appearance:none;appearance:none;
-    box-shadow:none !important;white-space:nowrap;transition:all .18s ease;
-  }
-  .pr-compound-pill .pr-comp-tab:hover:not(.active){color:#2d6b75 !important;}
-  .pr-compound-pill .pr-comp-tab.active{background:#677e85 !important;color:#fff !important;box-shadow:0 1px 4px rgba(73,105,112,0.18) !important;}
-  .pr-compound-pill .pr-comp-tab[data-compound="eshkol"].active{background:#496970 !important;}
-  .pr-compound-pill .pr-comp-tab[data-compound="merkaz"].active{background:#61C0CC !important;}
-  .pr-compound-pill .pr-comp-tab:focus{outline:none !important;box-shadow:none !important;}
 </style>
 </body></html>

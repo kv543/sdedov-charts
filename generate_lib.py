@@ -41,6 +41,9 @@ COMPOUND_UNITS_LABEL = {
     "merkaz": "במתחם המרכזי",
 }
 
+# מספר פרויקטים בשיווק בכל מתחם (לכרטיס ה-KPI "פרויקטים בשיווק")
+COMPOUND_PROJECTS_COUNT = {"all": 7, "eshkol": 5, "merkaz": 2}
+
 # ── טבלת שיוך גוש/חלקה למתחם ────────────────────────────────
 # מבוסס על "שיוך גוש חלקה לפרוייקטים.xlsx" (2026-05).
 # כל שורה שלא מופיעה כאן אינה חלק משדה דב ותוסר מהניתוח.
@@ -205,51 +208,37 @@ def generate_all_data(
             "units_label":        COMPOUND_UNITS_LABEL.get(compound, ""),
             "avg_price_3rooms":   avg_price_rooms(3),
             "avg_price_4rooms":   avg_price_rooms(4),
-            "projects_count":     int(projects_count),
+            "projects_count":     int(COMPOUND_PROJECTS_COUNT.get(compound, projects_count)),
             "projects_url":       projects_url,
         }
 
     kpi = {ck: _kpi(ck) for ck in COMPOUND_KEYS}
 
     # ── 2. גרף חודשי — count, cumulative, ppm ────────────────
-    # התוויות (חודשים) מחושבות גלובלית — מבוססות על כל df_count
-    monthly_global = (df_count.groupby("ym")
-                      .agg(count=("price", "count"))
-                      .reset_index()
-                      .sort_values("ym"))
-    global_ym_list = list(monthly_global["ym"])
-    labels_global  = [month_label(y, m) for y, m in global_ym_list]
+    # ללא ממד מתחם: חוסר ודאות בסיווג עסקאות מימוש אופציה לפי חודש המכירה,
+    # ולכן לא מציגים ניתוח זמני לפי מתחם (כל הנתונים — אגרגציה כללית בלבד).
+    monthly_all = (df_count.groupby("ym")
+                   .agg(count=("price", "count"))
+                   .reset_index()
+                   .sort_values("ym"))
+    monthly_ppm = (df_real_ppm.groupby("ym")
+                   .agg(avg_ppm=("ppm", "mean"))
+                   .reset_index()
+                   .sort_values("ym"))
 
-    def _monthly_count(compound):
-        sub = _slice(df_count, compound)
-        if len(sub) == 0:
-            return [0] * len(global_ym_list)
-        m = sub.groupby("ym").size().to_dict()
-        return [int(m.get(ym, 0)) for ym in global_ym_list]
+    labels     = [month_label(y, m) for y, m in monthly_all["ym"]]
+    counts     = [int(v) for v in monthly_all["count"]]
+    cumulative = [int(v) for v in monthly_all["count"].cumsum()]
 
-    def _monthly_cumulative(counts):
-        out, total = [], 0
-        for c in counts:
-            total += c
-            out.append(total)
-        return out
-
-    def _monthly_ppm(compound):
-        sub = _slice(df_real_ppm, compound)
-        if len(sub) == 0:
-            return [0] * len(global_ym_list)
-        m = sub.groupby("ym")["ppm"].mean().to_dict()
-        return [round(safe_float(m.get(ym, 0))) for ym in global_ym_list]
-
-    counts_data      = {ck: _monthly_count(ck) for ck in COMPOUND_KEYS}
-    cumulative_data  = {ck: _monthly_cumulative(counts_data[ck]) for ck in COMPOUND_KEYS}
-    ppm_data         = {ck: _monthly_ppm(ck) for ck in COMPOUND_KEYS}
+    ppm_dict  = {tuple(row["ym"]): round(safe_float(row["avg_ppm"]))
+                 for _, row in monthly_ppm.iterrows()}
+    avg_ppm_m = [ppm_dict.get(ym, 0) for ym in monthly_all["ym"]]
 
     charts = {
         "count": {
             "title":       "כמות דירות שנמכרו בשדה דב לפי חודשים",
-            "labels":      labels_global,
-            "data":        counts_data,
+            "labels":      labels,
+            "data":        counts,
             "color":       "#496970",
             "tooltipType": "count",
             "yMin":        0,
@@ -257,8 +246,8 @@ def generate_all_data(
         },
         "cumulative": {
             "title":       "כמות מצטברת של דירות שנמכרו בשדה דב",
-            "labels":      labels_global,
-            "data":        cumulative_data,
+            "labels":      labels,
+            "data":        cumulative,
             "color":       "#496970",
             "tooltipType": "cumulative",
             "yMin":        0,
@@ -266,8 +255,8 @@ def generate_all_data(
         },
         "price": {
             "title":       'התפתחות המחיר הממוצע למ"ר בשדה דב',
-            "labels":      labels_global,
-            "data":        ppm_data,
+            "labels":      labels,
+            "data":        avg_ppm_m,
             "color":       "#61C0CC",
             "tooltipType": "price",
             "yMin":        0,
@@ -356,22 +345,19 @@ def generate_all_data(
         }
     }
 
-    # ── 5. מחירי קצה — רבעוני (לפי מתחם) ─────────────────────
+    # ── 5. מחירי קצה — רבעוני ─────────────────────────────────
+    # ללא ממד מתחם (אותה לוגיקה של גרפי הזמן — סיווג זמני אינו ודאי).
     quarters_sorted = sorted(df_real_price["yq"].unique())
     q_labels        = [quarter_label(y, q) for y, q in quarters_sorted]
 
-    def _q_count(df_sub):
-        return [int(len(df_sub[df_sub["yq"] == yq])) for yq in quarters_sorted]
-
-    cheap_data, expensive_data = {}, {}
-    for ck in COMPOUND_KEYS:
-        sub = _slice(df_real_price, ck)
-        cheap_data[ck]     = _q_count(sub[sub["price"] < 4e6])
-        expensive_data[ck] = _q_count(sub[sub["price"] > 10e6])
+    df_cheap     = df_real_price[df_real_price["price"] < 4e6]
+    df_expensive = df_real_price[df_real_price["price"] > 10e6]
+    cheap_counts     = [int(len(df_cheap[df_cheap["yq"] == yq]))         for yq in quarters_sorted]
+    expensive_counts = [int(len(df_expensive[df_expensive["yq"] == yq])) for yq in quarters_sorted]
 
     price_ranges = {
-        "cheap":     {"labels": q_labels, "data": cheap_data,     "color": "#61C0CC"},
-        "expensive": {"labels": q_labels, "data": expensive_data, "color": "#496970"}
+        "cheap":     {"labels": q_labels, "data": cheap_counts,     "color": "#61C0CC"},
+        "expensive": {"labels": q_labels, "data": expensive_counts, "color": "#496970"}
     }
 
     # ── 6. טבלת עסקאות — לכל מתחם ────────────────────────────

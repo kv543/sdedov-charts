@@ -257,6 +257,17 @@ After previewing the initial implementation, the global compound filter and the 
 
 5. **Considered but dropped**: an "average build year" row in the comparison summary table. Initial intent was to convey "lower price ↔ later delivery", but the data shows the means are essentially equal (אשכול 2029.7, מרכז 2029.7) due to a bimodal distribution in מרכז (216×2028 in 6900/23 vs 80×2034 in 6896/204). The hypothesis doesn't hold at the compound aggregate level, so the row was omitted to avoid misleading viewers.
 
+### Iteration 3 — time-axis widgets reverted to no-compound, projects_count per compound
+
+After previewing the per-widget compound filters, two more refinements:
+
+1. **Removed compound filter from all time-series widgets** — the user observed that monthly transaction counts and quarterly price-range counts have inherent uncertainty for newly-published months: the data doesn't tell us cleanly whether a given April-2026 transaction is genuinely new or a retroactive `מימוש אופציה` of an option signed earlier. Showing "0 sales in April for מרכז" would be misleading.
+   - Affected widgets (now no compound pill, no compound dim in JSON): `charts.html` (count / cumulative / monthly ppm), `ranges.html` (cheap < 4M & expensive > 10M per quarter).
+   - Their data shape reverted from `{compound: [...]}` back to a plain array, matching pre-iteration-1 behavior.
+   - Compound filter still applies on KPI, pie, rooms_bar, transactions, and the comparison widgets.
+
+2. **`projects_count` is now per-compound**: `COMPOUND_PROJECTS_COUNT = {all: 7, eshkol: 5, merkaz: 2}`. The "פרויקטים בשיווק" KPI card updates accordingly when the compound filter changes.
+
 ### Sanity checks (passed)
 - `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
 - KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.
