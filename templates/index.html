@@ -172,8 +172,8 @@ select:hover,select:focus{border-color:#61C0CC;}
 /* ── Chart wraps ── */
 #chart-wrap,#rooms-chart-wrap,#pr-chart-wrap{flex:1;position:relative;min-height:260px;}
 #chart-wrap canvas,#rooms-chart-wrap canvas,#pr-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
-#pie-chart-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;}
-#pie-chart-wrap canvas{max-width:480px;width:100%;height:auto!important;}
+#pie-chart-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 0;max-height:280px;min-height:0;}
+#pie-chart-wrap canvas{max-width:400px;width:100%;height:auto!important;max-height:280px;}
 
 /* ── Chart legend (used when monthly ppm shows 2 compound lines) ── */
 #chart-legend{justify-content:center;gap:22px;margin-top:10px;flex-wrap:wrap;}
