@@ -1,6 +1,6 @@
 # Project State — sdedov-charts
 
-> **Last updated:** 2026-05-10 (session 4)
+> **Last updated:** 2026-05-11 (session 5 — copy review only)
 > **Purpose:** Single source of truth for resuming development after any break.
 > **Rule:** Update this file at the end of every work session.
 
@@ -30,16 +30,25 @@ A password-protected internal web application for the **שדה דב real estate 
 - Main Excel upload → full data processing → interactive dashboard (`POST /process`)
 - Optional land Excel upload → land cost chart (`POST /process-land`)
 - Dashboard auto-loads on page return (via `GET /api/data` + disk cache) — no need to re-upload
-- All 7 dashboard widgets render correctly with correct colors/scales matching live Elementor site
+- **Compound classification** — every row mapped to אשכול/מרכז via (גוש, חלקה); rows outside Sde Dov dropped
+- **Per-widget compound filter** (compact pill UI: הכל / אשכול / מרכז) on KPI, pie, rooms_bar, transactions
+- **Two-line monthly ppm chart** — אשכול full history + מרכז starting July 2025
+- **Two comparison widgets** — ppm-by-rooms + price-by-rooms, אשכול vs מרכז, 12-month window
+- **Per-compound KPI** — `total_transactions`, `avg_ppm`, `avg_price`, `total_units` (16K / 4844 / 7128), `units_label`, `projects_count` (7/5/2)
+- **Dynamic KPI subtitle** — "מתוך X יחידות דיור Y" updates with compound selection
+- All 8 dashboard widgets + land widget render correctly with correct colors/scales matching live Elementor site
 - Export copy page (`GET /export/copy`) — shows all widgets with "copy code" clipboard buttons
 - Export ZIP download (`GET /export/html`) — downloads `sdedov-widgets.zip` with per-widget HTML files
-- Export JSON ZIP (`GET /export/json`) — downloads all data as JSON files
+- Export JSON ZIP (`GET /export/json`) — downloads 8 (+1 optional) JSON files
 - Server restart recovery — data persists to `/tmp/sdedov_last/` and auto-reloads on next request
-- Land widget (widget 7) appears only when land data is present
+- Land widget appears only when land data is present
+- Single gunicorn worker (iteration 6) — no OOM on Railway
 
 ### ⚠️ Partially Implemented
 - `templates/widgets/pie_rooms.html` — exists but **deprecated** (replaced by separate `pie.html` + `rooms_bar.html`). Can be deleted.
+- `templates/widgets/comparison_summary.html` — no longer registered in `app.py` (iteration 5). Can be deleted.
 - `/export/html` ZIP route still has debug error-trap code (`.error.txt` files in ZIP) — useful for debugging but not production-clean
+- `preview/` folder is committed to the repo with ~300KB inlined Chart.js; should probably be `.gitignore`-d
 
 ### ❌ Not Implemented
 - No automatic data refresh / scheduled updates
@@ -324,6 +333,84 @@ The OOM happened during multipart upload parsing in `/process`. Two gunicorn wor
 
 The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): the JSON payload grew with the compound dimension (per-compound KPIs, transactions per compound, comparison section), and the source Excel grew to 1,519 rows. Combined headroom was lost.
 
+### Iteration 7 — "10 העסקאות..." titles cleaned up
+
+The transactions table titles (`"10 העסקאות היקרות ביותר בשדה דב"` / `"...זולות..."`) included the project name "בשדה דב". When a user filters by compound (אשכול / מרכז), the headline became inaccurate — it still said "בשדה דב" even when showing only one compound. Removed the trailing project-name phrase.
+
+- `templates/index.html` — `TBL_TITLES` const updated.
+- `templates/widgets/transactions.html` — `TABLE_TITLES` const updated.
+- Result: titles are simply `"10 העסקאות היקרות ביותר"` / `"...הזולות ביותר"`, accurate under any compound filter.
+
+### Iteration 8 — Widget heights aligned in pairs
+
+Symptom: on the live site, paired widgets in a `grid-2` row didn't have matching heights — most visibly the transactions table (with compound pill + 10 rows) was taller than the ranges chart sitting next to it.
+
+Root cause: every widget had `min-height: 480px`. Content-rich widgets (transactions table) pushed past 480px while their pair partner stayed at exactly 480px. CSS Grid stretched the grid cells to equal height, but the inner widget cards didn't fill the cells.
+
+**Fix** — for each grid-2 widget:
+- Container: `min-height: 480px` → `height: 480px` (fixed). Now both cards in a pair are exactly 480px.
+- Transactions: removed `max-height: 360px` on `#tbl-wrap` → `flex: 1` lets it fill whatever space remains inside the 480px container; table content scrolls within the wrap.
+- Pie: chart-wrap `max-height: 320px` → `280px`, canvas `max-width: 480px` → `400px`, added `min-height: 0`. Was needed because the natural pie canvas (with `aspectRatio: 1.4`) would have been ~343px tall and pushed the time tabs out of the 480px box.
+
+Applied to: `pie.html`, `rooms_bar.html`, `ranges.html`, `transactions.html`, `comparison_bars.html`, `comparison_price_bars.html`, and the matching containers in `templates/index.html`.
+
+### Iteration 9 — Mobile-responsive widget heights + compact legend
+
+After iteration 8, mobile devices started showing overflow problems:
+1. **rooms_bar / pie tabs slipped outside the box on mobile** — narrow screens caused header/title to wrap to 2-3 lines, and with `height: 480px` strict, the bottom tabs were pushed outside the rounded card.
+2. **Comparison widget legend wrapped to 2 rows on mobile** — each legend item (e.g. `▢ אשכול מאי 2025 – מרץ 2026`) was too wide to fit two side-by-side on a 380px-wide screen. The wrapped legend exceeded the 480px container.
+3. **Compound name vs. swatch alignment** — when the date range was stacked below the compound name (`display: block`), the swatch was vertically centered relative to the now 2-line label, ending up *between* the two lines instead of next to the name.
+
+**Fixes applied via `@media (max-width: 600px)` blocks**:
+
+*All grid-2 widgets* (`pie`, `rooms_bar`, `ranges`, `transactions`, both comparison widgets):
+```css
+@media (max-width: 600px) {
+  #X-container { height: auto; min-height: 480px; }
+}
+```
+On single-column mobile layouts there's no horizontal pair to align with, so the container becomes free to grow if the content needs it.
+
+*Comparison widgets* — compact legend on mobile:
+```css
+@media (max-width: 600px) {
+  .Xcmpb-legend       { gap: 14px; margin-top: 10px; }
+  .Xcmpb-legend-item  { font-size: 12px; align-items: flex-start; }
+  .Xcmpb-swatch       { margin-top: 3px; }            /* visually align with name baseline */
+  .Xcmpb-leg-name     { display: block; line-height: 1.2; }
+  .Xcmpb-leg-range    { display: block; margin: 1px 0 0 0; font-size: 10px; line-height: 1.2; }
+}
+```
+Stacking name+range vertically inside each legend item makes each item narrower → two items fit side-by-side without wrapping. `align-items: flex-start` + 3px `margin-top` on the swatch puts the swatch at the same horizontal line as the compound name.
+
+*Comparison containers reverted to flexible height even on desktop*:
+```css
+#cmpb-container, #cmpp-container { min-height: 480px; }   /* not fixed height */
+#cmpb-wrap,      #cmpp-wrap      { min-height: 0; }       /* chart can shrink to absorb legend growth */
+.cmpb-legend,    .cmpp-legend    { flex-shrink: 0; }      /* legend keeps its natural height */
+.cmpb-note,      .cmpp-note      { flex-shrink: 0; }
+```
+The pair stays equal-height via CSS Grid's `align-items: stretch`; the wrap absorbs the difference when the legend wraps.
+
+*Dashboard `index.html`* — same compact legend rule and `@media (max-width: 900px)` block to relax all grid-2 widgets when the dashboard collapses to a single column.
+
+### Iteration 10 — Jinja2 `{#X-container{` comment-tag trap
+
+After iteration 9, `/export/copy` started showing `"Missing end of comment tag"` errors on `pie.html`, `rooms_bar.html`, and `ranges.html`. The culprit was the new one-liner media queries:
+
+```css
+@media(max-width:600px){#rooms-container{height:auto;min-height:480px;}}
+```
+
+The `{#` sequence right before `rooms-container` is identical to Jinja2's comment opener. Jinja parses it as the start of `{# … #}` and then can't find the closing `#}` inside the CSS, throwing the `Missing end of comment tag` error at render time.
+
+**Fix**: separate the opening brace from the `#`, either with a space or with a newline. Example:
+```css
+@media (max-width: 600px) { #rooms-container { height: auto; min-height: 480px; } }
+```
+
+Applied to all four affected widget templates. The existing note in section 9 "Jinja2 gotcha" warned about this exact pattern — easy to re-introduce when iterating quickly on CSS. **For future iterations: always keep at least one space between `{` and `#` when writing CSS inside a Jinja template, or wrap risky CSS in `{% raw %}` / `{% endraw %}` blocks.**
+
 ### Sanity checks (passed)
 - `total_count` = 1,295 (was 1,519) — `מימוש אופציה` correctly excluded.
 - KPI per compound: אשכול avg_ppm 82,890 ₪, מרכז 65,549 ₪ — large but expected gap.
@@ -398,25 +485,32 @@ The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): t
 | POST | `/process` | Upload main Excel → processes → saves to `/tmp` → returns JSON |
 | POST | `/process-land` | Upload land Excel → processes → saves to `/tmp` → returns JSON |
 | GET | `/api/data` | Returns current data (from memory or disk); `{"available": bool, "data": {...}}` |
-| GET | `/export/json` | ZIP of 6-7 JSON files |
-| GET | `/export/copy` | HTML page with copy-to-clipboard buttons for all 7 widget HTML codes |
-| GET | `/export/html` | ZIP of 6-7 self-contained widget HTML files |
+| GET | `/export/json` | ZIP of 8 JSON files (+ optional land) |
+| GET | `/export/copy` | HTML page with copy-to-clipboard buttons for all 8 widget HTML codes (+ optional land) |
+| GET | `/export/html` | ZIP of 8 self-contained widget HTML files (+ optional land) |
 
-### Widget Templates (`templates/widgets/`) — see section 2d for compound-dim details
+### Widget Templates (`templates/widgets/`) — see sections 2d–iteration 10 for evolution
 | File | Widget | Data key(s) used |
 |---|---|---|
-| `kpi.html` | 4 KPI cards with animated counters + gauge | `data.kpi[compound]` |
-| `charts.html` | Monthly line chart (count / cumulative / price/sqm) | `data.charts[k].data[compound]` |
+| `kpi.html` | 4 KPI cards with animated counters + gauge | `data.kpi[compound]` (compound ∈ all/eshkol/merkaz) |
+| `charts.html` | Monthly line chart (count / cumulative / price-by-compound) | `data.charts.count.data` (array), `data.charts.cumulative.data` (array), `data.charts.price.series` (2-line by compound) |
 | `pie.html` | Pie chart (by rooms / by price range) | `data.pie[k].data[compound][time]` |
 | `rooms_bar.html` | Bar chart by room count (price / size / ppm) | `data.rooms_charts[k].data[compound][time]` |
-| `ranges.html` | Line chart: cheap (<4M) vs expensive (>10M) over time | `data.price_ranges[k].data[compound]` |
-| `transactions.html` | Table: top 10 most/least expensive transactions | `data.transactions[compound][k]` |
-| `comparison_bars.html` | Grouped bar: ppm by rooms, אשכול vs מרכז | `data.comparison.ppm_by_rooms` |
-| `comparison_summary.html` | Side-by-side table of indicators per compound | `data.comparison.summary` |
+| `ranges.html` | Line chart: cheap (<4M) vs expensive (>10M) over quarters | `data.price_ranges[cheap|expensive].data` (array, no compound) |
+| `transactions.html` | Table: top 10 most/least expensive transactions | `data.transactions[compound][expensive|cheap]` |
+| `comparison_bars.html` | Grouped bar: ppm by rooms, אשכול vs מרכז (12mo) | `data.comparison.ppm_by_rooms` |
+| `comparison_price_bars.html` | Grouped bar: avg apartment price (₪M) by rooms, אשכול vs מרכז (12mo) | `data.comparison.price_by_rooms` |
 | `land.html` | Land cost per unit — line + range band, external tooltip | `data.land_chart.tenders` |
 
+`comparison_summary.html` exists on disk but is no longer registered in `app.py` (replaced by `comparison_price_bars.html` in iteration 5).
+
 ### Excel Column Requirements (Main DB)
-`תמורה מוצהרת בש"ח`, `מחיר למ״ר`, `שטח`, `שנה`, `חודש`, `יום`, `חדרים`, `שנת בניה`, `סוג עסקה`
+Required for processing: `תמורה מוצהרת בש"ח`, `מחיר למ״ר`, `שטח`, `שנה`, `חודש`, `יום`, `חדרים`, `שנת בניה`, `סוג עסקה`, **`גוש`**, **`חלקה`** (the last two are used for compound classification).
+
+Rows whose (גוש, חלקה) pair is not in `COMPOUND_MAP` are dropped (treated as not part of Sde Dov). `סוג עסקה` values now have three meanings:
+- `אופציה` → counted as transaction, excluded from real-data analysis
+- `דירה` → counted as transaction AND included in real-data analysis
+- `מימוש אופציה` → NOT counted as transaction (reclassification of existing אופציה), included in real-data analysis
 
 ### Excel Column Requirements (Land DB)
 `סדר כרונולוגי`, `תאריך סגירת מכרז`, `מספר מכרז`, `מתחם`, `עלות ממוצעת לקרקע ליחידת דיור`, `ממוצע למכרז`
@@ -461,26 +555,69 @@ The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): t
 
 5. **`/export/html` has debug code** — per-widget try/except writes `.error.txt` into ZIP on failure. This is useful for debugging but ideally would be removed or toggled by a debug flag in production.
 
-6. **gunicorn uses 2 workers** — shared in-memory `_last_data` dict is NOT shared between workers. In practice this works because Railway typically routes a user's session to the same worker, but it's technically fragile. The disk persistence (`_load_from_disk`) mitigates this.
+6. ~~**gunicorn uses 2 workers**~~ — **resolved in session 4 iteration 6**: `Procfile` now uses `--workers 1`, eliminating both the OOM risk and cross-worker memory inconsistency.
 
-7. **`projects_count` and `projects_url` are hardcoded** in `generate_all_data()` defaults: `projects_count=7`, `projects_url="https://sdedov.co.il/projects/"`. These should be editable via UI or env var.
+7. **`projects_url` hardcoded** in `generate_all_data()` default (`projects_url="https://sdedov.co.il/projects/"`). Should be editable via UI or env var. (`projects_count` is now per-compound via `COMPOUND_PROJECTS_COUNT` constant — iteration 3.)
+
+8. **`COMPOUND_TOTAL_UNITS` and `COMPOUND_PROJECTS_COUNT` constants** are inline in `generate_lib.py`. Easy to forget when new compounds are added or numbers update. Consider extracting to a config file (or env vars).
+
+9. **`comparison_summary.html` is dead code** — still in `templates/widgets/` but no longer registered in `app.py`. Could be deleted (iteration 5 replaced it with `comparison_price_bars.html`).
+
+---
+
+## 2e. Session 5 — Text/copy review on live page (2026-05-11)
+
+After all session-4 charts deployed to the live Elementor site at `sdedov.co.il/נתוני-שוק-הנדלן-בשדה-דב/`, the live data JSONs were inspected and compared with the Hebrew narrative copy that surrounds the charts. No code changes; only **content/copy** changes were proposed for the user to apply in the WordPress page builder.
+
+### Live data snapshot used for the review (curl from `https://sdedov.co.il/wp-content/uploads/data/`):
+- KPI all: total=1,293; avg_ppm=76,456; avg_3rooms=6.41M; avg_4rooms=8.58M; projects=7.
+- KPI eshkol: total=520; avg_ppm=82,886; avg_3rooms=6.83M; avg_4rooms=9.65M; projects=5.
+- KPI merkaz: total=773; avg_ppm=65,549; avg_3rooms=5.07M; avg_4rooms=6.61M; projects=2.
+- Comparison ppm 12mo (אשכול / מרכז): 73,390/67,344 (2 חד), 79,934/64,908 (3), 85,620/64,340 (4), 86,814/66,006 (5).
+- Comparison price 12mo (M ₪): 3.34/3.45 (2 חד), 6.35/5.07 (3), 9.70/6.61 (4), 12.14/9.16 (5). Note: 2-room is +3% in merkaz (size: 51.8 vs 44.9 sqm).
+- price-ranges: cheap (<4M) overtook expensive (>10M) starting Q4 2025 (cheap 42 vs expensive 22) and stayed higher in Q1+Q2 2026.
+
+### Stale numbers in current page text (need user updates):
+1. "מחירה של דירת 4 חדרים בשדה דב עומד בממוצע על כ־9.5 מיליון שקלים" — actual is 8.58M aggregate (was 9.5M before merkaz data entered).
+2. "המחיר למ"ר בדירות קטנות (2-3 חדרים) נמוך בכ-4% בהשוואה לדירות גדולות (4-5 חדרים)" — current gap is ~0.4% (merkaz pulled small-apt-ppm up and large-apt-ppm down to near-parity).
+3. "דירות שמחירן מעל 10 מיליון שקלים מהוות כ-25% מסך הדירות שנמכרו" — actual is ~19% (160 of 825) because cheaper merkaz units shifted the distribution.
+4. "ב־12 החודשים האחרונים נרשמה ירידה של כ־6% במחיר הממוצע למ"ר בדירות 2 חדרים" — still ~-7.7% at aggregate level, but the drop is driven by merkaz mix entering. Needs nuance.
+5. "חלקן היחסי [של דירות 2 חדרים] בעסקאות עלה מ־30% ל־36%" — actual is 30% → 34%; close but slightly stale.
+
+### Sections without explanatory copy (need user additions):
+- "מחיר דירה ממוצע לפי מס' חדרים — השוואת מתחמים" and "מחיר ממוצע למ"ר לפי מס' חדרים — השוואת מתחמים" — only have the small footnote "האיכלוס במתחם המרכזי צפוי בממוצע כ-3-4 שנים לאחר מתחם אשכול". No introductory paragraph despite being the main new insight in this revision.
+- The monthly-ppm time-series chart was split into two compound lines (אשכול / מרכז) in iteration 4, but the narrative above the chart still talks about "המחיר הממוצע למ״ר... שומר על יציבות יחסית" — needs to acknowledge the two-line view.
+
+### Suggested edits delivered to the user (delivered in chat, not in code):
+- KPI block: no copy changes (numbers are dynamic per compound).
+- Rooms section: replace 9.5M→8.6M (or rephrase to mention compound difference), drop the 4% small/large claim, update 25%→~19% for >10M apartments, and add nuance to the "-6% in 2-room ppm" claim.
+- New paragraph above the comparison charts: highlight (a) ~21% ppm discount in merkaz vs eshkol, (b) flat ppm-by-rooms in merkaz vs sloped in eshkol, (c) 2-room counter-example where merkaz is +3% (driven by larger 2-room sizes ~52 vs 45 sqm), (d) connect to the existing הסכמי-אופציה/discounting paragraph as empirical support.
+- Time-series section: update the "כמות דירות שנמכרו ומחיר ממוצע למ"ר" preamble to mention the new two-line ppm view (separate lines for eshkol/merkaz, with merkaz starting July 2025).
+
+### Files touched
+- PROJECT_STATE.md (this section).
 
 ---
 
 ## 7. Next Step
 
-**Deployment of session 4 changes** (breaking JSON-schema change):
-1. Push to Railway main branch (auto-deploys).
-2. Open dashboard, re-upload `sdedov-db-0326.xlsx` (or newer) — regenerates `/tmp/*.json` in new schema.
-3. Verify dashboard works: global compound tab toggles all widgets, comparison section visible.
-4. Download `sdedov-data.zip` from `/export/json`, upload contents to WordPress `/wp-content/uploads/data/`.
-   New files: `shadeh-dov-comparison.json`, `shadeh-dov-meta.json`. Existing 6 files have new internal schema.
-5. Replace Elementor HTML widgets:
-   - Open `/export/copy`, copy each fragment, paste into corresponding Elementor HTML widget.
-   - 8 main widgets + 1 land widget; 2 of the 8 are new (comparison_bars, comparison_summary).
-6. Update the live dynamic-fetch widget code (separate codebase) to handle new schema, OR drop dynamic fetch and use only the baked-in HTML from step 5.
+**Session 4 has been deployed and is live on Railway and Elementor.** Latest pushed iterations: 1–10 (compound classification → OOM fix → height alignment → mobile-responsive → Jinja `{#` gotcha fix). **Session 5 was content-only — see section 2e.**
 
-**Open question for user**: when ready, May 2026 transactions can be added by uploading a newer Excel — no code changes needed (current code handles it transparently).
+When new Excel data arrives (e.g. May 2026):
+1. Upload it via the dashboard at `/` — no code changes required, generates the full new schema automatically.
+2. Verify the dashboard renders correctly (open `/`, switch compound filters per widget, confirm comparison section).
+3. Download `sdedov-data.zip` from `/export/json`, upload contents to WordPress `/wp-content/uploads/data/`. JSON files are:
+   - `shadeh-dov-kpi.json` — `{compound: {...}}` per compound
+   - `shadeh-dov-charts.json` — `count`/`cumulative` are plain arrays, `price` uses `.series` (2-line)
+   - `shadeh-dov-pie-charts.json` — `data[compound][time]`
+   - `shadeh-dov-rooms-charts.json` — same shape as pie
+   - `shadeh-dov-price-ranges.json` — plain arrays
+   - `shadeh-dov-transactions.json` — `{compound: {expensive, cheap}}`
+   - `shadeh-dov-comparison.json` — `{ppm_by_rooms, price_by_rooms}`
+   - `shadeh-dov-meta.json` — `total_count`, `total_real`, `compounds`, `by_type`, `date_range`
+4. If anything has changed in the widget templates since the last paste, re-copy the HTML from `/export/copy` into the corresponding Elementor HTML widgets.
+
+**Open questions / future work**: see TODO list below.
 
 ---
 
@@ -488,11 +625,16 @@ The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): t
 
 - [ ] Delete `templates/widgets/pie_rooms.html` (replaced by `pie.html` + `rooms_bar.html`, still an unused file)
 - [ ] Delete or archive `generate.py` and `serve.py` (legacy, not used by Flask)
-- [ ] Add `projects_count` input field in upload form (currently hardcoded to 7)
+- [ ] Add `projects_count` editing UI (now per-compound via `COMPOUND_PROJECTS_COUNT` inline constant; ideally editable without code change)
+- [ ] Delete unused `templates/widgets/comparison_summary.html` (replaced by `comparison_price_bars.html` in iteration 5)
+- [ ] Delete unused `templates/widgets/pie_rooms.html` (replaced earlier in session 2)
+- [ ] Delete or archive `generate.py` and `serve.py` (legacy, not used by Flask)
 - [ ] Remove debug `.error.txt` logic from `/export/html` route (or gate behind `DEBUG` flag)
-- [ ] Consider fixing gunicorn to 1 worker to avoid in-memory fragmentation (or switch to a proper cache)
-- [ ] Add column-name validation in `generate_all_data()` with a clear error message listing missing columns
+- [x] ~~Consider fixing gunicorn to 1 worker~~ — done in iteration 6
+- [ ] Add column-name validation in `generate_all_data()` with a clear error message listing missing columns (including new `גוש`/`חלקה` requirement)
 - [ ] Test land widget appearance in actual Elementor (confirm tooltip CSS, SVG legend, toggle behavior match live site)
+- [ ] Consider `.gitignore`-ing the `preview/` folder — currently committed copies (~300KB each with Chart.js inlined) bloat the repo
+- [ ] Consider extracting `COMPOUND_MAP`, `COMPOUND_TOTAL_UNITS`, `COMPOUND_PROJECTS_COUNT` to a config file so they're easier to maintain
 
 ---
 
@@ -511,8 +653,12 @@ The trigger for the OOM (now vs. earlier sessions when 2 workers were stable): t
 
 ### Jinja2 gotcha (IMPORTANT):
 - Widget templates use `{{ data.xxx | tojson }}` to embed data
-- **Never use `{#` in CSS within widget templates** — Jinja2 parses it as a comment tag start
-- Example fix: `{ #id-selector {` → add a space, or split to separate lines
+- **Never let `{#` appear adjacent in CSS within widget templates** — Jinja2 parses `{#` as the start of a comment and `{# … #}` as the comment block. If it can't find a closing `#}`, render fails with `"Missing end of comment tag"` (see iteration 10).
+- **The most common trap** is the one-liner media query: `@media (max-width:600px){#some-id{...}}` — the `){#` is fine but the `){` right before `#some-id` is NOT (it parses as `…){ #some-id …` which contains `{#`). Concretely the danger is **any opening brace immediately followed by `#`**.
+- Example fixes:
+  - Add a space: `{ #id-selector {`
+  - Or split to multiple lines: `@media ... { \n  #id { ... } \n }`
+  - Or for risky blocks: wrap in `{% raw %}` / `{% endraw %}` (Jinja ignores everything inside).
 
 ### Chart.js v4 gotchas:
 - `fill: 1` = fill toward dataset at index 1 (for band between max/min datasets)
