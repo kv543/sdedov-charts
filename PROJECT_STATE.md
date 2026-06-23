@@ -1,6 +1,6 @@
 # Project State — sdedov-charts
 
-> **Last updated:** 2026-05-11 (session 5 — copy review only)
+> **Last updated:** 2026-06-23 (session 7 — master-DB ingest logic: סוג עסקה classification + data-cleaning rules, no app code changes)
 > **Purpose:** Single source of truth for resuming development after any break.
 > **Rule:** Update this file at the end of every work session.
 
@@ -595,6 +595,136 @@ After all session-4 charts deployed to the live Elementor site at `sdedov.co.il/
 - Time-series section: update the "כמות דירות שנמכרו ומחיר ממוצע למ"ר" preamble to mention the new two-line ppm view (separate lines for eshkol/merkaz, with merkaz starting July 2025).
 
 ### Files touched
+- PROJECT_STATE.md (this section).
+
+---
+
+## 2f. Session 6 — Tax-authority data merge + new Skill (2026-06-10)
+
+No changes to the Flask app or charts. This session built a **standalone Skill** for the recurring monthly task of consolidating raw tax-authority deal exports before they are copied into the master sales DB.
+
+### Context / problem
+Yuval pulls deal data from רשות המיסים's "מערכת מידע נדל"ן" **per גוש** (one query per block), so each month produces several separate files. They need to be merged into one file, sorted by date, to copy into the master "all sales to date" Excel DB.
+
+### Key fact about the source files
+The downloaded `.xls` files are **NOT real Excel** — they are **HTML documents** (one `<table>` each) saved with a `.xls` extension. Read them with `pandas.read_html(...)`, not `read_excel`. The merge script tries HTML first and falls back to `read_excel`.
+
+### Source file format (10 columns, fixed order)
+`גוש חלקה | יום מכירה | תמורה מוצהרת בש"ח | שווי מכירה בש"ח | מהות | חלק נמכר | ישוב | שנת בניה | שטח | חדרים`
+- `גוש חלקה` — e.g. `006634-0015-013-00` = gush 6634, chelka 15, sub-plot 13. Must stay **text** (leading zeros).
+- `יום מכירה` — `DD/MM/YYYY`, used for sorting (kept as original string in output).
+
+### The Skill: `merge-tax-deals`
+Built at `outputs/merge-tax-deals/` (SKILL.md + `scripts/merge_tax_files.py`), packaged as `merge-tax-deals.skill`. **Installed once by the user mid-session, then updated** (the marking feature below was added after the first install — user must re-install the latest `.skill` to get it).
+
+What it does:
+1. Reads all `.xls`/`.xlsx` in a folder (skips prior `*מאוחד*` outputs).
+2. Concatenates all rows, sorts ascending by `יום מכירה`.
+3. **Marks rows whose (גוש, חלקה) is outside the Sde Dov quarter** — adds a final column `מחוץ לרובע` = `✓ למחיקה` and highlights the whole row light-red. User deletes them manually, then deletes the marker column.
+4. Output: single `.xlsx` named `עסקאות מאוחדות <month year>.xlsx`, 10 original columns + marker column.
+5. Prints a summary: per-file counts, total, date range, **month breakdown**, count of outside-quarter rows, duplicate-row count.
+
+Default behavior: keep ALL rows (no dedup), no filtering. Duplicates (often legitimate fractional-share sales, `חלק נמכר` like 0.333 reported in multiple rows) are reported but NOT removed.
+
+### Exclusion list (rows NOT part of Sde Dov) — encoded as `EXCLUDE_CHELKOT` in the script
+| גוש | excluded חלקות |
+|---|---|
+| **6634** | 333–336, 348, 351 |
+| **6896** | 2–3, 5–11, 12, 28–29, 38, 85–94, 158, 167, 207–212 |
+| **7186** | ALL chelkot **except** 3 (encoded as `{'all_except': {3}}`) |
+
+Gushim not listed (e.g. 6900) are treated as fully inside the quarter. To update later, edit `EXCLUDE_CHELKOT` only.
+
+> Note: this exclusion list is the **inverse** framing of `COMPOUND_MAP` in `generate_lib.py` (which lists chelkot that ARE in the quarter, mapped to אשכול/מרכז). The two are independent — the Skill is a pre-processing step that happens *before* data reaches the Flask app; it does NOT do compound classification, ppm calc, or schema conversion.
+
+### This month's output (April–May 2026)
+- 5 source files merged → **178 rows**, date range 2026-04-05 → 2026-05-14.
+- Month breakdown: April 139, May 39. (Note: files labeled "מאי" genuinely contained May data — flagged to user.)
+- **0 rows marked outside-quarter** this month — the only (gush,chelka) pairs present were 6634/15, 6634/238, 6896/204, 6900/23, all inside the quarter. Marking logic verified separately with synthetic excluded values (all passed).
+- 3 fully-identical duplicate rows present (kept).
+- Saved as `עסקאות מאוחדות אפריל-מאי 2026.xlsx` in the project folder.
+
+### Monthly workflow going forward
+Upload the month's per-gush `.xls` files → say "תאחד לי את הקבצים" (triggers the Skill) → review the merged `.xlsx`, manually delete the red-highlighted out-of-quarter rows + the marker column → copy remaining rows into the master sales DB → **apply the §2g ingest logic (classify `סוג עסקה`, repair prices, gross up partial sales, dedupe)** → (then the existing sdedov-charts upload flow as in section 7).
+
+### Files touched
+- New skill files at `outputs/merge-tax-deals/` (not part of this git repo).
+- `עסקאות מאוחדות אפריל-מאי 2026.xlsx` added to the project folder (data artifact, not code).
+- PROJECT_STATE.md (this section).
+
+---
+
+## 2g. Session 7 — Master-DB ingest: `סוג עסקה` classification + data-cleaning rules (2026-06-23)
+
+No changes to the Flask app or charts. This session defined the **manual ingest logic** applied to the master sales DB *after* the monthly tax files are merged (session 6 skill) and the rows are copied in — i.e. the step that turns raw copied rows into clean, analysis-ready rows. **All logic below is reusable every month.** This session it was applied to the April + May 2026 batch (240 new rows after cleanup) in the master workbook (sheet `בסיס נתוני מכירות`).
+
+### Pipeline position
+```
+per-gush .xls  →  [session-6 skill: merge]  →  עסקאות מאוחדות <month>.xlsx
+   → user copies rows into master DB  →  [SESSION-7 LOGIC below]  →  clean rows  →  sdedov-charts upload
+```
+The merged tax file (`עסקאות מאוחדות <month>.xlsx`) is the **source of truth** for every cross-check in this section — keep it until ingest is verified.
+
+### A. `סוג עסקה` classification for new rows (דירה vs מימוש אופציה)
+New tax rows arrive with `סוג עסקה` **empty**. Fill each new row as follows. A row is **`מימוש אופציה`** only if **BOTH** conditions hold; otherwise **`דירה`**:
+1. **Compound = מרכז.** אשכול (גוש 6634 / 7186) has **zero** option exercises — always `דירה`.
+2. **A matching `אופציה` row exists** in the master DB with the **identical full `גוש חלקה`** (including sub-plot, e.g. `006900-0023-058-00`), dated **June 2025 – March 2026** (the entire option-grant window; ~691 of 692 `אופציה` rows are in גוש 6900). Match on the full unit id only — not גוש/חלקה alone.
+
+Rationale: `מימוש אופציה` = a previously-granted option now exercised by signing the real deal. Matching the exact unit id (with sub-plot) makes the link unit-level, so it can't over-match.
+
+This month (April–May 2026): **218 מימוש אופציה + 22 דירה** = 240. All 22 דירה are units with no prior option (incl. all גוש 6634 / אשכול rows). All 219→218 גוש-6900 rows matched an option (the −1 is the duplicate removed in §D).
+
+> Consistency with the app: this `מימוש אופציה` value is exactly what `generate_lib.py` already expects (§2d/§9): counted out of `total_transactions`, but included in real-data analysis. So classifying correctly here is what makes the downstream KPIs right.
+
+### B. Corrupted-price detection & repair (paste-error guard)
+Symptom this month: 128 contiguous rows had `תמורה מוצהרת` **and** `שווי מכירה` overwritten by a **repeating 4-value cycle** `[4,852,000 → 4,880,000 → 6,935,000 → 11,250,000]` (each exactly 32×) — a classic Excel copy/paste-down error. Tell-tale: identical round sums repeating across apartments of very different sizes, producing absurd `מחיר למ״ר` (37k–321k vs. a sane ~55–80k).
+
+Rule going forward: **after copying rows in, scan the new block for repeated identical `תמורה` values** (real prices are essentially never identical to the shekel across many units). If found, **restore from the merged tax file** by matching `גוש חלקה` + `יום מכירה` + `שטח`, copying back both `תמורה` and `שווי`. `שטח` itself was NOT corrupted, so it's a safe join key.
+
+### C. Partial sales `חלק נמכר = 0.333` → gross up ×3
+The tax authority reports a fractional sale (a third of an apartment) as `חלק נמכר = 0.333`, **often as one of 3 separate rows** (each third reported separately). Two things to fix:
+1. **Mis-recorded fraction:** if the master row shows `חלק נמכר = 1` but the merged tax source shows `0.333`, it's actually a partial sale. This month: 7 such rows, all גוש 6634 (גוש-חלקה 611, 413, 203, 191, 608, 514, 199).
+2. **Gross-up to full-apartment value (Yuval's rule):** multiply `תמורה מוצהרת` ×3 **and** `שווי מכירה` ×3, then set `חלק נמכר = 1`. This makes the row represent a whole apartment so `מחיר למ״ר` lands in the real range (post-fix: 67.8k–99.7k ₪/מ״ר). (×3 of a 0.333-rounded figure lands a few ₪ short of the round number, e.g. 4,851,999 — negligible.)
+   - **Why gross-up is needed:** the `מחיר למ״ר` formula is **`=J{row}/Q{row}` = `תמורה ÷ שטח`** and does **NOT** divide by `חלק נמכר`. So a third-of-apartment price over the full area reads ~⅓ of the true ppm. Fixing `חלק נמכר` alone would NOT fix ppm — the price must be grossed up.
+   - **Sanity threshold:** any `מחיר למ״ר` **< 40,000 ₪** in the רובע is suspect and should be investigated — almost always an un-grossed partial sale.
+
+### D. Duplicate detection (delete true dupes, keep legitimate repeats)
+A `גוש חלקה` appearing multiple times in a month is **usually legitimate** (different `יום מכירה` and/or `תמורה` = genuinely different events: option → exercise → resale). This month 62 unit-ids repeated, almost all legitimate.
+- **True duplicate = same `גוש חלקה` + same `יום מכירה` + same `תמורה` + same `חלק נמכר`.** This month: 1 case — `006900-0023-016-00`, 14/04/2026, 5,855,431 appeared twice (the tax source itself double-reported it). Deleted one copy (kept one). Do **not** auto-delete near-matches; only exact dupes on those 4 fields.
+- After deleting a row with openpyxl, **same-row formulas don't auto-shift** — every formula in `בסיס נתוני מכירות` is same-row relative (`=J{r}/Q{r}`, `=MONTH(F{r})`, `=YEAR(F{r})`, `=DAY(F{r})`, `=IF(OR(B{r}="6634",B{r}="7186"),"אשכול","מרכז")`, `=RIGHT(LEFT(A{r},6),4)` etc.). Fix by rewriting every formula cell's row refs to its own current row (regex `([A-Z]{1,3}\$?)\d+` → keep column, replace digits with current row). No other sheet references the base sheet by formula, so cross-sheet refs are safe; pivots/charts are refreshed manually.
+
+### Recommended monthly order of operations (after copying rows into master)
+1. Fill `סוג עסקה` (§A).
+2. Repair corrupted prices from the merged tax file (§B).
+3. Fix partial sales: gross up ×3, set `חלק נמכר = 1` (§C).
+4. Remove exact duplicates and repair formula rows (§D).
+5. Verify: no `מחיר למ״ר` < 40,000 left unexplained; no exact dupes; every formula cell references its own row; `מחיר למ״ר`/`מתחם`/`חודש`/`שנה` recompute on open in Excel.
+
+### Important file/encoding gotchas
+- The master file's `מתחם`, `גוש`, `חלקה`, `חודש`, `שנה`, `יום`, `מחיר למ״ר` columns are **formulas**, so read computed values with `openpyxl(..., data_only=True)`; the freshly-pasted tax rows store `יום מכירה` as a **string `DD/MM/YYYY`** (older rows are real datetimes) — handle both when parsing month/year.
+- `present_files` choked on the master filename's Hebrew (NFC/NFD normalization). Worked around by saving a copy named `נתוני מכירות שדה דב - מעודכן.xlsx`.
+
+### Skill upgrade: `merge-tax-deals` now has a 2nd step that writes straight into the master DB
+The skill was upgraded from a single-step merger into a **two-step monthly pipeline**, packaged as `merge-tax-deals.skill` for re-install:
+
+- **Step 1 (unchanged): `scripts/merge_tax_files.py`** — merges the raw per-gush tax `.xls` files into `עסקאות מאוחדות <month>.xlsx`.
+- **Step 2 (NEW): `scripts/insert_into_master.py`** — inserts the merged rows directly into the master sales workbook's `בסיס נתוני מכירות` sheet, applying **all** of §A–D automatically. Usage: `python3 insert_into_master.py <master.xlsx> <merged_tax.xlsx> [out.xlsx]`. Trigger: user uploads the latest master file and asks to add the rows.
+
+What `insert_into_master.py` does (verified to reproduce this session's hand-built result exactly — 240 new rows, 218 מימוש / 22 דירה, 7 grossed, 1 dupe removed):
+- **Column mapping + formula regen** — maps the 10 tax columns to the 21 master columns and **regenerates every formula column from a template per row** (B/C/D parsing, G/H/I dates, S `=J/Q`, T price-bucket). Writes `מתחם` as a value and `יום מכירה` as a real datetime. Crucially it preserves the **absolute** `$U$2:$U$5` refs in the `טווח תמורה מוצהרת` formula and never touches the U2:U5 threshold table (4M/7M/10M/20M).
+- **Classify `סוג עסקה`** (§A) — matches against any existing `אופציה` row with the same full `גוש חלקה` (date-window-independent for future-proofing).
+- **Gross up partial sales** (§C) — collapses same-unit fractional rows, then ×`round(1/חלק)` on `תמורה`+`שווי`, sets `חלק נמכר=1`.
+- **Auto-remove exact duplicates** (§D) — same `גוש חלקה`+date+`תמורה`+`שווי`+`חלק`; keeps legitimate different-date/price repeats.
+- **Full re-sort by date** and rewrite — all other sheets (pivots/charts/land) preserved; they recalc when opened in Excel.
+
+The skill's `description` and `SKILL.md` were rewritten to document both steps. **Decisions locked in this session** (the user chose): full processing automatic, exact duplicates auto-deleted, full merge-by-date ordering. Skill files live in the user's installed-skills cache, **not** in this git repo (a copy of the two scripts can optionally be checked into the repo for versioning).
+
+### ⚠️ Bug found & fixed this session (regression from the manual cleanup)
+The hand-cleaned file delivered mid-session had its **`טווח תמורה מוצהרת` (col T) formula broken in all rows**: a blanket regex row-shift after a row deletion rewrote the absolute `$U$2…$U$5` refs into `$U${row}`. Root cause + guard now documented in §D and in the skill. The **corrected master** was regenerated via `insert_into_master.py` (correct T formulas, sorted, all sheets intact) and re-delivered.
+
+### Files touched
+- Master sales workbook (`נתוני מכירות שדה דב2.xlsx`; data artifact, not in this git repo) — cleaned per §A–D; corrected copy regenerated by `insert_into_master.py`.
+- `merge-tax-deals` skill — new `scripts/insert_into_master.py`, rewritten `SKILL.md`, repackaged as `merge-tax-deals.skill` (delivered to the user to re-install).
 - PROJECT_STATE.md (this section).
 
 ---
